@@ -1,0 +1,36 @@
+buildscript {
+    repositories {
+        maven {
+            url "[https://plugins.gradle.org/m2/](https://plugins.gradle.org/m2/)"
+        }
+    }
+
+    dependencies {
+        classpath "com.moowork.gradle:gradle-node-plugin:1.2.0"
+    }
+}
+
+plugins {
+    id 'war'
+}
+
+group 'com.soundscribe'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+
+apply plugin: 'com.moowork.node'
+apply plugin: 'java'
+
+//Gradle task calling npm run build command
+task npmBuild(type: NpmTask, dependsOn: npmInstall) {
+    group = 'node'
+    args = ['run', 'build']
+}
