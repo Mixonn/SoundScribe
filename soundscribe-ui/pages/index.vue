@@ -1,53 +1,53 @@
 <template>
   <section class="section">
-    <div class="columns is-mobile">
-      <card
-        title="Free"
-        icon="github-circle"
-      >
-        Open source on <a href="https://github.com/buefy/buefy">
-          GitHub
-        </a>
-      </card>
-
-      <card
-        title="Responsive"
-        icon="cellphone-link"
-      >
-        <b class="has-text-grey">
-          Every
-        </b> component is responsive
-      </card>
-
-      <card
-        title="Modern"
-        icon="alert-decagram"
-      >
-        Built with <a href="https://vuejs.org/">
-          Vue.js
-        </a> and <a href="http://bulma.io/">
-          Bulma
-        </a>
-      </card>
-
-      <card
-        title="Lightweight"
-        icon="arrange-bring-to-front"
-      >
-        No other internal dependency
-      </card>
-    </div>
+    <Score :score="selectedScore" @osmdInit="osmdInit" @scoreLoaded="scoreLoaded" />
+    <PlaybackControls
+      :playback-engine="pbEngine"
+      :score-title="scoreTitle"
+    />
   </section>
 </template>
 
 <script>
-import Card from '~/components/Card'
+import PlaybackEngine from '../osmd/PlaybackEngine'
+import PlaybackControls from '../components/PlaybackControls.vue'
+import scores from '../scores'
+import Score from '~/components/Score'
 
 export default {
   name: 'HomePage',
 
   components: {
-    Card
+    Score,
+    PlaybackControls
+  },
+  data () {
+    return {
+      pbEngine: new PlaybackEngine(),
+      scores,
+      selectedScore: null,
+      osmd: null,
+      scoreTitle: '',
+      drawer: true
+    }
+  },
+  computed: {},
+  methods: {
+    osmdInit (osmd) {
+      console.log('OSMD init')
+      this.osmd = osmd
+      this.selectedScore =
+                'https://opensheetmusicdisplay.github.io/demo/sheets/MuzioClementi_SonatinaOpus36No3_Part1.xml'
+    },
+    scoreLoaded () {
+      console.log('Score loaded')
+      if (this.osmd.sheet.title) { this.scoreTitle = this.osmd.sheet.title.text }
+      this.pbEngine.loadScore(this.osmd)
+    },
+    scoreChanged (scoreUrl) {
+      if (this.pbEngine.state === 'PLAYING') { this.pbEngine.stop() }
+      this.selectedScore = scoreUrl
+    }
   }
 }
 </script>
