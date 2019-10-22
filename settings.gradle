@@ -1,4 +1,4 @@
 rootProject.name = 'soundscribe'
-include 'soundscribe-ui'
 include 'soundscribe-be'
+include 'soundscribe-ui'
 
