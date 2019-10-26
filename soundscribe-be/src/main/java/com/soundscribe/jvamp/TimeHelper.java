@@ -2,7 +2,7 @@ package com.soundscribe.jvamp;
 
 import org.vamp_plugins.RealTime;
 
-public class Helper {
+public class TimeHelper {
     public static double RealTime2Double(RealTime time){
         return Double.parseDouble(time.toString());
     }
