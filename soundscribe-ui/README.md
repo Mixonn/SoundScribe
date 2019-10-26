@@ -1,6 +1,6 @@
 # soundscribe-ui
 
-> My scrumtrulescent Nuxt.js project
+> Soundscibe
 
 ## Build Setup
 
