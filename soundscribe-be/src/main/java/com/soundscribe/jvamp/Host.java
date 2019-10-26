@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.List;
 
+import com.soundscribe.utilities.MidiNotes;
 import org.vamp_plugins.PluginLoader;
 import org.vamp_plugins.Plugin;
 import org.vamp_plugins.OutputDescriptor;
@@ -73,8 +74,8 @@ public class Host {
                     midi.appendChild(document.createTextNode(String.valueOf(midiValue)));
                     note.appendChild(midi);
 
-                    Element letterNote = document.createElement("letterNote");
-                    letterNote.appendChild(document.createTextNode(Notes.note(midiValue)));
+                    Element letterNote = document.createElement("letterNotde");
+                    letterNote.appendChild(document.createTextNode(MidiNotes.note(midiValue)));
                     note.appendChild(letterNote);
                 }
 

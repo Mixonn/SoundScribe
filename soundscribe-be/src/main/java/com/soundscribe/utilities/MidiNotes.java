@@ -119,4 +119,9 @@ public class MidiNotes {
         };
     }
 
+    public static String note(int value)
+    {
+        return notesDict.getOrDefault(value,"?");
+    }
+
 }
