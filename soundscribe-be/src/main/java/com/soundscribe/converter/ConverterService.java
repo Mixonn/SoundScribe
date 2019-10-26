@@ -1,11 +1,11 @@
-package com.soundscribe.conventer;
+package com.soundscribe.converter;
 
 import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
 
 import java.io.File;
 
-public class ConventerService {
+public class ConverterService {
 
     public File convertMP3toWAV(File fileMp3) {
         String fileName = fileMp3.getName().split("\\.")[0];

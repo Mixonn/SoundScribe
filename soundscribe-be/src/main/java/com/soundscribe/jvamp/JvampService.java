@@ -8,13 +8,12 @@ import static com.soundscribe.jvamp.Functions.SMOOTHED_PITCH_TRACK;
 
 public class JvampService {
 
+    private static final String LIB_PATH = "/usr/lib/";
     private Host host;
 
     public JvampService() {
-        File libvampHOST = new File(Objects.requireNonNull(getClass().getClassLoader().getResource("libvamp-hostsdk.so")).getFile());
-        File libvampJNI = new File(Objects.requireNonNull(getClass().getClassLoader().getResource("libvamp-jni.so")).getFile());
-        System.load(libvampHOST.getAbsolutePath());
-        System.load(libvampJNI.getAbsolutePath());
+        System.load(LIB_PATH + "libvamp-hostsdk.so");
+        System.load(LIB_PATH + "libvamp-jni.so");
         host = new Host();
     }
 
