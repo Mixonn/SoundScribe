@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.List;
 
 import com.soundscribe.utilities.MidiNotes;
+import com.soundscribe.utilities.StaticVariables;
 import org.vamp_plugins.PluginLoader;
 import org.vamp_plugins.Plugin;
 import org.vamp_plugins.OutputDescriptor;
@@ -31,11 +32,9 @@ public class Host {
     private void printNotes(String filename, RealTime frameTime, Integer output,
                             Map<Integer, List<Feature>> features, File xmlFile) {
         int midiValue;
-
         if (!features.containsKey(output)) return;
 
         try {
-            // Stuff for xml
             DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
             Document document = documentBuilder.newDocument();
@@ -147,11 +146,11 @@ public class Host {
         switch (function) {
             case NOTES:
                 key = "pyin:pyin:notes";
-                xmlFile = new File(fileName + ".xml");
+                xmlFile = new File(StaticVariables.SONG_DATA_STORAGE_PATCH + fileName + ".xml");
                 break;
             case SMOOTHED_PITCH_TRACK:
                 key = "pyin:pyin:smoothedpitchtrack";
-                smoothedFile = new File(fileName + ".txt");
+                smoothedFile = new File(StaticVariables.SONG_DATA_STORAGE_PATCH + fileName + ".txt");
                 break;
         }
 

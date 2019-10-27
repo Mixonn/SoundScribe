@@ -1,5 +1,6 @@
 package com.soundscribe.converter;
 
+import com.soundscribe.utilities.StaticVariables;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -41,11 +42,12 @@ public class MidiConverter {
             }
 
             //write MIDI
-            File midiFile= new File(fileXML.getName() + ".mid");
+            File midiFile= new File(StaticVariables.SONG_DATA_STORAGE_PATCH + xml.getName() + ".mid");
             MidiSystem.write(sequence, 1, midiFile);
 
         } catch (Exception e) {
             System.out.println("Error while creating MIDI file.");
+            e.printStackTrace();
         }
         return null;
     }
