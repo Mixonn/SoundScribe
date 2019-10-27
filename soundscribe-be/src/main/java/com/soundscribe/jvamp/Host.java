@@ -43,7 +43,6 @@ public class Host {
             Element root = document.createElement(filename);
             document.appendChild(root);
 
-            // processing .wav file data
             for (Feature f : features.get(output)) {
                 Element note = document.createElement("note");
 
@@ -65,7 +64,6 @@ public class Host {
 
                     // frequency to midi
                     midiValue = (int) (Math.round(69 + 12 * (Math.log(v / 440) / Math.log(2))));
-
                     Element val = document.createElement("value");
                     val.appendChild(document.createTextNode(String.valueOf(v)));
                     note.appendChild(val);
