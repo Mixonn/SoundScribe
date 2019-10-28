@@ -25,7 +25,6 @@ public class MainController {
     @GetMapping("/tempo/{filename}")
     @ResponseBody
     public String tempo(@PathVariable String filename) throws Exception {
-        System.out.println("Trying to parse: " + filename);
         BeatDetector trackAnalyzerPort = new BeatDetector(filename);
         return trackAnalyzerPort.analyzeTrack().orElse("¯\\_(ツ)_/¯");
     }
