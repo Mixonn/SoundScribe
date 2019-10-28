@@ -4,8 +4,8 @@ import com.soundscribe.utilities.StaticVariables;
 
 import java.io.File;
 
-import static com.soundscribe.jvamp.Functions.NOTES;
-import static com.soundscribe.jvamp.Functions.SMOOTHED_PITCH_TRACK;
+import static com.soundscribe.jvamp.JvampFunctions.NOTES;
+import static com.soundscribe.jvamp.JvampFunctions.SMOOTHED_PITCH_TRACK;
 
 public class JvampService {
     private Host host;

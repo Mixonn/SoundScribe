@@ -71,7 +71,7 @@ public class Host {
                     midi.appendChild(document.createTextNode(String.valueOf(midiValue)));
                     note.appendChild(midi);
 
-                    Element letterNote = document.createElement("letterNotde");
+                    Element letterNote = document.createElement("letterNote");
                     letterNote.appendChild(document.createTextNode(MidiNotes.note(midiValue)));
                     note.appendChild(letterNote);
                 }
@@ -137,7 +137,7 @@ public class Host {
         return frames;
     }
 
-    public void start(Functions function, File file) {
+    public void start(JvampFunctions function, File file) {
         File xmlFile = null;
         File smoothedFile = null;
         String key = null;

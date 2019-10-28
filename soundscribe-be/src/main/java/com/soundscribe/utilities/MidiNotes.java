@@ -121,7 +121,12 @@ public class MidiNotes {
 
     public static String note(int value)
     {
-        return notesDict.getOrDefault(value,"?");
+        if (value<21)
+            return String.valueOf(value - 21);
+        else if(value>127)
+            return "+" + (value - 127);
+        else
+            return notesDict.get(value);
     }
 
 }
