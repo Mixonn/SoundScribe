@@ -12,6 +12,7 @@
     "lint": "eslint --ext .js,.vue"
   },
   "dependencies": {
+    "@nuxtjs/axios": "^5.8.0",
     "jquery": "^3.4.1",
     "nuxt": "^2.0.0",
     "verovio": "^2.2.0"

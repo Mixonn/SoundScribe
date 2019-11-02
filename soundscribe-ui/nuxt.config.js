@@ -44,6 +44,7 @@ export default {
   ** Nuxt.js modules
   */
   modules: [
+    '@nuxtjs/axios'
   ],
   /*
   ** vuetify module configuration
@@ -65,6 +66,9 @@ export default {
         }
       }
     }
+  },
+  axios: {
+    baseURL: 'http://localhost:3000'
   },
   /*
   ** Build configuration

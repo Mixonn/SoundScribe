@@ -6,6 +6,7 @@
 </template>
 
 <script>
+const fs = require('fs');
 const $ = require('jquery');
 const verovio = require('verovio').init(512);
 
@@ -36,18 +37,18 @@ function loadData (data) {
   $('#svg_output').html(svg);
 }
 
+function readFile () {
+  return fs.readFileSync('/mei/Beethoven_StringQuartet_op.18_no.2.mei', 'utf-8')
+}
+
 export default {
   name: 'StaffLines',
-  mounted () {
-    // const file = '~/static/mei/Beethoven_StringQuartet_op.18_no.2.mei';
-    const file = 'https://raw.githubusercontent.com/rism-ch/verovio-tutorial/gh-pages/mei/Beethoven_StringQuartet_op.18_no.2.mei';
-    $.ajax({
-      url: file,
-      dataType: 'text',
-      success (data) {
-        loadData(data);
-      }
-    });
+  async mounted () {
+    const file = '/mei/Beethoven_StringQuartet_op.18_no.2.mei';
+    // const file = 'https://raw.githubusercontent.com/rism-ch/verovio-tutorial/gh-pages/mei/Beethoven_StringQuartet_op.18_no.2.mei';
+    const data = await this.$axios.get(this.$axios.defaults.baseURL + file).then(res => res.data);
+    console.log(this.$axios.defaults.baseURL + file)
+    loadData(data);
   }
 }
 </script>
