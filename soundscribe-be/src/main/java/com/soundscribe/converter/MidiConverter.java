@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Converts midi to any other music format.
+ * Converts midi to any other music format and creates midi from raw pYIN data.
  */
 public class MidiConverter {
 
