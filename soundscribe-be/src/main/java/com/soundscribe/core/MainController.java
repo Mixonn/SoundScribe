@@ -1,13 +1,16 @@
 package com.soundscribe.core;
 
+import java.io.File;
+
 import com.soundscribe.converter.ConverterService;
 import com.soundscribe.jvamp.JvampService;
+
+import java.io.File;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.io.File;
 
 @Controller
 public class MainController {
@@ -25,8 +28,7 @@ public class MainController {
     @GetMapping("/tempo/{filename}")
     @ResponseBody
     public String tempo(@PathVariable String filename) throws Exception {
-        BeatDetector trackAnalyzerPort = new BeatDetector(filename);
-        return trackAnalyzerPort.analyzeTrack().orElse("¯\\_(ツ)_/¯");
+        BeatDetector beatDetector = new BeatDetector(filename);
+        return beatDetector.analyzeTrack().map(String::valueOf).orElse("¯\\_(ツ)_/¯");
     }
-
 }
