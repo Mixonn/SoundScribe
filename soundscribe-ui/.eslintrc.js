@@ -15,6 +15,7 @@ module.exports = {
   rules: {
     "semi": 0,
     "no-unused-vars": 0,
-    "new-cap": 0
+    "new-cap": 0,
+    "html-self-closing": 0
   }
-}
+};
