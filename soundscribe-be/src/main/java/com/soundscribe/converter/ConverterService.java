@@ -24,7 +24,7 @@ public class ConverterService {
 
     public File convertXMLtoMIDI(File fileXML, boolean deleteAfter) {
         MidiConverter midiConverter = new MidiConverter();
-        File midi = midiConverter.convertXMLtoMidi(fileXML);
+        File midi = midiConverter.convertXmlToMidi(fileXML);
         if(deleteAfter) fileXML.delete();
         return midi;
     }

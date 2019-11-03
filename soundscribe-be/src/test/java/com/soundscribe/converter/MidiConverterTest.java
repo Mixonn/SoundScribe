@@ -100,7 +100,7 @@ public class MidiConverterTest {
 
     @Test
     public void convertXMLtoMidiTestIfFileCreated() {
-        midiFile = midiConverter.convertXMLtoMidi(xmlFile);
+        midiFile = midiConverter.convertXmlToMidi(xmlFile);
         assertTrue(midiFile.exists());
     }
 }

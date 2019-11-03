@@ -3,6 +3,11 @@ package com.soundscribe.utilities;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Stores all possible notes.
+ * If midi value out of range returns information how far it is from original scales.
+ * For example. +2(too high), -3(too low).
+ */
 public class MidiNotes {
     private static final Map<Integer, String> notesDict;
     static {

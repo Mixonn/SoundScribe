@@ -16,11 +16,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Converts midi to any other music format.
+ */
 public class MidiConverter {
-    public File convertXMLtoMidi(File fileXML){
+
+    /**
+     * Directly converts pYIN data to Midi file. Midi sounds correct but BPM is always set to 120.
+     * Best way is to use MusicXML converter first.
+     * @param fileXML Xml file with notes.
+     * @return Created from notes midi file.
+     */
+    public File convertXmlToMidi(File fileXML){
         File midiFile = null;
         int PPQ = 24;
-        int BPM = 120; //120 standard midi BPM //todo take value from orginal song
+        int BPM = 120; //120 standard midi BPM
         XmlPojo xml = readXMLData(fileXML);
 
         try {
@@ -48,6 +58,15 @@ public class MidiConverter {
         return midiFile;
     }
 
+    /**
+     * Creates midi event.
+     * @param command
+     * @param channel
+     * @param note
+     * @param velocity
+     * @param tick
+     * @return
+     */
     private MidiEvent makeEvent(int command, int channel, int note, int velocity, int tick) {
 
         MidiEvent event = null;
@@ -61,11 +80,23 @@ public class MidiConverter {
         return event;
     }
 
+    /**
+     * Calculate length of notes in ticks.
+     * @param BPM beat per minute
+     * @param PPQ Midi file parameter
+     * @param time Length of note in seconds
+     * @return number of ticks
+     */
     private int secondsToTicks(int BPM, int PPQ, double time) {
         double tickTimeInMs = (double) 60000 / (BPM * PPQ);
         return (int) (time * 1000 / tickTimeInMs);
     }
 
+    /**
+     * Reads data from xml file and stores it into object for next processing.
+     * @param fileXML Xml file with notes.
+     * @return XmlPojo object with parsed data.
+     */
     private XmlPojo readXMLData(File fileXML) {
         XmlPojo xmlPojo = new XmlPojo();
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

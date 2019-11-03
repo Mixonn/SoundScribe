@@ -1,5 +1,8 @@
 package com.soundscribe.converter;
 
+/**
+ * Stores detailed data about notes.
+ */
 public class NotePojo {
     double timestamp;
     double duration;
