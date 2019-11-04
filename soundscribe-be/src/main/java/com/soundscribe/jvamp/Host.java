@@ -7,6 +7,7 @@ import java.util.List;
 import com.soundscribe.utilities.MidiNotes;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.vamp_plugins.PluginLoader;
 import org.vamp_plugins.Plugin;
 import org.vamp_plugins.OutputDescriptor;
@@ -28,12 +29,12 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+@Component
 public class Host {
     @Autowired
     private SoundscribeConfiguration soundscribeConfiguration;
 
-    private void printNotes(String filename, RealTime frameTime, Integer output,
-                            Map<Integer, List<Feature>> features, File xmlFile) {
+    private void printNotes(String filename, RealTime frameTime, Integer output, Map<Integer, List<Feature>> features, File xmlFile) {
         int midiValue;
         if (!features.containsKey(output)) return;
 
@@ -120,9 +121,7 @@ public class Host {
         }
     }
 
-    private int readBlock(AudioFormat format, AudioInputStream stream,
-                          float[][] buffers)
-            throws IOException {
+    private int readBlock(AudioFormat format, AudioInputStream stream, float[][] buffers) throws IOException {
         // 16-bit LE signed PCM only
         int channels = format.getChannels();
         byte[] raw = new byte[buffers[0].length * channels * 2];

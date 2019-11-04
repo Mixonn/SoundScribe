@@ -4,9 +4,11 @@ import com.soundscribe.utilities.SoundscribeConfiguration;
 import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 
+@Service
 public class ConverterService {
     @Autowired
     private SoundscribeConfiguration soundscribeConfiguration;

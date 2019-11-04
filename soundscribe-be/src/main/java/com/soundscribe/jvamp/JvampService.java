@@ -16,14 +16,12 @@ import static com.soundscribe.jvamp.JvampFunctions.SMOOTHED_PITCH_TRACK;
 public class JvampService {
     @Autowired
     private SoundscribeConfiguration soundscribeConfiguration;
-
+    @Autowired
     private Host host;
 
     public void loadLibraries() {
-        if (soundscribeConfiguration == null) System.out.println("Bean nie został wstrzyknięty!");
         System.load(soundscribeConfiguration.getSystemLib() + "libvamp-hostsdk.so");
         System.load(soundscribeConfiguration.getSystemLib() + "libvamp-jni.so");
-        host = new Host();
     }
 
     /**
@@ -42,6 +40,7 @@ public class JvampService {
      * @param deleteAfter Boolean, if set on true wav file will be deleted after the process is completed.
      */
     public void pyinNotes(File fileWav, boolean deleteAfter) {
+        if(host==null) System.out.println("Nie ma hosta!");
         host.start(NOTES, fileWav);
         if (deleteAfter) fileWav.delete();
     }
