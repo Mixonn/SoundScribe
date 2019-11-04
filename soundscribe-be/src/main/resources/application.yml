@@ -1,0 +1,4 @@
+#Path properties
+path:
+ songDataStorage: ""
+ systemLib: "/usr/lib/"

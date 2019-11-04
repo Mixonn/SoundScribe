@@ -1,15 +1,19 @@
 package com.soundscribe.converter;
 
-import com.soundscribe.utilities.StaticVariables;
+import com.soundscribe.utilities.SoundscribeConfiguration;
 import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 
 public class ConverterService {
+    @Autowired
+    private SoundscribeConfiguration soundscribeConfiguration;
+
     public File convertMP3toWAV(File fileMp3, boolean deleteAfter) {
         String fileName = fileMp3.getName().split("\\.")[0];
-        File fileWav = new File(StaticVariables.SONG_DATA_STORAGE_PATCH + fileName + ".wav");
+        File fileWav = new File(soundscribeConfiguration.getSongDataStorage()+ fileName + ".wav");
         Converter converter = new Converter();
 
         try {

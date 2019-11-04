@@ -1,6 +1,7 @@
 package com.soundscribe.jvamp;
 
-import com.soundscribe.utilities.StaticVariables;
+import com.soundscribe.utilities.SoundscribeConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 
@@ -11,11 +12,15 @@ import static com.soundscribe.jvamp.JvampFunctions.SMOOTHED_PITCH_TRACK;
  * Executes jVamp plugins.
  */
 public class JvampService {
+    @Autowired
+    private SoundscribeConfiguration soundscribeConfiguration;
+
     private Host host;
 
     public JvampService() {
-        System.load(StaticVariables.LIB_PATH + "libvamp-hostsdk.so");
-        System.load(StaticVariables.LIB_PATH + "libvamp-jni.so");
+        System.out.println(soundscribeConfiguration); // soundscribeConfiguration is null
+        System.load(soundscribeConfiguration.getSystemLib() + "libvamp-hostsdk.so");
+        System.load(soundscribeConfiguration.getSystemLib() + "libvamp-jni.so");
         host = new Host();
     }
 

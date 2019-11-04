@@ -14,7 +14,7 @@ public class MainController {
     @GetMapping("/file-processing/analyze-file")
     @ResponseBody
     public String analyzeFile(@RequestParam String filename) {
-        File file = new File("test.mp3");
+        File file = new File(filename);
         JvampService jvampService = new JvampService();
         ConverterService converterService = new ConverterService();
         File wavFile = converterService.convertMP3toWAV(file, false);

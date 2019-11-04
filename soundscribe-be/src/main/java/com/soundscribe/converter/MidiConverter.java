@@ -1,6 +1,7 @@
 package com.soundscribe.converter;
 
-import com.soundscribe.utilities.StaticVariables;
+import com.soundscribe.utilities.SoundscribeConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -20,6 +21,9 @@ import java.util.List;
  * Converts midi to any other music format and creates midi from raw pYIN data.
  */
 public class MidiConverter {
+
+    @Autowired
+    private SoundscribeConfiguration soundscribeConfiguration;
 
     /**
      * Directly converts pYIN data to Midi file. Midi sounds correct but BPM is always set to 120.
@@ -48,7 +52,7 @@ public class MidiConverter {
             }
 
             //write MIDI
-            midiFile = new File(StaticVariables.SONG_DATA_STORAGE_PATCH + xml.getName() + ".mid");
+            midiFile = new File(soundscribeConfiguration.getSongDataStorage() + xml.getName() + ".mid");
             MidiSystem.write(sequence, 1, midiFile);
 
         } catch (Exception e) {

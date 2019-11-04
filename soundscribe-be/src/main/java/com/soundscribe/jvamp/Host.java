@@ -5,7 +5,8 @@ import java.util.*;
 import java.util.List;
 
 import com.soundscribe.utilities.MidiNotes;
-import com.soundscribe.utilities.StaticVariables;
+import com.soundscribe.utilities.SoundscribeConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.vamp_plugins.PluginLoader;
 import org.vamp_plugins.Plugin;
 import org.vamp_plugins.OutputDescriptor;
@@ -28,6 +29,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 public class Host {
+    @Autowired
+    private SoundscribeConfiguration soundscribeConfiguration;
 
     private void printNotes(String filename, RealTime frameTime, Integer output,
                             Map<Integer, List<Feature>> features, File xmlFile) {
@@ -146,11 +149,11 @@ public class Host {
         switch (function) {
             case NOTES:
                 key = "pyin:pyin:notes";
-                xmlFile = new File(StaticVariables.SONG_DATA_STORAGE_PATCH + fileName + ".xml");
+                xmlFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".xml");
                 break;
             case SMOOTHED_PITCH_TRACK:
                 key = "pyin:pyin:smoothedpitchtrack";
-                smoothedFile = new File(StaticVariables.SONG_DATA_STORAGE_PATCH + fileName + ".txt");
+                smoothedFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".txt");
                 break;
         }
 
