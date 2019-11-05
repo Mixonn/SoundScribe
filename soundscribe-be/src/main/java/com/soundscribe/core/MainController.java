@@ -23,7 +23,7 @@ public class MainController {
     jvampService.loadLibraries();
     File file = new File(filename);
     File wavFile = converterService.convertMP3toWAV(file, false);
-    jvampService.pyinNotes(wavFile, true);
+    jvampService.pyinNotes(wavFile, false);
     return "Plik z danymi wyściowymi został utworzony";
   }
 
@@ -32,7 +32,6 @@ public class MainController {
   public String xmlToMidi(@RequestParam String filename) {
     jvampService.loadLibraries();
     File fileXML = new File(filename);
-    ConverterService converterService = new ConverterService();
     converterService.convertXMLtoMIDI(fileXML, false);
     return "Plik midi został utworzony";
   }

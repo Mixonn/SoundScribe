@@ -25,9 +25,9 @@ public class JvampService {
   }
 
   /**
-   * @param fileWav     Wav file for analysis.
+   * @param fileWav Wav file for analysis.
    * @param deleteAfter Boolean, if set on true wav file will be deleted after the process is
-   *                    completed.
+   *     completed.
    */
   public void pyinSmoothedPitchTrack(File fileWav, boolean deleteAfter) {
     host.start(SMOOTHED_PITCH_TRACK, fileWav);
@@ -37,12 +37,11 @@ public class JvampService {
   /**
    * Generetes xmlFile with timestamp,length and value of notes in song.
    *
-   * @param fileWav     Wav file for analysis.
+   * @param fileWav Wav file for analysis.
    * @param deleteAfter Boolean, if set on true wav file will be deleted after the process is
-   *                    completed.
+   *     completed.
    */
   public void pyinNotes(File fileWav, boolean deleteAfter) {
-    System.out.println(soundscribeConfiguration == null);
     host.start(NOTES, fileWav);
     if (deleteAfter) fileWav.delete();
   }

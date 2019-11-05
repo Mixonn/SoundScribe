@@ -9,8 +9,7 @@ public class XmlPojo {
   private String name;
   private List<NotePojo> notes;
 
-  public XmlPojo() {
-  }
+  public XmlPojo() {}
 
   public XmlPojo(
       String name,

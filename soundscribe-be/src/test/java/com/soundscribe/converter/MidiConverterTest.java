@@ -1,8 +1,13 @@
 package com.soundscribe.converter;
 
+import com.soundscribe.core.AppConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -19,17 +24,21 @@ import java.io.File;
 
 import static org.junit.Assert.assertTrue;
 
+/* TODO: preferably move to JUnit5 */
+
+@RunWith(SpringRunner.class)
+@ContextConfiguration(classes = AppConfig.class)
 public class MidiConverterTest {
 
   private File xmlFile = null;
   private File midiFile = null;
-  private MidiConverter midiConverter = null;
+  @Autowired
+  private MidiConverter midiConverter;
   private String testFileName = "testName";
 
   @Before
   public void setUp() {
     xmlFile = new File(testFileName + ".xml");
-    midiConverter = new MidiConverter();
 
     DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder documentBuilder = null;

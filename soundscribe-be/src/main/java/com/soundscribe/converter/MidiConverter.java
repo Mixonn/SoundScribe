@@ -91,8 +91,8 @@ public class MidiConverter {
   /**
    * Calculate length of notes in ticks.
    *
-   * @param BPM  beat per minute
-   * @param PPQ  Midi file parameter
+   * @param BPM beat per minute
+   * @param PPQ Midi file parameter
    * @param time Length of note in seconds
    * @return number of ticks
    */

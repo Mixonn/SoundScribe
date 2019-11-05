@@ -4,9 +4,9 @@ import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SoundscribeBeCoreApplicationTests {
+public class SoundscribeBeCoreApplicationTests {
 
   @Test
-  void contextLoads() {
+  public void contextLoads() {
   }
 }
