@@ -9,5 +9,4 @@ class SoundscribeBeCoreApplicationTests {
   @Test
   void contextLoads() {
   }
-
 }

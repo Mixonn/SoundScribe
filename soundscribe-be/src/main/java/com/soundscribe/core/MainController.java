@@ -12,30 +12,28 @@ import java.io.File;
 
 @Controller
 public class MainController {
+  @Autowired
+  private JvampService jvampService;
+  @Autowired
+  private ConverterService converterService;
 
-    @Autowired
-    JvampService jvampService;
-    @Autowired
-    ConverterService converterService;
+  @GetMapping("/file-processing/analyze-file")
+  @ResponseBody
+  public String analyzeFile(@RequestParam String filename) {
+    jvampService.loadLibraries();
+    File file = new File(filename);
+    File wavFile = converterService.convertMP3toWAV(file, false);
+    jvampService.pyinNotes(wavFile, true);
+    return "Plik z danymi wyściowymi został utworzony";
+  }
 
-    @GetMapping("/file-processing/analyze-file")
-    @ResponseBody
-    public String analyzeFile(@RequestParam String filename) {
-        jvampService.loadLibraries();
-        File file = new File(filename);
-        JvampService jvampService = new JvampService();
-        File wavFile = converterService.convertMP3toWAV(file, false);
-        jvampService.pyinNotes(wavFile, true);
-        return "Plik z danymi wyściowymi został utworzony";
-    }
-
-    @GetMapping("/file-processing/xml-to-midi")
-    @ResponseBody
-    public String xmlToMidi(@RequestParam String filename) {
-        jvampService.loadLibraries();
-        File fileXML = new File(filename);
-        ConverterService converterService = new ConverterService();
-        converterService.convertXMLtoMIDI(fileXML, false);
-        return "Plik midi został utworzony";
-    }
+  @GetMapping("/file-processing/xml-to-midi")
+  @ResponseBody
+  public String xmlToMidi(@RequestParam String filename) {
+    jvampService.loadLibraries();
+    File fileXML = new File(filename);
+    ConverterService converterService = new ConverterService();
+    converterService.convertXMLtoMIDI(fileXML, false);
+    return "Plik midi został utworzony";
+  }
 }
