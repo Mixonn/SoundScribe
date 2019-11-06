@@ -1,6 +1,9 @@
 package com.soundscribe.converter;
 
+import com.soundscribe.jvamp.JvampService;
 import com.soundscribe.utilities.SoundscribeConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
@@ -26,6 +29,7 @@ public class MidiConverter {
 
   @Autowired
   private SoundscribeConfiguration soundscribeConfiguration;
+  private static final Logger logger = LoggerFactory.getLogger(JvampService.class);
 
   /**
    * Directly converts pYIN data to Midi file. Midi sounds correct but BPM is always set to 120.
@@ -59,7 +63,7 @@ public class MidiConverter {
       MidiSystem.write(sequence, 1, midiFile);
 
     } catch (Exception e) {
-      System.out.println("Error while creating MIDI file.");
+      logger.error("Error while creating MIDI file.");
       e.printStackTrace();
     }
     return midiFile;
@@ -91,8 +95,8 @@ public class MidiConverter {
   /**
    * Calculate length of notes in ticks.
    *
-   * @param BPM beat per minute
-   * @param PPQ Midi file parameter
+   * @param BPM  beat per minute
+   * @param PPQ  Midi file parameter
    * @param time Length of note in seconds
    * @return number of ticks
    */
@@ -114,18 +118,18 @@ public class MidiConverter {
     try {
       builder = factory.newDocumentBuilder();
     } catch (ParserConfigurationException e) {
-      System.out.println("Error while converting XML.");
-      e.printStackTrace();
+      logger.error("Error while converting XML.");
+      throw new RuntimeException(e);
     }
     Document document = null;
     try {
       document = builder.parse(fileXML);
     } catch (SAXException e) {
-      System.out.println("Invalid xml file format");
-      e.printStackTrace();
+      logger.error("Invalid xml file format");
+      throw new RuntimeException(e);
     } catch (IOException e) {
-      System.out.println("Could not find xml file.");
-      e.printStackTrace();
+      logger.error("Could not find xml file.");
+      throw new RuntimeException(e);
     }
     document.getDocumentElement().normalize();
 

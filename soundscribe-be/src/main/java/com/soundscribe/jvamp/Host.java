@@ -2,6 +2,8 @@ package com.soundscribe.jvamp;
 
 import com.soundscribe.utilities.MidiNotes;
 import com.soundscribe.utilities.SoundscribeConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.vamp_plugins.*;
@@ -26,11 +28,26 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Host is slightly modified jVAMP class. It provides support for loading VAMP plugins.
+ */
 @Component
 public class Host {
+
   @Autowired
   private SoundscribeConfiguration soundscribeConfiguration;
+  private static final Logger logger = LoggerFactory.getLogger(Host.class);
 
+  /**
+   * Generates xml file from data calculated by pYIN algorithm. Additionaly it adds letterNote
+   * attribute which
+   *
+   * @param filename  Song name
+   * @param frameTime
+   * @param output
+   * @param features
+   * @param xmlFile   Xml file with pYIN data
+   */
   private void printNotes(
       String filename,
       RealTime frameTime,
@@ -38,7 +55,9 @@ public class Host {
       Map<Integer, List<Feature>> features,
       File xmlFile) {
     int midiValue;
-    if (!features.containsKey(output)) return;
+    if (!features.containsKey(output)) {
+      return;
+    }
 
     try {
       DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
@@ -106,7 +125,9 @@ public class Host {
       Map<Integer, List<Feature>> features,
       File file)
       throws IOException {
-    if (!features.containsKey(output)) return;
+    if (!features.containsKey(output)) {
+      return;
+    }
     try {
       PrintWriter writer = new PrintWriter(file, "UTF-8");
       // processing .wav file data
@@ -135,7 +156,9 @@ public class Host {
     int channels = format.getChannels();
     byte[] raw = new byte[buffers[0].length * channels * 2];
     int read = stream.read(raw);
-    if (read < 0) return read;
+    if (read < 0) {
+      return read;
+    }
     int frames = read / (channels * 2);
     for (int i = 0; i < frames; ++i) {
       for (int c = 0; c < channels; ++c) {
@@ -177,7 +200,7 @@ public class Host {
       if (format.getSampleSizeInBits() != 16
           || format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED
           || format.isBigEndian()) {
-        System.err.println("Sorry, only 16-bit signed little-endian PCM files supported");
+        logger.error("Sorry, only 16-bit signed little-endian PCM files supported");
         return;
       }
 
@@ -190,21 +213,22 @@ public class Host {
       OutputDescriptor[] outputs = p.getOutputDescriptors();
       int outputNumber = -1;
       for (int i = 0; i < outputs.length; ++i) {
-        if (outputs[i].identifier.equals(outputKey)) outputNumber = i;
+        if (outputs[i].identifier.equals(outputKey)) {
+          outputNumber = i;
+        }
       }
       if (outputNumber < 0) {
-        System.err.println("Plugin lacks output id: " + outputKey);
-        System.err.print("Outputs are:");
+        logger.error("Plugin lacks output id: " + outputKey);
+        logger.error("Outputs are:");
         for (OutputDescriptor output : outputs) {
-          System.err.print(" " + output.identifier);
+          logger.error(" " + output.identifier);
         }
-        System.err.println("");
         return;
       }
 
       boolean b = p.initialise(channels, blockSize, blockSize);
       if (!b) {
-        System.err.println("Plugin initialise failed");
+        logger.error("Plugin initialise failed");
         return;
       }
 
@@ -232,8 +256,8 @@ public class Host {
             // An incomplete block is only OK if it's the
             // last one -- so if the previous block was
             // incomplete, we have trouble
-            System.err.println(
-                "Audio file read incomplete! Short buffer detected at " + block * blockSize);
+            logger
+                .error("Audio file read incomplete! Short buffer detected at " + block * blockSize);
             return;
           }
 
@@ -261,13 +285,13 @@ public class Host {
 
       p.dispose();
     } catch (IOException e) {
-      System.err.println("Failed to read audio file: " + e.getMessage());
+      logger.error("Failed to read audio file: " + e.getMessage());
 
     } catch (UnsupportedAudioFileException e) {
-      System.err.println("Unsupported audio file format: " + e.getMessage());
+      logger.error("Unsupported audio file format: " + e.getMessage());
 
     } catch (PluginLoader.LoadFailedException e) {
-      System.err.println("Plugin load failed (unknown plugin?): key is " + key);
+      logger.error("Plugin load failed (unknown plugin?): key is " + key);
     }
   }
 }

@@ -1,6 +1,8 @@
 package com.soundscribe.converter;
 
 import com.soundscribe.core.AppConfig;
+import java.io.IOException;
+import java.nio.file.Files;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,16 +32,15 @@ import static org.junit.Assert.assertTrue;
 @ContextConfiguration(classes = AppConfig.class)
 public class MidiConverterTest {
 
-  private File xmlFile = null;
-  private File midiFile = null;
+  private File xmlFile;
+  private File midiFile;
   @Autowired
   private MidiConverter midiConverter;
-  private String testFileName = "testName";
 
   @Before
   public void setUp() {
+    String testFileName = "testName";
     xmlFile = new File(testFileName + ".xml");
-
     DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder documentBuilder = null;
     try {
@@ -103,8 +104,18 @@ public class MidiConverterTest {
 
   @After
   public void tearDown() {
-    if (xmlFile != null) xmlFile.delete();
-    if (midiFile != null) midiFile.delete();
+    if (xmlFile != null) {
+      try {
+        Files.delete(xmlFile.toPath());
+      } catch (IOException ignored) {
+      }
+    }
+    if (midiFile != null) {
+      try {
+        Files.delete(midiFile.toPath());
+      } catch (IOException ignored) {
+      }
+    }
   }
 
   @Test
