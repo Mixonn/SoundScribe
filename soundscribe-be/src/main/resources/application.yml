@@ -1,0 +1,4 @@
+#Path properties
+path:
+ songDataStorage: ""
+ vampPath: "/usr/lib/"
