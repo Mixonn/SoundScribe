@@ -16,5 +16,5 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:application.yml")
 public class SoundscribeConfiguration {
   private String songDataStorage;
-  private String systemLib;
+  private String vampPath;
 }

@@ -2,9 +2,8 @@ package com.soundscribe.jvamp;
 
 import com.soundscribe.utilities.MidiNotes;
 import com.soundscribe.utilities.SoundscribeConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.vamp_plugins.*;
 import org.w3c.dom.Document;
@@ -31,12 +30,11 @@ import java.util.Map;
 /**
  * Host is slightly modified jVAMP class. It provides support for loading VAMP plugins.
  */
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class Host {
-
-  @Autowired
-  private SoundscribeConfiguration soundscribeConfiguration;
-  private static final Logger logger = LoggerFactory.getLogger(Host.class);
+  private final SoundscribeConfiguration soundscribeConfiguration;
 
   /**
    * Generates xml file from data calculated by pYIN algorithm. Additionaly it adds letterNote
@@ -200,7 +198,7 @@ public class Host {
       if (format.getSampleSizeInBits() != 16
           || format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED
           || format.isBigEndian()) {
-        logger.error("Sorry, only 16-bit signed little-endian PCM files supported");
+        log.error("Sorry, only 16-bit signed little-endian PCM files supported");
         return;
       }
 
@@ -218,17 +216,17 @@ public class Host {
         }
       }
       if (outputNumber < 0) {
-        logger.error("Plugin lacks output id: " + outputKey);
-        logger.error("Outputs are:");
+        log.error("Plugin lacks output id: " + outputKey);
+        log.error("Outputs are:");
         for (OutputDescriptor output : outputs) {
-          logger.error(" " + output.identifier);
+          log.error(" " + output.identifier);
         }
         return;
       }
 
       boolean b = p.initialise(channels, blockSize, blockSize);
       if (!b) {
-        logger.error("Plugin initialise failed");
+        log.error("Plugin initialise failed");
         return;
       }
 
@@ -256,8 +254,7 @@ public class Host {
             // An incomplete block is only OK if it's the
             // last one -- so if the previous block was
             // incomplete, we have trouble
-            logger
-                .error("Audio file read incomplete! Short buffer detected at " + block * blockSize);
+            log.error("Audio file read incomplete! Short buffer detected at " + block * blockSize);
             return;
           }
 
@@ -285,13 +282,13 @@ public class Host {
 
       p.dispose();
     } catch (IOException e) {
-      logger.error("Failed to read audio file: " + e.getMessage());
+      log.error("Failed to read audio file: " + e.getMessage());
 
     } catch (UnsupportedAudioFileException e) {
-      logger.error("Unsupported audio file format: " + e.getMessage());
+      log.error("Unsupported audio file format: " + e.getMessage());
 
     } catch (PluginLoader.LoadFailedException e) {
-      logger.error("Plugin load failed (unknown plugin?): key is " + key);
+      log.error("Plugin load failed (unknown plugin?): key is " + key);
     }
   }
 }

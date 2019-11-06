@@ -5,21 +5,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class ConverterService {
 
-  @Autowired
-  private MidiConverter midiConverter;
-  @Autowired
-  private SoundscribeConfiguration soundscribeConfiguration;
-  private static final Logger logger = LoggerFactory.getLogger(ConverterService.class);
+  private final MidiConverter midiConverter;
+  private final SoundscribeConfiguration soundscribeConfiguration;
 
   public File convertMP3toWAV(File fileMp3, boolean deleteAfter) {
     String fileName = fileMp3.getName().split("\\.")[0];
@@ -29,7 +27,7 @@ public class ConverterService {
     try {
       converter.convert(fileMp3.getAbsolutePath(), fileWav.getAbsolutePath());
     } catch (JavaLayerException e) {
-      logger.error("An error occurred while converting mp3 to wav");
+      log.error("An error occurred while converting mp3 to wav", e);
       throw new RuntimeException(e);
     }
 
@@ -37,7 +35,7 @@ public class ConverterService {
       try {
         Files.delete(fileMp3.toPath());
       } catch (IOException e) {
-        logger.debug("The MP3 file cannot be deleted. This file no longer exists.");
+        log.debug("The MP3 file cannot be deleted. This file no longer exists.", e);
       }
     }
     return fileWav;
@@ -49,7 +47,7 @@ public class ConverterService {
       try {
         Files.delete(fileXML.toPath());
       } catch (IOException e) {
-        logger.debug("The XML file cannot be deleted. This file no longer exists.");
+        log.debug("The XML file cannot be deleted. This file no longer exists.", e);
       }
     }
     return midi;

@@ -7,26 +7,23 @@ import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
  * Executes jVamp plugins.
  */
 @Component
+@Slf4j
+@RequiredArgsConstructor
 public class JvampService {
-
-  @Autowired
-  private SoundscribeConfiguration soundscribeConfiguration;
-  @Autowired
-  public Host host;
-  private static final Logger logger = LoggerFactory.getLogger(JvampService.class);
+  private final SoundscribeConfiguration soundscribeConfiguration;
+  private final Host host;
 
   public void loadLibraries() {
-    System.load(soundscribeConfiguration.getSystemLib() + "libvamp-hostsdk.so");
-    System.load(soundscribeConfiguration.getSystemLib() + "libvamp-jni.so");
+    System.load(soundscribeConfiguration.getVampPath() + "libvamp-hostsdk.so");
+    System.load(soundscribeConfiguration.getVampPath() + "libvamp-jni.so");
   }
 
   /**
@@ -40,7 +37,7 @@ public class JvampService {
       try {
         Files.delete(fileWav.toPath());
       } catch (IOException e) {
-        logger.debug("The wav file cannot be deleted. This file no longer exists.");
+        log.debug("The wav file cannot be deleted. This file no longer exists.");
       }
     }
   }
@@ -58,7 +55,7 @@ public class JvampService {
       try {
         Files.delete(fileWav.toPath());
       } catch (IOException e) {
-        logger.debug("The wav file cannot be deleted. This file no longer exists.");
+        log.debug("The wav file cannot be deleted. This file no longer exists.");
       }
     }
   }
