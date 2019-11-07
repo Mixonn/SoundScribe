@@ -43,7 +43,7 @@ public class MidiConverter {
     File midiFile = null;
     int ppq = 24;
     int bpm = 120; // 120 standard midi bpm
-    XmlPojo xml = readXMLData(fileXML);
+    XmlPojo xml = XmlPojo.readXMLData(fileXML);
 
     try {
       Sequence sequence = new Sequence(Sequence.PPQ, ppq);
@@ -52,11 +52,11 @@ public class MidiConverter {
       int tickToStart, ticksToStop;
       for (NotePojo note : xml.getNotes()) {
         // Add Note On event
-        tickToStart = secondsToTicks(bpm, ppq, note.timestamp);
-        track.add(makeEvent(144, 1, note.midiValue, 96, tickToStart));
+        tickToStart = secondsToTicks(bpm, ppq, note.getTimestamp());
+        track.add(makeEvent(144, 1, note.getMidiValue(), 96, tickToStart));
         // Add Note Off event
-        ticksToStop = secondsToTicks(bpm, ppq, note.duration);
-        track.add(makeEvent(128, 1, note.midiValue, 96, tickToStart + ticksToStop));
+        ticksToStop = secondsToTicks(bpm, ppq, note.getDuration());
+        track.add(makeEvent(128, 1, note.getMidiValue(), 96, tickToStart + ticksToStop));
       }
 
       // write MIDI
@@ -105,60 +105,5 @@ public class MidiConverter {
   private int secondsToTicks(int bpm, int ppq, double time) {
     double tickTimeInMs = (double) 60000 / (bpm * ppq);
     return (int) (time * 1000 / tickTimeInMs);
-  }
-
-  /**
-   * Reads data from xml file and stores it into object for next processing.
-   *
-   * @param fileXML Xml file with notes.
-   * @return XmlPojo object with parsed data.
-   */
-  private XmlPojo readXMLData(File fileXML) {
-    XmlPojo xmlPojo = new XmlPojo();
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder builder = null;
-    try {
-      builder = factory.newDocumentBuilder();
-    } catch (ParserConfigurationException e) {
-      log.error("Error while converting XML.",e);
-      throw new RuntimeException(e);
-    }
-    Document document = null;
-    try {
-      document = builder.parse(fileXML);
-    } catch (SAXException e) {
-      log.error("Invalid xml file format",e);
-      throw new RuntimeException(e);
-    } catch (IOException e) {
-      log.error("Could not find xml file.",e);
-      throw new RuntimeException(e);
-    }
-    document.getDocumentElement().normalize();
-
-    Element root = document.getDocumentElement();
-    String songName = root.getNodeName();
-    xmlPojo.setName(songName);
-
-    List<NotePojo> noteList = new ArrayList<>();
-    NodeList nList = document.getElementsByTagName("note");
-    for (int temp = 0; temp < nList.getLength(); temp++) {
-      Node node = nList.item(temp);
-      if (node.getNodeType() == Node.ELEMENT_NODE) {
-        Element eElement = (Element) node;
-
-        double timestamp =
-            Double.parseDouble(eElement.getElementsByTagName("timestamp").item(0).getTextContent());
-        double duration =
-            Double.parseDouble(eElement.getElementsByTagName("duration").item(0).getTextContent());
-        double value =
-            Double.parseDouble(eElement.getElementsByTagName("value").item(0).getTextContent());
-        int midiValue =
-            Integer.parseInt(eElement.getElementsByTagName("midiValue").item(0).getTextContent());
-        String letterNotde = eElement.getElementsByTagName("letterNote").item(0).getTextContent();
-        noteList.add(new NotePojo(timestamp, duration, value, midiValue, letterNotde));
-      }
-    }
-    xmlPojo.setNotes(noteList);
-    return xmlPojo;
   }
 }

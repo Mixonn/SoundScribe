@@ -12,8 +12,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.File;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/convert")
 public class ConversionController {
@@ -21,7 +22,6 @@ public class ConversionController {
   private final ConverterService converterService;
 
   @GetMapping("analyze-file")
-  @ResponseBody
   public ResponseEntity analyzeFile(@RequestParam String filename) {
     jvampService.loadLibraries();
     File file = new File(filename);
@@ -31,11 +31,18 @@ public class ConversionController {
   }
 
   @GetMapping("/xml-to-midi")
-  @ResponseBody
   public ResponseEntity xmlToMidi(@RequestParam String filename) {
     jvampService.loadLibraries();
     File fileXML = new File(filename);
-    converterService.convertXMLtoMIDI(fileXML, false);
+    converterService.convertXmltoMidi(fileXML, false);
     return new ResponseEntity("Plik midi został utworzony", HttpStatus.OK);
+  }
+
+  @GetMapping("/xml-to-musicxml")
+  public ResponseEntity xmlToMusicxml(@RequestParam String filename) {
+    jvampService.loadLibraries();
+    File fileXML = new File(filename);
+    converterService.convertXmltoMusicXml(fileXML, false);
+    return new ResponseEntity("Plik musicxml został utworzony", HttpStatus.OK);
   }
 }
