@@ -2,8 +2,8 @@ package com.soundscribe.converter;
 
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
-import java.time.Duration;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -12,6 +12,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,10 @@ import org.w3c.dom.Element;
 public class MusicXmlConverter {
 
   private final SoundscribeConfiguration soundscribeConfiguration;
+  private int bpm = 60;
+  private int divisionsValue = 4;
+  private int beatsValue = 4;
+  private int beatTypeValue = 4;
 
   public File convertXmlToMidi(File xml)
       throws ParserConfigurationException, TransformerException {
@@ -61,6 +66,7 @@ public class MusicXmlConverter {
     part.appendChild(measure);
 
     measure.appendChild(createAttributes(document));
+    addTempo(measure, document, bpm);
     addNotesToMusicXml(measure, document, xmlPojo);
 
     // create the xml file
@@ -77,35 +83,20 @@ public class MusicXmlConverter {
   private Element createAttributes(Document document) {
     Element attributes = document.createElement("attributes");
 
-    /////
-
     Element divisions = document.createElement("divisions");
-    divisions.appendChild(document.createTextNode("4"));
+    divisions.appendChild(document.createTextNode(String.valueOf(divisionsValue)));
     attributes.appendChild(divisions);
-
-    /////
-
-    Element key = document.createElement("key");
-    attributes.appendChild(key);
-
-    Element fifths = document.createElement("fifths");
-    fifths.appendChild(document.createTextNode("0"));
-    key.appendChild(fifths);
-
-    ////
 
     Element time = document.createElement("time");
     attributes.appendChild(time);
 
     Element beats = document.createElement("beats");
-    beats.appendChild(document.createTextNode("4"));
+    beats.appendChild(document.createTextNode(String.valueOf(beatsValue)));
     time.appendChild(beats);
 
     Element beatType = document.createElement("beat-type");
-    beatType.appendChild(document.createTextNode("4"));
+    beatType.appendChild(document.createTextNode(String.valueOf(beatTypeValue)));
     time.appendChild(beatType);
-
-    /////
 
     Element clef = document.createElement("clef");
     attributes.appendChild(clef);
@@ -121,90 +112,56 @@ public class MusicXmlConverter {
     return attributes;
   }
 
-  private double findLongestNote(List<NotePojo> noteList) {
-    double longestNoteTime = 0;
-    for (NotePojo notePojo : noteList) {
-      if (notePojo.getDuration() > longestNoteTime) {
-        longestNoteTime = notePojo.getDuration();
+  @Data
+  private static class NoteLengthSettings {
+
+    String name;
+    int lengthDuration;
+    int lengthSeconds;
+  }
+
+  private NoteLengthSettings chooseNoteValues(double duration) {
+    NoteLengthSettings noteLengthSettings = null;
+    Map<String, Integer> notesLengthInDuration = getNotesLengthInDuration(divisionsValue);
+    Map<String, Double> notesLengthInSeconds = getNotesLengthInSeconds(bpm);
+    for (Map.Entry<String, Double> entry : notesLengthInSeconds.entrySet()) {
+      if (duration > entry.getValue() / 1.5) {
+        noteLengthSettings = new NoteLengthSettings();
+        noteLengthSettings.setName(entry.getKey());
+        noteLengthSettings.setLengthDuration(notesLengthInDuration.get(entry.getKey()));
+        break;
       }
     }
-    return longestNoteTime;
-  }
-
-  private double[] calculateNotesTimes(List<NotePojo> noteList) {
-    double[] times = {0, 0, 0, 0, 0};
-    times[0] = findLongestNote(noteList);
-    times[1] = times[0] / 2;
-    times[2] = times[1] / 2;
-    times[3] = times[2] / 2;
-    times[4] = times[3] / 2;
-    return times;
-  }
-
-  private String chooseNoteValue(double duration, double[] times) {
-    if (duration > 1.5 * times[1]) {
-      return "whole";
-    } else if (duration > 1.5 * times[2]) {
-      return "half";
-    } else if (duration > 1.5 * times[3]) {
-      return "quarter";
-    } else if (duration > 1.5 * times[4]) {
-      return "eighth";
-    } else {
-      return "16th";
-    }
+    return noteLengthSettings;
   }
 
   private void addNotesToMusicXml(Element measure, Document document, XmlPojo xmlPojo) {
-    double timeNow = 0;
-    for (NotePojo note : xmlPojo.getNotes()) {
-
-      double noteStartTime = note.getTimestamp();
-      double timeForRest = noteStartTime-timeNow;
-
-      if(timeForRest>0) {
-        double noteTime[] = calculateNotesTimes(xmlPojo.getNotes());
-        String typeValue = chooseNoteValue(note.getDuration(), noteTime);
-        String durationValue;
-        if (typeValue == "whole") {
-          durationValue = "16";
-        } else if (typeValue == "half") {
-          durationValue = "8";
-        } else if (typeValue == "quarter") {
-          durationValue = "4";
-        } else if (typeValue == "eighth") {
-          durationValue = "2";
-        } else {
-          durationValue = "1";
-        }
-        createPause(measure,document,durationValue,typeValue);
-      }
+    int numberOfNotes = xmlPojo.getNotes().size();
+    for (int i = 0; i < numberOfNotes; i++) {
+      NotePojo note = xmlPojo.getNotes().get(i);
 
       String stepValue = getStep(note.getLetterNote());
       String octaveValue = getOctave(note.getLetterNote());
+      NoteLengthSettings noteLengthSettings = chooseNoteValues(note.getDuration());
 
-      double noteTime[] = calculateNotesTimes(xmlPojo.getNotes());
-      String typeValue = chooseNoteValue(note.getDuration(), noteTime);
+      crateNote(measure, document, stepValue, octaveValue, noteLengthSettings.lengthDuration,
+          noteLengthSettings.name);
 
-      String durationValue;
-      if (typeValue == "whole") {
-        durationValue = "16";
-      } else if (typeValue == "half") {
-        durationValue = "8";
-      } else if (typeValue == "quarter") {
-        durationValue = "4";
-      } else if (typeValue == "eighth") {
-        durationValue = "2";
-      } else {
-        durationValue = "1";
+
+      if (i < numberOfNotes - 1) {
+        NotePojo nextNote = xmlPojo.getNotes().get(i + 1);
+        double secondsForRest = nextNote.getTimestamp() - note.getTimestamp() - note.getDuration();
+        noteLengthSettings = chooseNoteValues(secondsForRest);
+        if (noteLengthSettings != null) {
+          createRest(measure, document, noteLengthSettings.lengthDuration, noteLengthSettings.name);
+        }
       }
 
-      crateNote(measure, document, stepValue, octaveValue, durationValue, typeValue);
-      timeNow=note.getTimestamp()+note.getDuration();
     }
   }
 
-  private void createPause(Element measure, Document document, String durationValue, String typeValue) {
+  private void createRest(Element measure, Document document, Integer durationValue,
+      String typeValue) {
     Element note = document.createElement("note");
     measure.appendChild(note);
 
@@ -212,7 +169,7 @@ public class MusicXmlConverter {
     note.appendChild(rest);
 
     Element duration = document.createElement("duration");
-    duration.appendChild(document.createTextNode(durationValue));
+    duration.appendChild(document.createTextNode(String.valueOf(durationValue)));
     note.appendChild(duration);
 
     Element type = document.createElement("type");
@@ -222,11 +179,11 @@ public class MusicXmlConverter {
   }
 
   private void crateNote(Element measure, Document document, String stepValue,
-      String octaveValue, String durationValue, String typeValue) {
+      String octaveValue, Integer durationValue, String typeValue) {
 
     Element note = document.createElement("note");
     measure.appendChild(note);
-/////
+
     Element pitch = document.createElement("pitch");
     note.appendChild(pitch);
 
@@ -238,13 +195,9 @@ public class MusicXmlConverter {
     octave.appendChild(document.createTextNode(octaveValue));
     pitch.appendChild(octave);
 
-    ////
-
     Element duration = document.createElement("duration");
-    duration.appendChild(document.createTextNode(durationValue));
+    duration.appendChild(document.createTextNode(String.valueOf(durationValue)));
     note.appendChild(duration);
-
-    ////
 
     Element type = document.createElement("type");
     type.appendChild(document.createTextNode(typeValue));
@@ -258,4 +211,44 @@ public class MusicXmlConverter {
   private String getOctave(String noteSymbol) {
     return noteSymbol.substring(noteSymbol.length() - 1, noteSymbol.length());
   }
+
+  private Map<String, Double> getNotesLengthInSeconds(int bpm) {
+    Map<String, Double> notesLenthDict = new HashMap<>();
+    notesLenthDict.put("whole", (double) 2 * (60 / bpm));
+    notesLenthDict.put("half", (double) (60 / bpm));
+    notesLenthDict.put("quarter", (double) 0.5 * (60 / bpm));
+    notesLenthDict.put("eighth", (double) 0.25 * (60 / bpm));
+    notesLenthDict.put("16th", (double) 0.125 * (60 / bpm));
+    return notesLenthDict;
+  }
+
+  private Map<String, Integer> getNotesLengthInDuration(int divisions) {
+    Map<String, Integer> notesLenthDict = new HashMap<>();
+    notesLenthDict.put("whole", divisions * 4);
+    notesLenthDict.put("half", divisions * 2);
+    notesLenthDict.put("quarter", divisions);
+    notesLenthDict.put("eighth", divisions / 2);
+    notesLenthDict.put("16th", divisions / 4);
+    return notesLenthDict;
+  }
+
+  private void addTempo(Element measure, Document document, int bpm) {
+    Element direction = document.createElement("direction");
+    measure.appendChild(direction);
+/////
+    Element sound = document.createElement("sound");
+    sound.setAttribute("tempo", String.valueOf(bpm));
+    direction.appendChild(sound);
+
+    measure.appendChild(direction);
+  }
+  /*
+  <direction directive="yes" placement="above">
+        <direction-type>
+          <words default-y="26" font-size="11" font-weight="bold">Ziemlich langsam und mit Ausdruck</words>
+        </direction-type>
+        <sound tempo="60"/>
+   </direction>/
+      *
+   */
 }
