@@ -1,26 +1,16 @@
-package com.soundscribe.converter;
+package com.soundscribe.converters;
 
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Track;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * Converts midi to any other music format and creates midi from raw pYIN data.
@@ -32,6 +22,10 @@ public class MidiConverter {
 
   private final SoundscribeConfiguration soundscribeConfiguration;
 
+  public File convertXmlToMidi(XmlPojo xml) {
+    return convertXmlPojoToMidi(xml);
+  }
+
   /**
    * Directly converts pYIN data to Midi file. Midi sounds correct but bpm is always set to 120.
    * Best way is to use MusicXML converter first.
@@ -40,14 +34,20 @@ public class MidiConverter {
    * @return Created from notes midi file.
    */
   public File convertXmlToMidi(File fileXML) {
-    File midiFile = null;
-    int ppq = 24;
-    int bpm = 120; // 120 standard midi bpm
     XmlPojo xml = XmlPojo.readXMLData(fileXML);
+    xml.setDivisions(soundscribeConfiguration.getDefaultDivisions());
+    xml.setBpm(soundscribeConfiguration.getDefaultBpm());
+    return convertXmlPojoToMidi(xml);
+  }
 
+  private File convertXmlPojoToMidi(XmlPojo xml) {
+    File midiFile;
+    int ppq = xml.getDivisions();
+    int bpm = xml.getBpm();
     try {
       Sequence sequence = new Sequence(Sequence.PPQ, ppq);
       Track track = sequence.createTrack();
+      track.add(createSetTempoEvent(0,bpm));
       // Adding notes
       int tickToStart, ticksToStop;
       for (NotePojo note : xml.getNotes()) {
@@ -55,16 +55,17 @@ public class MidiConverter {
         tickToStart = secondsToTicks(bpm, ppq, note.getTimestamp());
         track.add(makeEvent(144, 1, note.getMidiValue(), 96, tickToStart));
         // Add Note Off event
-        ticksToStop = secondsToTicks(bpm, ppq, note.getDuration());
+        ticksToStop = secondsToTicks(bpm, ppq, note.getDurationInSeconds());
         track.add(makeEvent(128, 1, note.getMidiValue(), 96, tickToStart + ticksToStop));
       }
 
       // write MIDI
-      midiFile = new File(soundscribeConfiguration.getSongDataStorage() + xml.getName() + ".mid");
+      midiFile = new File(
+          soundscribeConfiguration.getSongDataStorage() + xml.getSongName() + ".mid");
       MidiSystem.write(sequence, 1, midiFile);
 
     } catch (Exception e) {
-      log.error("Error while creating MIDI file.",e);
+      log.error("Error while creating MIDI file.", e);
       throw new RuntimeException(e);
     }
     return midiFile;
@@ -88,7 +89,7 @@ public class MidiConverter {
       a.setMessage(command, channel, note, velocity);
       event = new MidiEvent(a, tick);
     } catch (Exception e) {
-      log.error("Error while creating midi event",e);
+      log.error("Error while creating midi event", e);
       throw new RuntimeException(e);
     }
     return event;
@@ -105,5 +106,33 @@ public class MidiConverter {
   private int secondsToTicks(int bpm, int ppq, double time) {
     double tickTimeInMs = (double) 60000 / (bpm * ppq);
     return (int) (time * 1000 / tickTimeInMs);
+  }
+
+  /**
+   * Create a Set Tempo meta event. Takes a tempo in BPMs.
+   */
+  public MidiEvent createSetTempoEvent(long tick, long tempo) {
+    // microseconds per quarternote
+    long mpqn = 60000000 / tempo;
+
+    MetaMessage metaMessage = new MetaMessage();
+
+    // create the tempo byte array
+    byte[] array = new byte[] { 0, 0, 0 };
+
+    for (int i = 0; i < 3; i++) {
+      int shift = (3 - 1 - i) * 8;
+      array[i] = (byte) (mpqn >> shift);
+    }
+
+    // now set the message
+    try {
+      metaMessage.setMessage(81, array, 3);
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.exit(1);
+    }
+
+    return new MidiEvent(metaMessage, tick);
   }
 }

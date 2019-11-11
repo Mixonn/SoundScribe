@@ -12,9 +12,13 @@ import org.springframework.context.annotation.PropertySource;
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties("path")
+@ConfigurationProperties("settings")
 @PropertySource("classpath:application.yml")
 public class SoundscribeConfiguration {
   private String songDataStorage;
   private String vampPath;
+  private int defaultDivisions;
+  private int defaultBpm;
+  private int defaultBeats;
+  private int defaultBeatType;
 }

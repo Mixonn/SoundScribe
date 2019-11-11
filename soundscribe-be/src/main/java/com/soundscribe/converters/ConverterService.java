@@ -1,11 +1,9 @@
-package com.soundscribe.converter;
+package com.soundscribe.converters;
 
-import com.soundscribe.converter.musicxml.MusicXmlConverter;
+import com.soundscribe.converters.musicxml.converter.MusicXmlConverter;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.IOException;
 import java.nio.file.Files;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
 import lombok.RequiredArgsConstructor;
@@ -58,12 +56,7 @@ public class ConverterService {
   }
 
   public File convertXmltoMusicXml(File fileXML, boolean deleteAfter) {
-    File musicXml = null;
-    try {
-      musicXml = musicXmlConverter.convertXmlToMidi(fileXML);
-    } catch (ParserConfigurationException | TransformerException e) {
-      e.printStackTrace();
-    }
+    File musicXml = musicXmlConverter.convertXmlToMusicXml(fileXML);
     if (deleteAfter) {
       try {
         Files.delete(fileXML.toPath());
@@ -72,5 +65,17 @@ public class ConverterService {
       }
     }
     return musicXml;
+  }
+
+  public File convertMusicXmltoMidi(File musicXml, boolean deleteAfter) {
+    File midi = musicXmlConverter.convertMusicXmlToMidi(musicXml);
+    if (deleteAfter) {
+      try {
+        Files.delete(musicXml.toPath());
+      } catch (IOException e) {
+        log.debug("The XML file cannot be deleted. This file no longer exists.", e);
+      }
+    }
+    return midi;
   }
 }

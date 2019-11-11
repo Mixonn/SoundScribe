@@ -1,4 +1,4 @@
-package com.soundscribe.converter.musicxml;
+package com.soundscribe.converters.musicxml.entity;
 
 /**
  * List of available jVamp functions

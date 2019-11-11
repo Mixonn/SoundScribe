@@ -1,9 +1,10 @@
-package com.soundscribe.converter.musicxml;
+package com.soundscribe.converters.musicxml.functions;
 
-import com.soundscribe.converter.NotePojo;
-import com.soundscribe.converter.XmlPojo;
-import com.soundscribe.converter.musicxml.MusicXmlNoteTypes;
-import com.soundscribe.converter.musicxml.MusicXmlNote;
+import com.soundscribe.converters.NotePojo;
+import com.soundscribe.converters.XmlPojo;
+import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
+import com.soundscribe.converters.musicxml.entity.MusicXmlNoteTypes;
+import com.soundscribe.converters.musicxml.utilities.MusicXmlNoteUtils;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
 import java.util.ArrayList;
@@ -24,20 +25,17 @@ import org.w3c.dom.Element;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MusicXmlConverter {
+public class XmlToMusicXml {
 
   private final SoundscribeConfiguration soundscribeConfiguration;
-  private int bpm = 150;
+  private int bpm = 130;
   private int divisionsValue = 4;
-  private int beatsValue = 4;
-  private int beatTypeValue = 4;
-  private ArrayList<MusicXmlNote> musicXmlBaseNotes = null;
 
-  public File convertXmlToMidi(File xml)
+  public File convertXmlToMusicXml(File xml)
       throws ParserConfigurationException, TransformerException {
     XmlPojo xmlPojo = XmlPojo.readXMLData(xml);
     File musicXmlFile = new File(
-        soundscribeConfiguration.getSongDataStorage() + xmlPojo.getName() + ".musicxml");
+        soundscribeConfiguration.getSongDataStorage() + xmlPojo.getSongName() + ".musicxml");
 
     DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
@@ -45,6 +43,12 @@ public class MusicXmlConverter {
 
     Element scorePartwise = document.createElement("score-partwise");
     document.appendChild(scorePartwise);
+
+    Element movementTitle = document.createElement("movement-title");
+    movementTitle.appendChild(document.createTextNode(xmlPojo.getSongName()));
+    scorePartwise.appendChild(movementTitle);
+
+    scorePartwise.appendChild(createTitle(document, xmlPojo.getSongName()));
 
     Element partList = document.createElement("part-list");
     scorePartwise.appendChild(partList);
@@ -66,7 +70,7 @@ public class MusicXmlConverter {
     part.appendChild(measure);
 
     measure.appendChild(createAttributes(document));
-    addTempo(measure, document, bpm);
+    measure.appendChild(createTempo(document, bpm));
     addNotesToMusicXml(measure, document, xmlPojo);
 
     TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -89,11 +93,11 @@ public class MusicXmlConverter {
     attributes.appendChild(time);
 
     Element beats = document.createElement("beats");
-    beats.appendChild(document.createTextNode(String.valueOf(beatsValue)));
+    beats.appendChild(document.createTextNode(String.valueOf(soundscribeConfiguration.getDefaultBeats())));
     time.appendChild(beats);
 
     Element beatType = document.createElement("beat-type");
-    beatType.appendChild(document.createTextNode(String.valueOf(beatTypeValue)));
+    beatType.appendChild(document.createTextNode(String.valueOf(soundscribeConfiguration.getDefaultBeatType())));
     time.appendChild(beatType);
 
     Element clef = document.createElement("clef");
@@ -110,32 +114,15 @@ public class MusicXmlConverter {
     return attributes;
   }
 
-  private MusicXmlNote chooseBestNote(double durationInSeconds, boolean delete16th,
-      boolean force16th) {
-    for (MusicXmlNote musicXmlNote : musicXmlBaseNotes) {
-      if (durationInSeconds > musicXmlNote.getSeconds() / 1.25) {
-        if (delete16th && musicXmlNote.getName().equals("16th")) {
-          return null;
-        } else {
-          return musicXmlNote;
-        }
-      }
-    }
-    if (force16th) {
-      return musicXmlBaseNotes.get(musicXmlBaseNotes.size() - 1);
-    } else {
-      return null;
-    }
-  }
-
   private void addNotesToMusicXml(Element measure, Document document, XmlPojo xmlPojo) {
-    musicXmlBaseNotes = getMusicXmlBaseNotes(bpm, divisionsValue);
+    MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils();
+    ArrayList<MusicXmlNote> musicXmlBaseNotes = musicXmlNoteUtils.getMusicXmlBaseNotes(bpm, divisionsValue);
     int numberOfNotes = xmlPojo.getNotes().size();
     for (int i = 0; i < numberOfNotes; i++) {
       NotePojo note = xmlPojo.getNotes().get(i);
       String stepValue = getStep(note.getLetterNote());
       String octaveValue = getOctave(note.getLetterNote());
-      MusicXmlNote musicXmlNote = chooseBestNote(note.getDuration(), true, false);
+      MusicXmlNote musicXmlNote = musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(note.getDurationInSeconds(),musicXmlBaseNotes, true, false);
 
       if (musicXmlNote != null) {
         Element noteElement = createNote(document, stepValue, octaveValue,
@@ -146,8 +133,8 @@ public class MusicXmlConverter {
 
       if (i < numberOfNotes - 1) {
         NotePojo nextNote = xmlPojo.getNotes().get(i + 1);
-        double secondsForRest = nextNote.getTimestamp() - note.getTimestamp() - note.getDuration();
-        musicXmlNote = chooseBestNote(secondsForRest, true, false);
+        double secondsForRest = nextNote.getTimestamp() - note.getTimestamp() - note.getDurationInSeconds();
+        musicXmlNote = musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(secondsForRest,musicXmlBaseNotes, true, false);
         if (musicXmlNote != null) {
           Element noteElement = createNote(document, stepValue, octaveValue,
               musicXmlNote.getDuration(),
@@ -203,39 +190,46 @@ public class MusicXmlConverter {
     return noteSymbol.substring(noteSymbol.length() - 1, noteSymbol.length());
   }
 
-  private ArrayList<MusicXmlNote> getMusicXmlBaseNotes(int bpm, int divisions) {
-    double quarterNoteTime = (double) 60 / bpm;
-    ArrayList<MusicXmlNote> notesLengthList = new ArrayList<>();
-    notesLengthList
-        .add(new MusicXmlNote("whole", quarterNoteTime * 4 * 1.5, (int) (divisions * 4 * 1.5),
-            true));
-    notesLengthList.add(new MusicXmlNote("whole", quarterNoteTime * 4, divisions * 4, false));
-    notesLengthList
-        .add(new MusicXmlNote("half", quarterNoteTime * 2 * 1.5, (int) (divisions * 2 * 1.5),
-            true));
-    notesLengthList.add(new MusicXmlNote("half", quarterNoteTime * 2, divisions * 2, false));
-    notesLengthList
-        .add(new MusicXmlNote("quarter", quarterNoteTime * 1.5, (int) (divisions * 1.5), true));
-    notesLengthList.add(new MusicXmlNote("quarter", quarterNoteTime, divisions, false));
-    notesLengthList
-        .add(new MusicXmlNote("eighth", quarterNoteTime / 2 * 1.5, (int) (divisions / 2 * 1.5),
-            true));
-    notesLengthList.add(new MusicXmlNote("eighth", quarterNoteTime / 2, divisions / 2, false));
-    notesLengthList
-        .add(new MusicXmlNote("16th", quarterNoteTime / 4 * 1.5, (int) (divisions / 4 * 1.5),
-            true));
-    notesLengthList.add(new MusicXmlNote("16th", quarterNoteTime / 4, divisions / 4, false));
-    return notesLengthList;
-  }
-
-  private void addTempo(Element measure, Document document, int bpm) {
+  private Element createTempo(Document document, int bpm) {
     Element direction = document.createElement("direction");
-    measure.appendChild(direction);
+    direction.setAttribute("placement", "above");
+
+    Element directionType = document.createElement("direction-type");
+    direction.appendChild(directionType);
+
+    Element metronome = document.createElement("metronome");
+    directionType.appendChild(metronome);
+
+    Element beatUnit = document.createElement("beat-unit");
+    beatUnit.appendChild(document.createTextNode("quarter"));
+    metronome.appendChild(beatUnit);
+
+    Element perMinute = document.createElement("per-minute");
+    perMinute.appendChild(document.createTextNode(String.valueOf(bpm)));
+    metronome.appendChild(perMinute);
 
     Element sound = document.createElement("sound");
     sound.setAttribute("tempo", String.valueOf(bpm));
     direction.appendChild(sound);
 
-    measure.appendChild(direction);
+    return direction;
+  }
+
+  private Element createTitle(Document document, String title) {
+    Element credit = document.createElement("credit");
+    credit.setAttribute("page", "1");
+
+    Element creditType = document.createElement("credit-type");
+    creditType.appendChild(document.createTextNode("title"));
+    credit.appendChild(creditType);
+
+    Element creditWords = document.createElement("credit-words");
+    creditWords.setAttribute("justify", "center");
+    creditWords.setAttribute("valign", "left");
+
+    creditWords.appendChild(document.createTextNode(title));
+    credit.appendChild(creditWords);
+
+    return credit;
   }
 }

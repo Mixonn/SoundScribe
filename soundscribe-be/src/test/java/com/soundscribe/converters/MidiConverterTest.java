@@ -1,4 +1,4 @@
-package com.soundscribe.converter;
+package com.soundscribe.converters;
 
 import com.soundscribe.core.AppConfig;
 import java.io.IOException;

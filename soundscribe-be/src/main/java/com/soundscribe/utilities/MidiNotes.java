@@ -2,12 +2,13 @@ package com.soundscribe.utilities;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
- * Stores all possible notes. If midi value out of range returns information how far it is from
- * original scales. For example. +2(too high), -3(too low).
+ * Stores all possible midi notes.
  */
 public class MidiNotes {
+
   private static final Map<Integer, String> notesDict;
 
   static {
@@ -125,9 +126,36 @@ public class MidiNotes {
         };
   }
 
-  public static String note(int value) {
-    if (value < 21) return String.valueOf(value - 21);
-    else if (value > 127) return "+" + (value - 127);
-    else return notesDict.get(value);
+  /**
+   * Returns note letter for given midi note value. If midi value is out of range, returns
+   * information how far it is from original scales. For example. +2(too high), -3(too low).
+   *
+   * @param value midi note value
+   * @return note letter
+   */
+  public static String getNoteSymbolByMidiValue(int value) {
+    if (value < 21) {
+      return String.valueOf(value - 21);
+    } else if (value > 127) {
+      return "+" + (value - 127);
+    } else {
+      return notesDict.get(value);
+    }
+  }
+
+  /**
+   * Returns midi value for given note letter. If letter doesnt exist in dictionary function returns
+   * 0.
+   *
+   * @param noteSymbol midi note value
+   * @return note letter
+   */
+  public static int getMidiValueByNoteSymbol(String noteSymbol) {
+    for (Entry<Integer, String> entry : notesDict.entrySet()) {
+      if (entry.getValue().equals(noteSymbol)) {
+        return entry.getKey();
+      }
+    }
+    return 0;
   }
 }

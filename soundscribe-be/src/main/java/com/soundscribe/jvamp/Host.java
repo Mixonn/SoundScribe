@@ -34,6 +34,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class Host {
+
   private final SoundscribeConfiguration soundscribeConfiguration;
 
   /**
@@ -96,7 +97,8 @@ public class Host {
           note.appendChild(midi);
 
           Element letterNote = document.createElement("letterNote");
-          letterNote.appendChild(document.createTextNode(MidiNotes.note(midiValue)));
+          letterNote
+              .appendChild(document.createTextNode(MidiNotes.getNoteSymbolByMidiValue(midiValue)));
           note.appendChild(letterNote);
         }
 
@@ -116,13 +118,8 @@ public class Host {
     }
   }
 
-  private void printSmoothedPitch(
-      String filename,
-      RealTime frameTime,
-      Integer output,
-      Map<Integer, List<Feature>> features,
-      File file)
-      throws IOException {
+  private void printSmoothedPitch(String filename, RealTime frameTime, Integer output,
+      Map<Integer, List<Feature>> features, File file) {
     if (!features.containsKey(output)) {
       return;
     }
