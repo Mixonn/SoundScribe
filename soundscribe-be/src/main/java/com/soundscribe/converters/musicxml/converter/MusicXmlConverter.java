@@ -18,7 +18,7 @@ public class MusicXmlConverter {
   private final MusicXmlToMidi musicXmlToMidi;
 
   public File convertXmlToMusicXml(File xml) {
-    File musicxml = null;
+    File musicxml;
     try {
       musicxml = xmlToMusicXml.convertXmlToMusicXml(xml);
     } catch (ParserConfigurationException | TransformerException e) {

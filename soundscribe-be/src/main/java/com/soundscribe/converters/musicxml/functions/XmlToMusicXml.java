@@ -1,6 +1,6 @@
 package com.soundscribe.converters.musicxml.functions;
 
-import com.soundscribe.converters.NotePojo;
+import com.soundscribe.converters.PyinNote;
 import com.soundscribe.converters.XmlPojo;
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import com.soundscribe.converters.musicxml.entity.MusicXmlNoteTypes;
@@ -28,8 +28,6 @@ import org.w3c.dom.Element;
 public class XmlToMusicXml {
 
   private final SoundscribeConfiguration soundscribeConfiguration;
-  private int bpm = 130;
-  private int divisionsValue = 4;
 
   public File convertXmlToMusicXml(File xml)
       throws ParserConfigurationException, TransformerException {
@@ -69,8 +67,8 @@ public class XmlToMusicXml {
     part.setAttribute("number", "1");
     part.appendChild(measure);
 
-    measure.appendChild(createAttributes(document));
-    measure.appendChild(createTempo(document, bpm));
+    measure.appendChild(createAttributes(document, xmlPojo.getDivisions()));
+    measure.appendChild(createTempo(document, xmlPojo.getBpm()));
     addNotesToMusicXml(measure, document, xmlPojo);
 
     TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -82,7 +80,7 @@ public class XmlToMusicXml {
     return null;
   }
 
-  private Element createAttributes(Document document) {
+  private Element createAttributes(Document document, int divisionsValue) {
     Element attributes = document.createElement("attributes");
 
     Element divisions = document.createElement("divisions");
@@ -93,11 +91,13 @@ public class XmlToMusicXml {
     attributes.appendChild(time);
 
     Element beats = document.createElement("beats");
-    beats.appendChild(document.createTextNode(String.valueOf(soundscribeConfiguration.getDefaultBeats())));
+    beats.appendChild(
+        document.createTextNode(String.valueOf(soundscribeConfiguration.getDefaultBeats())));
     time.appendChild(beats);
 
     Element beatType = document.createElement("beat-type");
-    beatType.appendChild(document.createTextNode(String.valueOf(soundscribeConfiguration.getDefaultBeatType())));
+    beatType.appendChild(
+        document.createTextNode(String.valueOf(soundscribeConfiguration.getDefaultBeatType())));
     time.appendChild(beatType);
 
     Element clef = document.createElement("clef");
@@ -116,13 +116,16 @@ public class XmlToMusicXml {
 
   private void addNotesToMusicXml(Element measure, Document document, XmlPojo xmlPojo) {
     MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils();
-    ArrayList<MusicXmlNote> musicXmlBaseNotes = musicXmlNoteUtils.getMusicXmlBaseNotes(bpm, divisionsValue);
+    ArrayList<MusicXmlNote> musicXmlBaseNotes = musicXmlNoteUtils
+        .getMusicXmlBaseNotes(xmlPojo.getBpm(), xmlPojo.getDivisions());
     int numberOfNotes = xmlPojo.getNotes().size();
     for (int i = 0; i < numberOfNotes; i++) {
-      NotePojo note = xmlPojo.getNotes().get(i);
+      PyinNote note = xmlPojo.getNotes().get(i);
       String stepValue = getStep(note.getLetterNote());
       String octaveValue = getOctave(note.getLetterNote());
-      MusicXmlNote musicXmlNote = musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(note.getDurationInSeconds(),musicXmlBaseNotes, true, false);
+      MusicXmlNote musicXmlNote = musicXmlNoteUtils
+          .chooseBestNoteByDurationInSeconds(note.getDurationInSeconds(), musicXmlBaseNotes, true,
+              false);
 
       if (musicXmlNote != null) {
         Element noteElement = createNote(document, stepValue, octaveValue,
@@ -132,9 +135,11 @@ public class XmlToMusicXml {
       }
 
       if (i < numberOfNotes - 1) {
-        NotePojo nextNote = xmlPojo.getNotes().get(i + 1);
-        double secondsForRest = nextNote.getTimestamp() - note.getTimestamp() - note.getDurationInSeconds();
-        musicXmlNote = musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(secondsForRest,musicXmlBaseNotes, true, false);
+        PyinNote nextNote = xmlPojo.getNotes().get(i + 1);
+        double secondsForRest =
+            nextNote.getTimestamp() - note.getTimestamp() - note.getDurationInSeconds();
+        musicXmlNote = musicXmlNoteUtils
+            .chooseBestNoteByDurationInSeconds(secondsForRest, musicXmlBaseNotes, true, false);
         if (musicXmlNote != null) {
           Element noteElement = createNote(document, stepValue, octaveValue,
               musicXmlNote.getDuration(),

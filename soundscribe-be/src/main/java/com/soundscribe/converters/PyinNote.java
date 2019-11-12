@@ -2,6 +2,7 @@ package com.soundscribe.converters;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -10,7 +11,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class NotePojo {
+@NoArgsConstructor
+public class PyinNote {
 
   private double timestamp;
   private double durationInSeconds;

@@ -1,7 +1,7 @@
 package com.soundscribe.converters.musicxml.functions;
 
 import com.soundscribe.converters.MidiConverter;
-import com.soundscribe.converters.NotePojo;
+import com.soundscribe.converters.PyinNote;
 import com.soundscribe.converters.XmlPojo;
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import com.soundscribe.converters.musicxml.utilities.MusicXmlNoteUtils;
@@ -63,7 +63,7 @@ public class MusicXmlToMidi {
 
     ArrayList<MusicXmlNote> noteTimes = musicXmlNoteUtils.getMusicXmlBaseNotes(bpm, divisions);
 
-    List<NotePojo> noteList = new ArrayList<>();
+    List<PyinNote> noteList = new ArrayList<>();
     NodeList nList = document.getElementsByTagName("note");
     double timeNow = 0;
     for (int temp = 0; temp < nList.getLength(); temp++) {
@@ -81,9 +81,9 @@ public class MusicXmlToMidi {
           String octaveValue = pitchElement.getElementsByTagName("octave").item(0).getTextContent();
           String letterNote = pitchValue + octaveValue;
           int midiNote = MidiNotes.getMidiValueByNoteSymbol(letterNote);
-          noteList.add(new NotePojo(timeNow, durationInSeconds, 0, midiNote, letterNote));
+          noteList.add(new PyinNote(timeNow, durationInSeconds, 0, midiNote, letterNote));
         } else {
-          noteList.add(new NotePojo(timeNow, durationInSeconds, 0, 0, null));
+          noteList.add(new PyinNote(timeNow, durationInSeconds, 0, 0, null));
         }
         timeNow += durationInSeconds;
       }

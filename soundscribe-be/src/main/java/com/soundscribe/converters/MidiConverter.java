@@ -50,7 +50,7 @@ public class MidiConverter {
       track.add(createSetTempoEvent(0,bpm));
       // Adding notes
       int tickToStart, ticksToStop;
-      for (NotePojo note : xml.getNotes()) {
+      for (PyinNote note : xml.getNotes()) {
         // Add Note On event
         tickToStart = secondsToTicks(bpm, ppq, note.getTimestamp());
         track.add(makeEvent(144, 1, note.getMidiValue(), 96, tickToStart));

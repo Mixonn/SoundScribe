@@ -47,12 +47,8 @@ public class Host {
    * @param features
    * @param xmlFile   Xml file with pYIN data
    */
-  private void printNotes(
-      String filename,
-      RealTime frameTime,
-      Integer output,
-      Map<Integer, List<Feature>> features,
-      File xmlFile) {
+  private void printNotes(String filename, RealTime frameTime, Integer output,
+      Map<Integer, List<Feature>> features, File xmlFile) {
     int midiValue;
     if (!features.containsKey(output)) {
       return;
@@ -65,6 +61,15 @@ public class Host {
 
       Element root = document.createElement(filename);
       document.appendChild(root);
+
+      Element bpm = document.createElement("bpm");
+      bpm.appendChild(document.createTextNode("130"));//todo get bmp from beat-detector
+      root.appendChild(bpm);
+
+      Element divisions = document.createElement("divisions");
+      divisions.appendChild(
+          document.createTextNode(String.valueOf(soundscribeConfiguration.getDefaultDivisions())));
+      root.appendChild(divisions);
 
       for (Feature f : features.get(output)) {
         Element note = document.createElement("note");

@@ -26,7 +26,7 @@ public class XmlPojo {
   private String songName;
   private Integer bpm;
   private Integer divisions;
-  private List<NotePojo> notes;
+  private List<PyinNote> notes;
 
   /**
    * Reads data from xml file and stores it into object for next processing.
@@ -37,14 +37,14 @@ public class XmlPojo {
   public static XmlPojo readXMLData(File fileXML) {
     XmlPojo xmlPojo = new XmlPojo();
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder builder = null;
+    DocumentBuilder builder;
     try {
       builder = factory.newDocumentBuilder();
     } catch (ParserConfigurationException e) {
       log.error("Error while converting XML.",e);
       throw new RuntimeException(e);
     }
-    Document document = null;
+    Document document;
     try {
       document = builder.parse(fileXML);
     } catch (SAXException e) {
@@ -60,7 +60,13 @@ public class XmlPojo {
     String songName = root.getNodeName();
     xmlPojo.setSongName(songName);
 
-    List<NotePojo> noteList = new ArrayList<>();
+    Element soundElement = (Element) document.getElementsByTagName("bpm").item(0);
+    xmlPojo.setBpm(Integer.parseInt(soundElement.getTextContent()));
+
+    Element divisionsElement = (Element) document.getElementsByTagName("divisions").item(0);
+    xmlPojo.setDivisions(Integer.parseInt(divisionsElement.getTextContent()));
+
+    List<PyinNote> noteList = new ArrayList<>();
     NodeList nList = document.getElementsByTagName("note");
     for (int temp = 0; temp < nList.getLength(); temp++) {
       Node node = nList.item(temp);
@@ -76,7 +82,7 @@ public class XmlPojo {
         int midiValue =
             Integer.parseInt(eElement.getElementsByTagName("midiValue").item(0).getTextContent());
         String letterNotde = eElement.getElementsByTagName("letterNote").item(0).getTextContent();
-        noteList.add(new NotePojo(timestamp, duration, value, midiValue, letterNotde));
+        noteList.add(new PyinNote(timestamp, duration, value, midiValue, letterNotde));
       }
     }
     xmlPojo.setNotes(noteList);
