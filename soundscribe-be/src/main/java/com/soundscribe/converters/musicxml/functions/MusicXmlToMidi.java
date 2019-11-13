@@ -35,12 +35,17 @@ public class MusicXmlToMidi {
     return midiConverter.convertXmlToMidi(xmlPojo);
   }
 
+  /**
+   * Parse musicXml data to XmlPojo object
+   * @param musicXml MusicXml file
+   * @return XmlPojo object
+   */
   private XmlPojo musicXmlToXmlPojo(File musicXml) {
     MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils();
     XmlPojo xmlPojo = new XmlPojo();
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder builder = null;
-    Document document = null;
+    DocumentBuilder builder;
+    Document document;
     try {
       builder = factory.newDocumentBuilder();
       document = builder.parse(musicXml);

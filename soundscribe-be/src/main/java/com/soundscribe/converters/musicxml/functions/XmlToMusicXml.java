@@ -3,7 +3,6 @@ package com.soundscribe.converters.musicxml.functions;
 import com.soundscribe.converters.PyinNote;
 import com.soundscribe.converters.XmlPojo;
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
-import com.soundscribe.converters.musicxml.entity.MusicXmlNoteTypes;
 import com.soundscribe.converters.musicxml.utilities.MusicXmlNoteUtils;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
@@ -29,6 +28,13 @@ public class XmlToMusicXml {
 
   private final SoundscribeConfiguration soundscribeConfiguration;
 
+  /**
+   * Converts raw pYIN data to MusicXml file.
+   * @param xml
+   * @return
+   * @throws ParserConfigurationException
+   * @throws TransformerException
+   */
   public File convertXmlToMusicXml(File xml)
       throws ParserConfigurationException, TransformerException {
     XmlPojo xmlPojo = XmlPojo.readXMLData(xml);
@@ -80,6 +86,13 @@ public class XmlToMusicXml {
     return null;
   }
 
+  /**
+   * Create main attributes for MusicXml file.
+   * Divisions per quarter note, type of beat and clef.
+   * @param document
+   * @param divisionsValue
+   * @return
+   */
   private Element createAttributes(Document document, int divisionsValue) {
     Element attributes = document.createElement("attributes");
 
@@ -114,6 +127,12 @@ public class XmlToMusicXml {
     return attributes;
   }
 
+  /**
+   * Process xmlPojo and all its notes, bpm, divisions, name to MusicXml file.
+   * @param measure
+   * @param document
+   * @param xmlPojo Object with song data.
+   */
   private void addNotesToMusicXml(Element measure, Document document, XmlPojo xmlPojo) {
     MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils();
     ArrayList<MusicXmlNote> musicXmlBaseNotes = musicXmlNoteUtils
@@ -130,7 +149,7 @@ public class XmlToMusicXml {
       if (musicXmlNote != null) {
         Element noteElement = createNote(document, stepValue, octaveValue,
             musicXmlNote.getDuration(),
-            musicXmlNote.getName(), MusicXmlNoteTypes.PITCH, musicXmlNote.isWithDot());
+            musicXmlNote.getName(), false, musicXmlNote.isWithDot());
         measure.appendChild(noteElement);
       }
 
@@ -143,7 +162,7 @@ public class XmlToMusicXml {
         if (musicXmlNote != null) {
           Element noteElement = createNote(document, stepValue, octaveValue,
               musicXmlNote.getDuration(),
-              musicXmlNote.getName(), MusicXmlNoteTypes.REST, musicXmlNote.isWithDot());
+              musicXmlNote.getName(), true, musicXmlNote.isWithDot());
           measure.appendChild(noteElement);
         }
       }
@@ -151,12 +170,23 @@ public class XmlToMusicXml {
     }
   }
 
+  /**
+   * Creates pich or rest notes for MusicXml file.
+   * @param document
+   * @param stepValue Note step
+   * @param octaveValue Note octave
+   * @param durationValue Note duration
+   * @param typeValue WHOLE, HALF QUARTER e.t.c
+   * @param noteIsRest If true created note will be rest.
+   * @param withDot Note with dot it 1.5 times longer then original.
+   * @return
+   */
   private Element createNote(Document document, String stepValue, String octaveValue,
       Integer durationValue, String typeValue,
-      MusicXmlNoteTypes noteType, boolean withDot) {
+      boolean noteIsRest, boolean withDot) {
     Element note = document.createElement("note");
 
-    if (noteType == MusicXmlNoteTypes.REST) {
+    if (noteIsRest) {
       note.appendChild(document.createElement("rest"));
     } else {
       Element pitch = document.createElement("pitch");
@@ -187,14 +217,31 @@ public class XmlToMusicXml {
     return note;
   }
 
+  /**
+   * Cuts step value from MidiNotes string.
+   * @param noteSymbol
+   * @return
+   */
   private String getStep(String noteSymbol) {
     return noteSymbol.substring(0, noteSymbol.length() - 1);
   }
 
+
+  /**
+   * Cuts octave value from MidiNotes string.
+   * @param noteSymbol
+   * @return
+   */
   private String getOctave(String noteSymbol) {
     return noteSymbol.substring(noteSymbol.length() - 1, noteSymbol.length());
   }
 
+  /**
+   * Create attributes with tempo for MusicXml file.
+   * @param document
+   * @param bpm
+   * @return
+   */
   private Element createTempo(Document document, int bpm) {
     Element direction = document.createElement("direction");
     direction.setAttribute("placement", "above");
@@ -220,6 +267,12 @@ public class XmlToMusicXml {
     return direction;
   }
 
+  /**
+   * Create attributes with title for MusicXml file.
+   * @param document
+   * @param title Song name.
+   * @return
+   */
   private Element createTitle(Document document, String title) {
     Element credit = document.createElement("credit");
     credit.setAttribute("page", "1");

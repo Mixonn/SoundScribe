@@ -1,12 +1,17 @@
 package com.soundscribe.converters.musicxml.entity;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+/**
+ * Stores data about MusicXml notes.
+ */
 public class MusicXmlNote {
 
   private String name;

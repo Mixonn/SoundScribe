@@ -3,7 +3,17 @@ package com.soundscribe.converters.musicxml.utilities;
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import java.util.ArrayList;
 
+/**
+ * MusicXmlNoteUtils contains common utilities for other MusicXml functions.
+ */
 public class MusicXmlNoteUtils {
+
+  /**
+   * Based on bpm and number of divisions per quarter note, function calculates necessary information about notes in MusicXMl
+   * @param bpm song tempo
+   * @param divisions divisions per quarter note
+   * @return List of note with standard length
+   */
   public ArrayList<MusicXmlNote> getMusicXmlBaseNotes(int bpm, int divisions) {
     double quarterNoteTime = (double) 60 / bpm;
     ArrayList<MusicXmlNote> notesLengthList = new ArrayList<>();
@@ -29,6 +39,15 @@ public class MusicXmlNoteUtils {
     return notesLengthList;
   }
 
+  /**
+   * Based on given sound time, and calculated base notes function returns the best-matching element.
+   * Thanks to flags delete16th and force16th you can choose if you want to add or delete very short notes.
+   * @param durationInSeconds Duration of sound in seconds.
+   * @param baseNotes List of calculated for adequate bpm notes.
+   * @param delete16th True if you dont want to add 16th notes to musicXml.
+   * @param force16th True if you want to add very short notes detected by pYIN.
+   * @return Best-matching note.
+   */
   public MusicXmlNote chooseBestNoteByDurationInSeconds(double durationInSeconds,ArrayList<MusicXmlNote> baseNotes, boolean delete16th, boolean force16th) {
     for (MusicXmlNote musicXmlNote : baseNotes) {
       if (durationInSeconds > musicXmlNote.getSeconds() / 1.25) {
@@ -46,6 +65,12 @@ public class MusicXmlNoteUtils {
     }
   }
 
+  /**
+   * Returns time in seconds for MusicXml note.
+   * @param duration Relative length of musicXml note.
+   * @param baseNotes List of calculated for adequate bpm notes.
+   * @return
+   */
   public double getNoteDurationInSeconds(int duration,ArrayList<MusicXmlNote> baseNotes){
     for(MusicXmlNote note :baseNotes){
       if(note.getDuration()==duration){

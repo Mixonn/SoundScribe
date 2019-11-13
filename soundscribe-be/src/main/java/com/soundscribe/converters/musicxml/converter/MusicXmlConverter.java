@@ -17,6 +17,11 @@ public class MusicXmlConverter {
   private final XmlToMusicXml xmlToMusicXml;
   private final MusicXmlToMidi musicXmlToMidi;
 
+  /**
+   * Converts raw pYIN algorithm notes to MusicXml format.
+   * @param xml Xml file with pYIN notes, tempo and divisions.
+   * @return MusicXml file.
+   */
   public File convertXmlToMusicXml(File xml) {
     File musicxml;
     try {
@@ -28,6 +33,11 @@ public class MusicXmlConverter {
     return musicxml;
   }
 
+  /**
+   * Converts MusicXml file to playable Midi file.
+   * @param musicXml MusicXml file.
+   * @return Midi file.
+   */
   public File convertMusicXmlToMidi(File musicXml) {
     return musicXmlToMidi.convertMusicXmlToMidi(musicXml);
   }

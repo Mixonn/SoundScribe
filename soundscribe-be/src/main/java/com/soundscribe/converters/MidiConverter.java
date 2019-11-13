@@ -40,6 +40,12 @@ public class MidiConverter {
     return convertXmlPojoToMidi(xml);
   }
 
+  /**
+   * Creates midi file from XmlPojo object.
+   *
+   * @param xml XmlPojo object that contains information about song
+   * @return Midi file
+   */
   private File convertXmlPojoToMidi(XmlPojo xml) {
     File midiFile;
     int ppq = xml.getDivisions();
@@ -47,7 +53,7 @@ public class MidiConverter {
     try {
       Sequence sequence = new Sequence(Sequence.PPQ, ppq);
       Track track = sequence.createTrack();
-      track.add(createSetTempoEvent(0,bpm));
+      track.add(createSetTempoEvent(0, bpm));
       // Adding notes
       int tickToStart, ticksToStop;
       for (PyinNote note : xml.getNotes()) {
@@ -110,15 +116,19 @@ public class MidiConverter {
 
   /**
    * Create a Set Tempo meta event. Takes a tempo in BPMs.
+   *
+   * @param tick  Tick in which tempo will change
+   * @param tempo BPM value
+   * @return MidiEvent which changes tempo
    */
-  public MidiEvent createSetTempoEvent(long tick, long tempo) {
+  private MidiEvent createSetTempoEvent(long tick, long tempo) {
     // microseconds per quarternote
     long mpqn = 60000000 / tempo;
 
     MetaMessage metaMessage = new MetaMessage();
 
     // create the tempo byte array
-    byte[] array = new byte[] { 0, 0, 0 };
+    byte[] array = new byte[]{0, 0, 0};
 
     for (int i = 0; i < 3; i++) {
       int shift = (3 - 1 - i) * 8;

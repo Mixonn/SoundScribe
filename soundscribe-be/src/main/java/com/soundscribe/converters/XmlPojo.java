@@ -23,6 +23,7 @@ import org.xml.sax.SAXException;
 @Setter
 @Slf4j
 public class XmlPojo {
+
   private String songName;
   private Integer bpm;
   private Integer divisions;
@@ -41,17 +42,17 @@ public class XmlPojo {
     try {
       builder = factory.newDocumentBuilder();
     } catch (ParserConfigurationException e) {
-      log.error("Error while converting XML.",e);
+      log.error("Error while converting XML.", e);
       throw new RuntimeException(e);
     }
     Document document;
     try {
       document = builder.parse(fileXML);
     } catch (SAXException e) {
-      log.error("Invalid xml file format",e);
+      log.error("Invalid xml file format", e);
       throw new RuntimeException(e);
     } catch (IOException e) {
-      log.error("Could not find xml file.",e);
+      log.error("Could not find xml file.", e);
       throw new RuntimeException(e);
     }
     document.getDocumentElement().normalize();
