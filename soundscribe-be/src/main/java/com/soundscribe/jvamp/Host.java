@@ -77,7 +77,7 @@ public class Host {
         if (f.hasTimestamp) {
           Element timestamp = document.createElement("timestamp");
           timestamp.appendChild(
-              document.createTextNode(TimeHelper.RealTime2String(f.timestamp, 2)));
+              document.createTextNode(TimeHelper.realTime2String(f.timestamp, 2)));
           note.appendChild(timestamp);
         } else {
           Element frame = document.createElement("frame");
@@ -86,7 +86,7 @@ public class Host {
         }
         if (f.hasDuration) {
           Element duration = document.createElement("duration");
-          duration.appendChild(document.createTextNode(TimeHelper.RealTime2String(f.duration, 2)));
+          duration.appendChild(document.createTextNode(TimeHelper.realTime2String(f.duration, 2)));
           note.appendChild(duration);
         }
         for (float v : f.values) {
@@ -118,8 +118,8 @@ public class Host {
 
         transformer.transform(domSource, streamResult);
       }
-    } catch (ParserConfigurationException | TransformerException pce) {
-      pce.printStackTrace();
+    } catch (ParserConfigurationException | TransformerException e) {
+      log.error("Could not save result of pYIN algorithm to file", e);
     }
   }
 
@@ -146,7 +146,7 @@ public class Host {
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error("Could not save result of pYIN algorithm to file", e);
     }
   }
 
@@ -177,15 +177,12 @@ public class Host {
     String key = null;
     PluginLoader loader = PluginLoader.getInstance();
     String fileName = file.getName().split("\\.")[0];
-    switch (function) {
-      case NOTES:
-        key = "pyin:pyin:notes";
-        xmlFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".xml");
-        break;
-      case SMOOTHED_PITCH_TRACK:
-        key = "pyin:pyin:smoothedpitchtrack";
-        smoothedFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".txt");
-        break;
+    if (function == JvampFunctions.NOTES) {
+      key = "pyin:pyin:notes";
+      xmlFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".xml");
+    } else {
+      key = "pyin:pyin:smoothedpitchtrack";
+      smoothedFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".txt");
     }
 
     String[] keyparts = key.split(":");
@@ -273,13 +270,10 @@ public class Host {
       Map<Integer, List<Feature>> features = p.getRemainingFeatures();
 
       RealTime timestamp = RealTime.frame2RealTime(block * blockSize, (int) (rate + 0.5));
-      switch (function) {
-        case NOTES:
-          printNotes(fileName, timestamp, outputNumber, features, xmlFile);
-          break;
-        case SMOOTHED_PITCH_TRACK:
-          printSmoothedPitch(fileName, timestamp, outputNumber, features, smoothedFile);
-          break;
+      if (function == JvampFunctions.NOTES) {
+        printNotes(fileName, timestamp, outputNumber, features, xmlFile);
+      } else {
+        printSmoothedPitch(fileName, timestamp, outputNumber, features, smoothedFile);
       }
 
       p.dispose();

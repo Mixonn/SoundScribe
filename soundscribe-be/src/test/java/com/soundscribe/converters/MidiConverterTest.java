@@ -1,18 +1,11 @@
 package com.soundscribe.converters;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.soundscribe.core.AppConfig;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -22,23 +15,29 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-import static org.junit.Assert.assertTrue;
-
-/* TODO: preferably move to JUnit5 */
-
-@RunWith(SpringRunner.class)
+@TestInstance(Lifecycle.PER_CLASS)
+@SpringBootTest
 @ContextConfiguration(classes = AppConfig.class)
-public class MidiConverterTest {
+class MidiConverterTest {
 
   private File xmlFile;
   private File midiFile;
   @Autowired
   private MidiConverter midiConverter;
 
-  @Before
-  public void setUp() {
+  @BeforeAll
+  void setUp() {
     String testFileName = "testName";
     xmlFile = new File(testFileName + ".xml");
     DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
@@ -52,6 +51,14 @@ public class MidiConverterTest {
 
     Element root = document.createElement(testFileName);
     document.appendChild(root);
+
+    Element bpm = document.createElement("bpm");
+    bpm.appendChild(document.createTextNode("130"));
+    root.appendChild(bpm);
+
+    Element divisions = document.createElement("divisions");
+    divisions.appendChild(document.createTextNode("4"));
+    root.appendChild(divisions);
 
     for (int i = 1; i < 3; i++) {
       Element note = document.createElement("note");
@@ -102,8 +109,8 @@ public class MidiConverterTest {
     }
   }
 
-  @After
-  public void tearDown() {
+  @AfterAll
+  void tearDown() {
     if (xmlFile != null) {
       try {
         Files.delete(xmlFile.toPath());
@@ -119,7 +126,8 @@ public class MidiConverterTest {
   }
 
   @Test
-  public void convertXMLtoMidiTestIfFileCreated() {
+  void testConvertXmlToMidi() {
+    System.out.println(midiConverter);
     midiFile = midiConverter.convertXmlToMidi(xmlFile);
     assertTrue(midiFile.exists());
   }

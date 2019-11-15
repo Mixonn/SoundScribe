@@ -1,7 +1,6 @@
 package com.soundscribe.controller;
 
 import com.soundscribe.converters.ConverterService;
-import com.soundscribe.converters.musicxml.functions.MusicXmlToMidi;
 import com.soundscribe.jvamp.JvampService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

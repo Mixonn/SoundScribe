@@ -6,7 +6,7 @@ import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import com.soundscribe.converters.musicxml.utilities.MusicXmlNoteUtils;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -135,7 +135,7 @@ public class XmlToMusicXml {
    */
   private void addNotesToMusicXml(Element measure, Document document, XmlPojo xmlPojo) {
     MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils();
-    ArrayList<MusicXmlNote> musicXmlBaseNotes = musicXmlNoteUtils
+    List<MusicXmlNote> musicXmlBaseNotes = musicXmlNoteUtils
         .getMusicXmlBaseNotes(xmlPojo.getBpm(), xmlPojo.getDivisions());
     int numberOfNotes = xmlPojo.getNotes().size();
     for (int i = 0; i < numberOfNotes; i++) {

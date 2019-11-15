@@ -55,7 +55,8 @@ public class MidiConverter {
       Track track = sequence.createTrack();
       track.add(createSetTempoEvent(0, bpm));
       // Adding notes
-      int tickToStart, ticksToStop;
+      int tickToStart;
+      int ticksToStop;
       for (PyinNote note : xml.getNotes()) {
         // Add Note On event
         tickToStart = secondsToTicks(bpm, ppq, note.getTimestamp());
@@ -139,8 +140,7 @@ public class MidiConverter {
     try {
       metaMessage.setMessage(81, array, 3);
     } catch (Exception e) {
-      e.printStackTrace();
-      System.exit(1);
+      log.error("Could not create tempo MidiEvent",e);
     }
 
     return new MidiEvent(metaMessage, tick);

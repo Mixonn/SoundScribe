@@ -2,6 +2,7 @@ package com.soundscribe.converters.musicxml.utilities;
 
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * MusicXmlNoteUtils contains common utilities for other MusicXml functions.
@@ -14,7 +15,7 @@ public class MusicXmlNoteUtils {
    * @param divisions divisions per quarter note
    * @return List of note with standard length
    */
-  public ArrayList<MusicXmlNote> getMusicXmlBaseNotes(int bpm, int divisions) {
+  public List<MusicXmlNote> getMusicXmlBaseNotes(int bpm, int divisions) {
     double quarterNoteTime = (double) 60 / bpm;
     ArrayList<MusicXmlNote> notesLengthList = new ArrayList<>();
     notesLengthList
@@ -48,7 +49,7 @@ public class MusicXmlNoteUtils {
    * @param force16th True if you want to add very short notes detected by pYIN.
    * @return Best-matching note.
    */
-  public MusicXmlNote chooseBestNoteByDurationInSeconds(double durationInSeconds,ArrayList<MusicXmlNote> baseNotes, boolean delete16th, boolean force16th) {
+  public MusicXmlNote chooseBestNoteByDurationInSeconds(double durationInSeconds,List<MusicXmlNote> baseNotes, boolean delete16th, boolean force16th) {
     for (MusicXmlNote musicXmlNote : baseNotes) {
       if (durationInSeconds > musicXmlNote.getSeconds() / 1.25) {
         if (delete16th && musicXmlNote.getName().equals("16th")) {
@@ -71,7 +72,7 @@ public class MusicXmlNoteUtils {
    * @param baseNotes List of calculated for adequate bpm notes.
    * @return
    */
-  public double getNoteDurationInSeconds(int duration,ArrayList<MusicXmlNote> baseNotes){
+  public double getNoteDurationInSeconds(int duration,List<MusicXmlNote> baseNotes){
     for(MusicXmlNote note :baseNotes){
       if(note.getDuration()==duration){
         return note.getSeconds();

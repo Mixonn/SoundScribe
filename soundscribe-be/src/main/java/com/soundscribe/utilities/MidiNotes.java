@@ -9,7 +9,7 @@ import java.util.Map.Entry;
  */
 public class MidiNotes {
 
-  private static final Map<Integer, String> notesDict;
+  private static Map<Integer, String> notesDict;
 
   static {
     notesDict =
