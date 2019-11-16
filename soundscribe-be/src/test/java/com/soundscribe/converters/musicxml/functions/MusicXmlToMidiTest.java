@@ -3,7 +3,7 @@ package com.soundscribe.converters.musicxml.functions;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.soundscribe.converters.MidiConverter;
-import com.soundscribe.core.AppConfig;
+import com.soundscribe.AppConfig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

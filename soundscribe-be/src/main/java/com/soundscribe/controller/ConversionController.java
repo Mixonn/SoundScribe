@@ -20,35 +20,35 @@ public class ConversionController {
   private final ConverterService converterService;
 
   @GetMapping("analyze-file")
-  public ResponseEntity analyzeFile(@RequestParam String filename) {
+  public ResponseEntity<String> analyzeFile(@RequestParam String filename) {
     jvampService.loadLibraries();
     File file = new File(filename);
     File wavFile = converterService.convertMP3toWAV(file, false);
     jvampService.pyinNotes(wavFile, false);
-    return new ResponseEntity("Plik z danymi wyściowymi został utworzony", HttpStatus.OK);
+    return new ResponseEntity<>("Plik z danymi wyściowymi został utworzony", HttpStatus.OK);
   }
 
   @GetMapping("/xml-to-midi")
-  public ResponseEntity xmlToMidi(@RequestParam String filename) {
+  public ResponseEntity<String> xmlToMidi(@RequestParam String filename) {
     jvampService.loadLibraries();
     File fileXML = new File(filename);
     converterService.convertXmltoMidi(fileXML, false);
-    return new ResponseEntity("Plik midi został utworzony", HttpStatus.OK);
+    return new ResponseEntity<>("Plik midi został utworzony", HttpStatus.OK);
   }
 
   @GetMapping("/xml-to-musicxml")
-  public ResponseEntity xmlToMusicXml(@RequestParam String filename) {
+  public ResponseEntity<String> xmlToMusicXml(@RequestParam String filename) {
     jvampService.loadLibraries();
     File fileXML = new File(filename);
     converterService.convertXmltoMusicXml(fileXML, false);
-    return new ResponseEntity("Plik musicxml został utworzony", HttpStatus.OK);
+    return new ResponseEntity<>("Plik musicxml został utworzony", HttpStatus.OK);
   }
 
   @GetMapping("/musicxml-to-midi")
-  public ResponseEntity musicXmlToMidi(@RequestParam String filename) {
+  public ResponseEntity<String> musicXmlToMidi(@RequestParam String filename) {
     jvampService.loadLibraries();
     File musicXml = new File(filename);
     converterService.convertMusicXmltoMidi(musicXml, false);
-    return new ResponseEntity("Plik musicXml został przekonwertowany do midi", HttpStatus.OK);
+    return new ResponseEntity<>("Plik musicXml został przekonwertowany do midi", HttpStatus.OK);
   }
 }

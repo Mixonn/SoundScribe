@@ -2,7 +2,7 @@ package com.soundscribe.converters;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.soundscribe.core.AppConfig;
+import com.soundscribe.AppConfig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
