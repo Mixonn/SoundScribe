@@ -27,17 +27,23 @@
 
 <script>
 import { Player } from 'midi-player-js';
+import Soundfont from 'soundfont-player';
+import axios from 'axios';
 const fs = require('fs');
 const $ = require('jquery');
 const verovio = require('verovio').init(512);
 
 function str2ab (str) {
   const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
-  const bufView = new Uint16Array(buf);
+  const bufView = new Uint8Array(buf);
   for (let i = 0, strLen = str.length; i < strLen; i++) {
     bufView[i] = str.charCodeAt(i);
   }
   return buf;
+}
+
+function ab2str (buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
 }
 
 export default {
@@ -137,25 +143,46 @@ export default {
       if (this.isPlaying === false) {
         const base64midi = this.vrvToolkit.renderToMIDI();
         const decodec = atob(base64midi);
-        // const song = 'data:audio/midi;base64,' + base64midi;
+        const song1 = 'data:audio/midi;base64,' + base64midi;
         console.log(base64midi);
         console.log(decodec);
         if (decodec.startsWith('MThd')) {
           console.log('EEEE');
         }
+        const x = str2ab(decodec);
 
-        this.$axios.$get(`/songs/ff.mid`, {
-          responseType: 'arraybuffer'
-        }).then((res) => {
-          console.log(res.data);
-          this.player.loadArrayBuffer(res.data);
-          // we have access to each track, and each track has events.
-          // console.log(player.tracks);
-          console.log('start playing');
-          this.player.play();
-          this.isPlaying = true;
+        const AudioContext = window.AudioContext || window.webkitAudioContext || false;
+        const ac = new AudioContext();
+
+        Soundfont.instrument(ac, `https://raw.githubusercontent.com/gleitz/midi-js-soundfonts/gh-pages/MusyngKite/acoustic_guitar_nylon-mp3.js`).then((instrument) => {
+          this.player = new Player((event) => {
+            if (!this.isPlaying) {
+              this.player.stop();
+            }
+            if (event.name === 'Note on' && event.velocity > 0) {
+              instrument.play(event.noteName, ac.currentTime, {
+                gain: event.velocity / 100
+              });
+            }
+          });
+
+          axios.get(`/songs/ff.mid`, {
+            responseType: 'arraybuffer'
+          }).then(({ data: song }) => {
+            console.log(ab2str(song));
+            console.log(ab2str(x));
+            console.log(song);
+            console.log(x);
+            console.log(song.constructor.name);
+            console.log(x.constructor.name);
+            this.player.loadArrayBuffer(x);
+            // we have access to each track, and each track has events.
+            // console.log(player.tracks);
+            console.log('start playing');
+            this.player.play();
+            this.isPlaying = true;
+          });
         });
-
         // this.player.loadArrayBuffer(str2ab(base64midi));
       }
     },

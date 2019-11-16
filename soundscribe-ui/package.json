@@ -13,10 +13,12 @@
   },
   "dependencies": {
     "@nuxtjs/axios": "^5.8.0",
+    "axios": "^0.19.0",
     "jptv-midi-js": "^0.3.0",
     "jquery": "^3.4.1",
     "midi-player-js": "^2.0.5",
     "nuxt": "^2.0.0",
+    "soundfont-player": "^0.11.0",
     "verovio": "^2.3.0"
   },
   "devDependencies": {
