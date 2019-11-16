@@ -13,9 +13,12 @@
     <button @click="zoomOut">
       Zoom out
     </button>
-    <div style="height: 30px;">
-      <div id="player" />
-    </div>
+    <button @click="playMidi">
+      Play
+    </button>
+    <button @click="midiStop">
+      Stop
+    </button>
     <div
       id="svg_output"
     />
@@ -23,15 +26,26 @@
 </template>
 
 <script>
-import './wildwebmidi.js'
-
+import { Player } from 'midi-player-js';
 const fs = require('fs');
 const $ = require('jquery');
 const verovio = require('verovio').init(512);
-const midiPlayer = require('./midiplayer');
+
+function str2ab (str) {
+  const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
+  const bufView = new Uint16Array(buf);
+  for (let i = 0, strLen = str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
 
 export default {
   name: 'StaffLines',
+  head () {
+    return {
+    }
+  },
   data () {
     return {
       vrvToolkit: new verovio.toolkit(),
@@ -40,7 +54,8 @@ export default {
       pageWidth: 2100,
       page: 1,
       ids: [],
-      isPlaying: false
+      isPlaying: false,
+      player: null
     }
   },
   async mounted () {
@@ -50,16 +65,8 @@ export default {
     console.log(this.$axios.defaults.baseURL + file);
     this.loadData(data);
 
-    // $(window).resize(function () {
-    //   this.refresh();
-    // });
-    //
-    // $('#player').midiPlayer({
-    //   color: '#c00',
-    //   onUpdate: this.midiUpdate,
-    //   onStop: this.midiStop,
-    //   width: 250
-    // });
+    this.player = new Player((this.midiUpdate));
+    this.player.on('endOfFile', this.midiStop)
   },
   methods: {
     setOptions () {
@@ -126,13 +133,30 @@ export default {
       this.zoom = this.zoom * 2;
       this.refresh();
     },
-    play_midi () {
+    playMidi () {
       if (this.isPlaying === false) {
         const base64midi = this.vrvToolkit.renderToMIDI();
-        const song = 'data:audio/midi;base64,' + base64midi;
-        $('#player').show();
-        $('#player').midiPlayer.play(song);
-        this.isPlaying = true;
+        const decodec = atob(base64midi);
+        // const song = 'data:audio/midi;base64,' + base64midi;
+        console.log(base64midi);
+        console.log(decodec);
+        if (decodec.startsWith('MThd')) {
+          console.log('EEEE');
+        }
+
+        this.$axios.$get(`/songs/ff.mid`, {
+          responseType: 'arraybuffer'
+        }).then((res) => {
+          console.log(res.data);
+          this.player.loadArrayBuffer(res.data);
+          // we have access to each track, and each track has events.
+          // console.log(player.tracks);
+          console.log('start playing');
+          this.player.play();
+          this.isPlaying = true;
+        });
+
+        // this.player.loadArrayBuffer(str2ab(base64midi));
       }
     },
     midiUpdate (time) {
@@ -163,7 +187,6 @@ export default {
       this.ids.forEach(function (noteid) {
         $('#' + noteid).attr('fill', '#000').attr('stroke', '#000');
       });
-      $('#player').hide();
       this.isPlaying = false;
     }
   }
@@ -171,5 +194,4 @@ export default {
 </script>
 
 <style scoped>
-
 </style>
