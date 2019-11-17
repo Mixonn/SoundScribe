@@ -43,7 +43,7 @@ function str2ab (str) {
 }
 
 function ab2str (buf) {
-  return String.fromCharCode.apply(null, new Uint16Array(buf));
+  return String.fromCharCode.apply(null, new Uint8Array(buf));
 }
 
 export default {
@@ -144,8 +144,8 @@ export default {
         const base64midi = this.vrvToolkit.renderToMIDI();
         const decodec = atob(base64midi);
         const song1 = 'data:audio/midi;base64,' + base64midi;
-        console.log(base64midi);
-        console.log(decodec);
+        // console.log(base64midi);
+        // console.log(decodec);
         if (decodec.startsWith('MThd')) {
           console.log('EEEE');
         }
@@ -175,7 +175,7 @@ export default {
             console.log(x);
             console.log(song.constructor.name);
             console.log(x.constructor.name);
-            this.player.loadArrayBuffer(x);
+            this.player.loadArrayBuffer(song);
             // we have access to each track, and each track has events.
             // console.log(player.tracks);
             console.log('start playing');
