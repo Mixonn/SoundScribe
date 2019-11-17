@@ -1,6 +1,5 @@
 <template>
   <div class="container">
-    {{ text }}
     <midi-chart
       v-if="loaded"
       :chartdata="chartdata"
@@ -20,12 +19,12 @@ export default {
   },
   data () {
     return {
-      text: 'xDDDDD',
       loaded: false,
       chartdata: {
       },
       options: {
-        maintainAspectRatio: false
+        maintainAspectRatio: false,
+        showLines: true
       },
       midiFileContent: '',
       baseFrequencyFileContent: '',
@@ -79,9 +78,9 @@ export default {
       const midiChartData = this.prepareMidiChartData()
       const baseFrequencyChartData = this.prepareBaseFrequencyChartData()
       const chartData = this.prepareCombinedChartData(midiChartData, baseFrequencyChartData)
-      console.log(chartData)
+      console.log(baseFrequencyChartData)
       this.chartdata = {
-        labels: ['test1', 'test2'],
+        labels: ['midi', 'freq'],
         datasets: chartData
       }
       this.loaded = true
@@ -103,11 +102,11 @@ export default {
           this.midiDataFormatted.push(midiWrapper)
           chartData.push({
             x: midiWrapper.startTime,
-            y: midiWrapper.midiValue
+            y: midiWrapper.value
           })
           chartData.push({
             x: midiWrapper.endTime,
-            y: midiWrapper.midiValue
+            y: midiWrapper.value
           })
         }
       }
@@ -138,10 +137,11 @@ export default {
         label: 'midi' })
       chartData.push({
         data: baseFrequencyData,
-        radius: 0,
+        radius: 1,
         borderColor: '#3e95cd',
         fill: false,
-        label: 'freq' })
+        label: 'freq',
+        showLine: true })
       return chartData
     }
   }

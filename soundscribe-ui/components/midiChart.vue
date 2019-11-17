@@ -1,8 +1,9 @@
 <script>
-import { Scatter } from 'vue-chartjs'
+import { Scatter, mixins } from 'vue-chartjs'
 
 export default {
   extends: Scatter,
+  mixins: mixins.reactiveProp,
   props: {
     chartdata: {
       type: Object,
