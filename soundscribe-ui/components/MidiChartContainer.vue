@@ -22,7 +22,8 @@ export default {
     return {
       text: 'xDDDDD',
       loaded: false,
-      chartdata: null,
+      chartdata: {
+      },
       options: {
         maintainAspectRatio: false
       },
@@ -45,7 +46,7 @@ export default {
     }
   },
   mounted () {
-    this.loaded = true
+    this.loaded = false
     this.init()
   },
   methods: {
@@ -75,9 +76,15 @@ export default {
       })
     },
     generateChartDataSet () {
-      //  const midiChartData = this.prepareMidiChartData()
+      const midiChartData = this.prepareMidiChartData()
       const baseFrequencyChartData = this.prepareBaseFrequencyChartData()
-      console.log(baseFrequencyChartData)
+      const chartData = this.prepareCombinedChartData(midiChartData, baseFrequencyChartData)
+      console.log(chartData)
+      this.chartdata = {
+        labels: ['test1', 'test2'],
+        datasets: chartData
+      }
+      this.loaded = true
     },
     prepareMidiChartData () {
       const notes = this.midiFileContent.getElementsByTagName(this.fileNameFormatted)[0].childNodes
@@ -92,7 +99,6 @@ export default {
           letterNote: notes[i].children[4].textContent
         }
         if (midiWrapper.startTime > this.chartPosition.endTime || midiWrapper.endTime < this.chartPosition.startTime) {
-          continue
         } else {
           this.midiDataFormatted.push(midiWrapper)
           chartData.push({
@@ -112,13 +118,30 @@ export default {
       const data = this.baseFrequencyFileContent.split('\n')
       for (let i = 0; i < data.length; i++) {
         const values = data[i].trim().split(/[ ,]+/)
-        if (this.chartPosition.startTime > parseFloat(values[0]) || this.chartPosition.endTime < parseFloat(values[1])) {
+        const timeValue = parseFloat(values[0])
+        const frequencyValue = parseFloat(values[1])
+        if (!isNaN(timeValue) && !isNaN(frequencyValue) && this.chartPosition.startTime < timeValue && this.chartPosition.endTime > timeValue) {
           chartData.push({
-            x: parseFloat(values[0]),
-            y: parseFloat(values[1])
+            x: timeValue,
+            y: frequencyValue
           })
         }
       }
+      return chartData
+    },
+    prepareCombinedChartData (midiData, baseFrequencyData) {
+      const chartData = []
+      chartData.push({
+        data: midiData,
+        borderColor: '#ac2b2b',
+        fill: false,
+        label: 'midi' })
+      chartData.push({
+        data: baseFrequencyData,
+        radius: 0,
+        borderColor: '#3e95cd',
+        fill: false,
+        label: 'freq' })
       return chartData
     }
   }
