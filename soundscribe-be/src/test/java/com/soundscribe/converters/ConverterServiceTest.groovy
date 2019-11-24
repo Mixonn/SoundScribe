@@ -8,8 +8,7 @@ import spock.lang.Specification
 class ConverterServiceTest extends Specification {
 
     @Shared
-            mxlPath = this.getClass().getClassLoader().getResource("samples/Etude1.mxl").path
-
+            mxlFile = new File(this.getClass().getClassLoader().getResource("samples/Etude1.mxl").path)
     @Shared
             converterService
 
@@ -21,23 +20,31 @@ class ConverterServiceTest extends Specification {
 
     def "ConvertMusicXmlToMei"() {
         when:
-        File mei = converterService.convertMusicXmlToMei(mxlPath)
-        println mei.getAbsolutePath()
+        Optional<File> mei = converterService.convert(mxlFile, new ConversionFormat("musicxml", "mei"))
 
         then:
-        mei.getAbsolutePath().endsWith("mei")
-        mei.exists()
-        mei.text.length() == 21000
+        !mei.isEmpty()
+        mei.get().getAbsolutePath().endsWith("mei")
+        mei.get().exists()
+        mei.get().text.length() == 21000
     }
 
     def "ConvertMusicXmlToAbc"() {
         when:
-        File abc = converterService.convertMusicXmlToAbc(mxlPath)
+        Optional<File> abc = converterService.convert(mxlFile, new ConversionFormat("musicxml", "abc"))
 
         then:
-        abc.getAbsolutePath().endsWith("abc")
-        println abc.getAbsolutePath()
-        abc.exists()
-        abc.text.length() == 574
+        !abc.isEmpty()
+        abc.get().getAbsolutePath().endsWith("abc")
+        abc.get().exists()
+        abc.get().text.length() == 574
+    }
+
+    def "ConvertUnsupportedFormat"() {
+        when:
+        Optional<File> abc = converterService.convert(mxlFile, new ConversionFormat("mei", "abc"))
+
+        then:
+        abc.isEmpty()
     }
 }

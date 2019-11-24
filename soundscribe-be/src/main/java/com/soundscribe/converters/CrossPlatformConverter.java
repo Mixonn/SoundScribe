@@ -9,13 +9,13 @@ import java.io.IOException;
 @Slf4j
 class CrossPlatformConverter {
 
-    private String filename;
+    private File input;
     private String directory;
 
-    CrossPlatformConverter(String filename) {
-        this.filename = filename;
+    CrossPlatformConverter(File input) {
+        this.input = input;
         try {
-            this.directory = new File(filename).getParentFile().getAbsolutePath();
+            this.directory = input.getParentFile().getAbsolutePath();
         } catch (NullPointerException e) {
             try {
                 this.directory = new File(".").getCanonicalPath();
@@ -26,9 +26,10 @@ class CrossPlatformConverter {
     }
 
     File convertMusicXmlToMei() {
-        boolean isSuccess = convert("verovio", filename, "-f", "musicxml", "-t", "mei", "-a");
+        boolean isSuccess = convert("verovio", input.getName(), "-f", "musicxml", "-t", "mei", "-a");
         if (isSuccess) {
-            String meiFilename = directory + "/" + Files.getNameWithoutExtension(filename) + ".mei";
+            String meiFilename =
+                    directory + "/" + Files.getNameWithoutExtension(input.getName()) + ".mei";
             return new File(meiFilename);
         } else {
             return null;
@@ -36,9 +37,8 @@ class CrossPlatformConverter {
     }
 
     File convertMeiToMusicXml() {
-        String mxlFilename = directory + "/" + Files.getNameWithoutExtension(filename) + ".mxl";
-        System.out.println(filename + " " + mxlFilename);
-        boolean isSuccess = convert("meitomusicxml", filename, mxlFilename);
+        String mxlFilename = directory + "/" + Files.getNameWithoutExtension(input.getName()) + ".mxl";
+        boolean isSuccess = convert("meitomusicxml", input.getName(), mxlFilename);
         if (isSuccess) {
             return new File(mxlFilename);
         } else {
@@ -47,8 +47,8 @@ class CrossPlatformConverter {
     }
 
     File convertMusicXmlToAbc() {
-        String abcFilename = directory + "/" + Files.getNameWithoutExtension(filename) + ".abc";
-        boolean isSuccess = convert("xml2abc", filename, "-o", directory);
+        String abcFilename = directory + "/" + Files.getNameWithoutExtension(input.getName()) + ".abc";
+        boolean isSuccess = convert("xml2abc", input.getName(), "-o", directory);
         if (isSuccess) {
             return new File(abcFilename);
         } else {
@@ -57,8 +57,8 @@ class CrossPlatformConverter {
     }
 
     File convertAbcToMusicXml() {
-        String abcFilename = directory + "/" + Files.getNameWithoutExtension(filename) + ".abc";
-        boolean isSuccess = convert("abc2xml", filename, "-o", directory);
+        String abcFilename = directory + "/" + Files.getNameWithoutExtension(input.getName()) + ".abc";
+        boolean isSuccess = convert("abc2xml", input.getName(), "-o", directory);
         if (isSuccess) {
             return new File(abcFilename);
         } else {

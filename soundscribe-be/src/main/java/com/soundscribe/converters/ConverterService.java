@@ -9,8 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -21,7 +20,28 @@ public class ConverterService {
   private final MusicXmlConverter musicXmlConverter;
   private final SoundscribeConfiguration soundscribeConfiguration;
 
-  public File convertMP3toWAV(File fileMp3, boolean deleteAfter) {
+  public Optional<File> convert(File input, ConversionFormat conversionFormat) {
+    if (conversionFormat.equals(new ConversionFormat("mp3", "wav"))) {
+      return Optional.of(convertMP3toWAV(input));
+    } else if (conversionFormat.equals(new ConversionFormat("xml", "midi"))) {
+      return Optional.of(convertXmltoMidi(input));
+    } else if (conversionFormat.equals(new ConversionFormat("xml", "musicxml"))) {
+      return Optional.of(convertXmltoMusicXml(input));
+    } else if (conversionFormat.equals(new ConversionFormat("musicxml", "midi"))) {
+      return Optional.of(convertMusicXmltoMidi(input));
+    } else if (conversionFormat.equals(new ConversionFormat("musicxml", "mei"))) {
+      return Optional.ofNullable(convertMusicXmlToMei(input));
+    } else if (conversionFormat.equals(new ConversionFormat("mei", "musicxml"))) {
+      return Optional.ofNullable(convertMeiToMusicXml(input));
+    } else if (conversionFormat.equals(new ConversionFormat("musicxml", "abc"))) {
+      return Optional.ofNullable(convertMusicXmlToAbc(input));
+    } else if (conversionFormat.equals(new ConversionFormat("abc", "musicxml"))) {
+      return Optional.ofNullable(convertAbcToMusicXml(input));
+    }
+    return Optional.empty();
+  }
+
+  private File convertMP3toWAV(File fileMp3) {
     String fileName = fileMp3.getName().split("\\.")[0];
     File fileWav = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".wav");
     Converter converter = new Converter();
@@ -32,66 +52,34 @@ public class ConverterService {
       log.error("An error occurred while converting mp3 to wav", e);
       throw new RuntimeException(e);
     }
-
-    if (deleteAfter) {
-      try {
-        Files.delete(fileMp3.toPath());
-      } catch (IOException e) {
-        log.debug("The MP3 file cannot be deleted. This file no longer exists.", e);
-      }
-    }
     return fileWav;
   }
 
-  public File convertXmltoMidi(File fileXML, boolean deleteAfter) {
-    File midi = midiConverter.convertXmlToMidi(fileXML);
-    if (deleteAfter) {
-      try {
-        Files.delete(fileXML.toPath());
-      } catch (IOException e) {
-        log.debug("The XML file cannot be deleted. This file no longer exists.", e);
-      }
-    }
-    return midi;
+  private File convertXmltoMidi(File fileXML) {
+    return midiConverter.convertXmlToMidi(fileXML);
   }
 
-  public File convertXmltoMusicXml(File fileXML, boolean deleteAfter) {
-    File musicXml = musicXmlConverter.convertXmlToMusicXml(fileXML);
-    if (deleteAfter) {
-      try {
-        Files.delete(fileXML.toPath());
-      } catch (IOException e) {
-        log.debug("The XML file cannot be deleted. This file no longer exists.", e);
-      }
-    }
-    return musicXml;
+  private File convertXmltoMusicXml(File fileXML) {
+    return musicXmlConverter.convertXmlToMusicXml(fileXML);
   }
 
-  public File convertMusicXmltoMidi(File musicXml, boolean deleteAfter) {
-    File midi = musicXmlConverter.convertMusicXmlToMidi(musicXml);
-    if (deleteAfter) {
-      try {
-        Files.delete(musicXml.toPath());
-      } catch (IOException e) {
-        log.debug("The XML file cannot be deleted. This file no longer exists.", e);
-      }
-    }
-    return midi;
+  private File convertMusicXmltoMidi(File musicXml) {
+    return musicXmlConverter.convertMusicXmlToMidi(musicXml);
   }
 
-  public File convertMusicXmlToMei(String filename) {
-    return new CrossPlatformConverter(filename).convertMusicXmlToMei();
+  private File convertMusicXmlToMei(File musicXml) {
+    return new CrossPlatformConverter(musicXml).convertMusicXmlToMei();
   }
 
-  public File convertMeiToMusicXml(String filename) {
-    return new CrossPlatformConverter(filename).convertMeiToMusicXml();
+  private File convertMeiToMusicXml(File mei) {
+    return new CrossPlatformConverter(mei).convertMeiToMusicXml();
   }
 
-  public File convertMusicXmlToAbc(String filename) {
-    return new CrossPlatformConverter(filename).convertMusicXmlToAbc();
+  private File convertMusicXmlToAbc(File musicXml) {
+    return new CrossPlatformConverter(musicXml).convertMusicXmlToAbc();
   }
 
-  public File convertAbcToMusicXml(String filename) {
-    return new CrossPlatformConverter(filename).convertAbcToMusicXml();
+  private File convertAbcToMusicXml(File abc) {
+    return new CrossPlatformConverter(abc).convertAbcToMusicXml();
   }
 }
