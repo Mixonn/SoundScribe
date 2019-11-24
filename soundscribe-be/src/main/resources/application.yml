@@ -1,0 +1,10 @@
+#Path properties
+settings:
+  songDataStorage: ""
+  vampPath: "/usr/lib/"
+
+#Converters properties
+  defaultDivisions: 4
+  defaultBpm: 120
+  defaultBeats: 4
+  defaultBeatType: 4
