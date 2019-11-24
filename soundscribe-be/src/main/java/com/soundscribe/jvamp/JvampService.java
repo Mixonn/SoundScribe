@@ -1,15 +1,16 @@
 package com.soundscribe.jvamp;
 
-import static com.soundscribe.jvamp.JvampFunctions.NOTES;
-import static com.soundscribe.jvamp.JvampFunctions.SMOOTHED_PITCH_TRACK;
-
 import com.soundscribe.utilities.SoundscribeConfiguration;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
+import static com.soundscribe.jvamp.JvampFunctions.NOTES;
+import static com.soundscribe.jvamp.JvampFunctions.SMOOTHED_PITCH_TRACK;
 
 /**
  * Executes jVamp plugins.
@@ -27,12 +28,12 @@ public class JvampService {
   }
 
   /**
-   * @param fileWav     Wav file for analysis.
+   * @param fileWav Wav file for analysis.
    * @param deleteAfter Boolean, if set on true wav file will be deleted after the process is
-   *                    completed.
+   *     completed.
    */
-  public void pyinSmoothedPitchTrack(File fileWav, boolean deleteAfter) {
-    host.start(SMOOTHED_PITCH_TRACK, fileWav);
+  public void pyinSmoothedPitchTrack(File fileWav, File fileMp3, boolean deleteAfter) {
+    host.start(SMOOTHED_PITCH_TRACK, fileWav, fileMp3);
     if (deleteAfter) {
       try {
         Files.delete(fileWav.toPath());
@@ -45,12 +46,12 @@ public class JvampService {
   /**
    * Generetes xmlFile with timestamp,length and value of notes in song.
    *
-   * @param fileWav     Wav file for analysis.
+   * @param fileWav Wav file for analysis.
    * @param deleteAfter Boolean, if set on true wav file will be deleted after the process is
-   *                    completed.
+   *     completed.
    */
-  public void pyinNotes(File fileWav, boolean deleteAfter) {
-    host.start(NOTES, fileWav);
+  public void pyinNotes(File fileWav, File fileMp3, boolean deleteAfter) {
+    host.start(NOTES, fileWav, fileMp3);
     if (deleteAfter) {
       try {
         Files.delete(fileWav.toPath());

@@ -27,3 +27,6 @@ nbdist/
 .nb-gradle/
 
 /.gradletasknamecache
+
+hs_err*.log
+npm-debug.log

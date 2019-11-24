@@ -1,5 +1,6 @@
 package com.soundscribe.jvamp;
 
+import com.soundscribe.core.BeatDetector;
 import com.soundscribe.utilities.MidiNotes;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import lombok.RequiredArgsConstructor;
@@ -35,20 +36,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class Host {
 
+  private final BeatDetector beatDetector;
   private final SoundscribeConfiguration soundscribeConfiguration;
 
   /**
    * Generates xml file from data calculated by pYIN algorithm. Additionaly it adds letterNote
    * attribute which
    *
-   * @param filename  Song name
+   * @param filename Song name
    * @param frameTime
    * @param output
    * @param features
-   * @param xmlFile   Xml file with pYIN data
+   * @param xmlFile Xml file with pYIN data
    */
-  private void printNotes(String filename, RealTime frameTime, Integer output,
-      Map<Integer, List<Feature>> features, File xmlFile) {
+  private void printNotes(
+          String filename,
+          RealTime frameTime,
+          Integer output,
+          Map<Integer, List<Feature>> features,
+          File xmlFile,
+          File mp3File) {
     int midiValue;
     if (!features.containsKey(output)) {
       return;
@@ -63,7 +70,7 @@ public class Host {
       document.appendChild(root);
 
       Element bpm = document.createElement("bpm");
-      bpm.appendChild(document.createTextNode("130"));//todo get bmp from beat-detector
+      bpm.appendChild(document.createTextNode(beatDetector.analyzeTrack(mp3File).toString()));
       root.appendChild(bpm);
 
       Element divisions = document.createElement("divisions");
@@ -102,8 +109,8 @@ public class Host {
           note.appendChild(midi);
 
           Element letterNote = document.createElement("letterNote");
-          letterNote
-              .appendChild(document.createTextNode(MidiNotes.getNoteSymbolByMidiValue(midiValue)));
+          letterNote.appendChild(
+                  document.createTextNode(MidiNotes.getNoteSymbolByMidiValue(midiValue)));
           note.appendChild(letterNote);
         }
 
@@ -123,8 +130,12 @@ public class Host {
     }
   }
 
-  private void printSmoothedPitch(String filename, RealTime frameTime, Integer output,
-      Map<Integer, List<Feature>> features, File file) {
+  private void printSmoothedPitch(
+          String filename,
+          RealTime frameTime,
+          Integer output,
+          Map<Integer, List<Feature>> features,
+          File file) {
     if (!features.containsKey(output)) {
       return;
     }
@@ -171,7 +182,7 @@ public class Host {
     return frames;
   }
 
-  public void start(JvampFunctions function, File file) {
+  public void start(JvampFunctions function, File file, File fileMp3) {
     File xmlFile = null;
     File smoothedFile = null;
     String key = null;
@@ -271,7 +282,7 @@ public class Host {
 
       RealTime timestamp = RealTime.frame2RealTime(block * blockSize, (int) (rate + 0.5));
       if (function == JvampFunctions.NOTES) {
-        printNotes(fileName, timestamp, outputNumber, features, xmlFile);
+        printNotes(fileName, timestamp, outputNumber, features, xmlFile, fileMp3);
       } else {
         printSmoothedPitch(fileName, timestamp, outputNumber, features, smoothedFile);
       }
