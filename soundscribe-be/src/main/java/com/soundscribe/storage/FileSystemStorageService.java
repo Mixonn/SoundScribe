@@ -1,5 +1,6 @@
 package com.soundscribe.storage;
 
+import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -22,9 +23,8 @@ public class FileSystemStorageService implements StorageService {
 
   private final Path rootLocation;
 
-  @Autowired
-  public FileSystemStorageService(StorageProperties properties) {
-    this.rootLocation = Paths.get(properties.getLocation());
+  public FileSystemStorageService(SoundscribeConfiguration properties) {
+    this.rootLocation = Paths.get(properties.getSongDataStorage());
   }
 
   @Override

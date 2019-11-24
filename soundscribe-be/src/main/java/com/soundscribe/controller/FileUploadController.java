@@ -1,5 +1,6 @@
 package com.soundscribe.controller;
 
+import com.soundscribe.OnlyForShow;
 import com.soundscribe.storage.StorageFileNotFoundException;
 import com.soundscribe.storage.StorageService;
 import java.io.IOException;
@@ -25,10 +26,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class FileUploadController {
 
   private final StorageService storageService;
+  private final OnlyForShow onlyForShow;
 
   @Autowired
-  public FileUploadController(StorageService storageService) {
+  public FileUploadController(StorageService storageService, OnlyForShow onlyForShow) {
     this.storageService = storageService;
+    this.onlyForShow = onlyForShow;
   }
 
   @GetMapping("/")
@@ -56,6 +59,8 @@ public class FileUploadController {
       RedirectAttributes redirectAttributes) {
 
     storageService.store(file);
+    onlyForShow.analyzeFile(file.getOriginalFilename()); //todo Delete this line
+
     redirectAttributes.addFlashAttribute("message",
         "You successfully uploaded " + file.getOriginalFilename() + "!");
 

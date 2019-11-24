@@ -171,7 +171,7 @@ public class Host {
     return frames;
   }
 
-  public void start(JvampFunctions function, File file) {
+  public File start(JvampFunctions function, File file) throws PyinConversionException {
     File xmlFile = null;
     File smoothedFile = null;
     String key = null;
@@ -198,7 +198,7 @@ public class Host {
           || format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED
           || format.isBigEndian()) {
         log.error("Sorry, only 16-bit signed little-endian PCM files supported");
-        return;
+        throw new PyinConversionException();
       }
 
       float rate = format.getFrameRate();
@@ -220,13 +220,13 @@ public class Host {
         for (OutputDescriptor output : outputs) {
           log.error(" " + output.identifier);
         }
-        return;
+        throw new PyinConversionException();
       }
 
       boolean b = p.initialise(channels, blockSize, blockSize);
       if (!b) {
         log.error("Plugin initialise failed");
-        return;
+        throw new PyinConversionException();
       }
 
       float[][] buffers = new float[channels][blockSize];
@@ -254,7 +254,7 @@ public class Host {
             // last one -- so if the previous block was
             // incomplete, we have trouble
             log.error("Audio file read incomplete! Short buffer detected at " + block * blockSize);
-            return;
+            throw new PyinConversionException();
           }
 
           incomplete = (read < buffers[0].length);
@@ -286,5 +286,7 @@ public class Host {
     } catch (PluginLoader.LoadFailedException e) {
       log.error("Plugin load failed (unknown plugin?): key is " + key);
     }
+
+    return xmlFile;
   }
 }

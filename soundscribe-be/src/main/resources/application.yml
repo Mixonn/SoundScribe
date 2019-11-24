@@ -1,6 +1,6 @@
 #Path properties
 settings:
-  songDataStorage: ""
+  songDataStorage: "audioFilesStorage/"
   vampPath: "/usr/lib/"
 
 #Converters properties

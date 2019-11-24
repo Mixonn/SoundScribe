@@ -83,7 +83,7 @@ public class XmlToMusicXml {
     StreamResult streamResult = new StreamResult(musicXmlFile);
 
     transformer.transform(domSource, streamResult);
-    return null;
+    return musicXmlFile;
   }
 
   /**
