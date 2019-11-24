@@ -2,6 +2,7 @@ package com.soundscribe.controller;
 
 import com.soundscribe.converters.ConverterService;
 import com.soundscribe.jvamp.JvampService;
+import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,6 @@ public class ConversionController {
 
   @GetMapping("analyze-file")
   public ResponseEntity<String> analyzeFile(@RequestParam String filename) {
-    jvampService.loadLibraries();
     File file = new File(filename);
     File wavFile = converterService.convertMP3toWAV(file, false);
     jvampService.pyinNotes(wavFile, false);
@@ -30,7 +30,6 @@ public class ConversionController {
 
   @GetMapping("/xml-to-midi")
   public ResponseEntity<String> xmlToMidi(@RequestParam String filename) {
-    jvampService.loadLibraries();
     File fileXML = new File(filename);
     converterService.convertXmltoMidi(fileXML, false);
     return new ResponseEntity<>("Plik midi został utworzony", HttpStatus.OK);
@@ -38,7 +37,6 @@ public class ConversionController {
 
   @GetMapping("/xml-to-musicxml")
   public ResponseEntity<String> xmlToMusicXml(@RequestParam String filename) {
-    jvampService.loadLibraries();
     File fileXML = new File(filename);
     converterService.convertXmltoMusicXml(fileXML, false);
     return new ResponseEntity<>("Plik musicxml został utworzony", HttpStatus.OK);
@@ -46,9 +44,13 @@ public class ConversionController {
 
   @GetMapping("/musicxml-to-midi")
   public ResponseEntity<String> musicXmlToMidi(@RequestParam String filename) {
-    jvampService.loadLibraries();
     File musicXml = new File(filename);
     converterService.convertMusicXmltoMidi(musicXml, false);
     return new ResponseEntity<>("Plik musicXml został przekonwertowany do midi", HttpStatus.OK);
+  }
+
+  @PostConstruct
+  public void init() {
+    jvampService.loadLibraries();
   }
 }
