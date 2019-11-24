@@ -62,7 +62,7 @@ export default {
       const time = self.vrvToolkit.getTimeForElement(id);
       if (self.isPlaying) {
         self.player.pause();
-        self.player.skipToPercent((time / 1000) / self.player.getSongTime() * 100);
+        self.player.skipToPercent(self.calculatePercentageDuration(time));
         self.player.play();
       } else {
         self.playMidi(time);
@@ -131,20 +131,18 @@ export default {
       this.zoom = this.zoom * 2;
       this.refresh();
     },
-    playMidi (startTime = 0) {
+    playMidi () {
       if (this.isPlaying === false) {
         const base64midi = this.vrvToolkit.renderToMIDI();
         const song1 = 'data:audio/midi;base64,' + base64midi;
         const AudioContext = window.AudioContext || window.webkitAudioContext || false;
         const ac = new AudioContext();
-
         // Soundfont.instrument(ac, `https://gleitz.github.io/midi-js-soundfonts/MusyngKite/acoustic_guitar_nylon-mp3.js`).then((instrument) => {
         Soundfont.instrument(ac, 'acoustic_grand_piano', { soundfont: 'FluidR3_GM' }).then((instrument) => {
           this.player = new Player((event) => {
             this.midiUpdate(event, instrument, ac);
           });
           this.player.loadDataUri(song1);
-          this.player.skipToPercent((startTime / 1000) / this.player.getSongTime() * 100);
           this.player.play();
           this.isPlaying = true;
         });
@@ -191,6 +189,12 @@ export default {
       this.ids.forEach(function (noteid) {
         $('#' + noteid).attr('fill', '#000').attr('stroke', '#000');
       });
+    },
+    calculatePercentageDuration (startInSeconds) {
+      return (startInSeconds / 1000) / this.player.getSongTime() * 100
+    },
+    testFunc () {
+      console.log('elo');
     }
   }
 }
