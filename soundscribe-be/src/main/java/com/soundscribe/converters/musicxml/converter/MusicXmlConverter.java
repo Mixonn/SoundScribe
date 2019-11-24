@@ -38,7 +38,7 @@ public class MusicXmlConverter {
    * @param musicXml MusicXml file.
    * @return Midi file.
    */
-  public File convertMusicXmlToMidi(File musicXml) {
+  public File convertMusicXmlToMidi(File musicXml){
     return musicXmlToMidi.convertMusicXmlToMidi(musicXml);
   }
 }

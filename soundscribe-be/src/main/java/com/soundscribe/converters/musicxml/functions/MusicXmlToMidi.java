@@ -30,7 +30,7 @@ public class MusicXmlToMidi {
 
   private final MidiConverter midiConverter;
 
-  public File convertMusicXmlToMidi(File musicXml) {
+  public File convertMusicXmlToMidi(File musicXml){
     XmlPojo xmlPojo = musicXmlToXmlPojo(musicXml);
     return midiConverter.convertXmlToMidi(xmlPojo);
   }
@@ -40,7 +40,7 @@ public class MusicXmlToMidi {
    * @param musicXml MusicXml file
    * @return XmlPojo object
    */
-  private XmlPojo musicXmlToXmlPojo(File musicXml) {
+  private XmlPojo musicXmlToXmlPojo(File musicXml){
     MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils();
     XmlPojo xmlPojo = new XmlPojo();
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

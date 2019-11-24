@@ -21,7 +21,7 @@ public class ConverterService {
   private final MusicXmlConverter musicXmlConverter;
   private final SoundscribeConfiguration soundscribeConfiguration;
 
-  public File convertMP3toWAV(File fileMp3, boolean deleteAfter) {
+  public File convertMP3toWAV(File fileMp3, boolean deleteAfter){
     String fileName = fileMp3.getName().split("\\.")[0];
     File fileWav = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".wav");
     Converter converter = new Converter();
@@ -67,7 +67,7 @@ public class ConverterService {
     return musicXml;
   }
 
-  public File convertMusicXmltoMidi(File musicXml, boolean deleteAfter) {
+  public File convertMusicXmltoMidi(File musicXml, boolean deleteAfter){
     File midi = musicXmlConverter.convertMusicXmlToMidi(musicXml);
     if (deleteAfter) {
       try {

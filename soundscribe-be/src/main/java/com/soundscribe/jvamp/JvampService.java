@@ -32,8 +32,8 @@ public class JvampService {
    * @param deleteAfter Boolean, if set on true wav file will be deleted after the process is
    *     completed.
    */
-  public void pyinSmoothedPitchTrack(File fileWav, File fileMp3, boolean deleteAfter) {
-    host.start(SMOOTHED_PITCH_TRACK, fileWav, fileMp3);
+  public File pyinSmoothedPitchTrack(File fileWav, File fileMp3, boolean deleteAfter) throws PyinConversionException{
+    File resultFile = host.start(SMOOTHED_PITCH_TRACK, fileWav, fileMp3);
     if (deleteAfter) {
       try {
         Files.delete(fileWav.toPath());
@@ -41,6 +41,7 @@ public class JvampService {
         log.debug("The wav file cannot be deleted. This file no longer exists.");
       }
     }
+    return resultFile;
   }
 
   /**
@@ -50,8 +51,8 @@ public class JvampService {
    * @param deleteAfter Boolean, if set on true wav file will be deleted after the process is
    *     completed.
    */
-  public void pyinNotes(File fileWav, File fileMp3, boolean deleteAfter) {
-    host.start(NOTES, fileWav, fileMp3);
+  public File pyinNotes(File fileWav, File fileMp3, boolean deleteAfter) throws PyinConversionException{
+    File xmlFile = host.start(NOTES, fileWav, fileMp3);
     if (deleteAfter) {
       try {
         Files.delete(fileWav.toPath());
@@ -59,5 +60,6 @@ public class JvampService {
         log.debug("The wav file cannot be deleted. This file no longer exists.");
       }
     }
+    return xmlFile;
   }
 }

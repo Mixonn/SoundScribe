@@ -1,6 +1,6 @@
 #Path properties
 settings:
-  songDataStorage: ""
+  songDataStorage: "audioFilesStorage/"
   vampPath: "/usr/lib/"
 
 #Converters properties
@@ -8,3 +8,9 @@ settings:
   defaultBpm: 120
   defaultBeats: 4
   defaultBeatType: 4
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
