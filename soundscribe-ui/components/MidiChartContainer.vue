@@ -1,10 +1,21 @@
 <template>
-  <div class="container">
-    <midi-chart
-      v-if="loaded"
-      :chartdata="chartdata"
-      :options="options"
-      :styles="chartStyles"
+  <div>
+    <div ref="containerId" class="chartContainer">
+      <midi-chart
+        v-if="loaded"
+        :chartdata="chartdata"
+        :options="options"
+        :style="chartStyles"
+      />
+    </div>
+    <button class="btn" @click="zoomIn">
+      +
+    </button>
+    <button @click="zoomOut">
+      -
+    </button>
+    <av-waveform
+      audio-src='https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3'
     />
   </div>
 </template>
@@ -24,23 +35,39 @@ export default {
       },
       options: {
         maintainAspectRatio: false,
-        showLines: true
+        showLines: true,
+        responsive: true,
+        legend: {
+          display: false
+        },
+        scales: {
+          yAxes: [{
+            ticks: {
+              max: 600,
+              min: 200,
+              stepSize: 20
+            }
+          }]
+        }
       },
       midiFileContent: '',
       baseFrequencyFileContent: '',
       chartPosition: {
         startTime: 0,
-        endTime: 10
+        endTime: 200
       },
       fileNameFormatted: '',
-      midiDataFormatted: []
+      midiDataFormatted: [],
+      maxTime: 0,
+      secondsOnChart: 10
     }
   },
   computed: {
     chartStyles () {
       return {
         height: '10%',
-        width: '100%'
+        width: ((this.maxTime / this.secondsOnChart) > 1 ? (this.maxTime / this.secondsOnChart) * 100 : 100) + '%',
+        position: 'relative'
       }
     }
   },
@@ -78,9 +105,7 @@ export default {
       const midiChartData = this.prepareMidiChartData()
       const baseFrequencyChartData = this.prepareBaseFrequencyChartData()
       const chartData = this.prepareCombinedChartData(midiChartData, baseFrequencyChartData)
-      console.log(baseFrequencyChartData)
       this.chartdata = {
-        labels: ['midi', 'freq'],
         datasets: chartData
       }
       this.loaded = true
@@ -100,16 +125,20 @@ export default {
         if (midiWrapper.startTime > this.chartPosition.endTime || midiWrapper.endTime < this.chartPosition.startTime) {
         } else {
           this.midiDataFormatted.push(midiWrapper)
-          chartData.push({
+          const midiEvent = []
+          midiEvent.push({
             x: midiWrapper.startTime,
             y: midiWrapper.value
           })
-          chartData.push({
+          midiEvent.push({
             x: midiWrapper.endTime,
             y: midiWrapper.value
           })
+          chartData.push(midiEvent)
         }
       }
+      const maxMidiTime = parseInt(chartData[chartData.length - 1][1].x)
+      this.maxTime = maxMidiTime > this.maxTime ? maxMidiTime : this.maxTime
       return chartData
     },
     prepareBaseFrequencyChartData () {
@@ -126,27 +155,56 @@ export default {
           })
         }
       }
+      const maxFrequencyTime = parseInt(chartData[chartData.length - 1].x)
+      this.maxTime = maxFrequencyTime > this.maxTime ? maxFrequencyTime : this.maxTime
       return chartData
     },
     prepareCombinedChartData (midiData, baseFrequencyData) {
       const chartData = []
-      chartData.push({
-        data: midiData,
-        borderColor: '#ac2b2b',
-        fill: false,
-        label: 'midi' })
+      for (let i = 0; i < midiData.length; i++) {
+        chartData.push({
+          data: midiData[i],
+          borderColor: '#ac2b2b',
+          fill: false,
+          showLine: true })
+      }
       chartData.push({
         data: baseFrequencyData,
         radius: 1,
         borderColor: '#3e95cd',
         fill: false,
-        label: 'freq',
-        showLine: true })
+        showLine: true
+      })
       return chartData
+    },
+    zoomIn () {
+      if (this.secondsOnChart > 2) {
+        this.secondsOnChart -= 1
+      }
+    },
+    zoomOut () {
+      if (this.secondsOnChart < this.maxTime) {
+        this.secondsOnChart += 1
+      }
+    },
+    async scrollRight () {
+      const scroll = this.$refs.containerId
+      const pixelsPerSecond = scroll.scrollWidth / this.maxTime
+      for (let i = 0; i < this.maxTime - this.secondsOnChart; i++) {
+        scroll.scrollLeft = i * pixelsPerSecond
+        await this.sleep(1000)
+      }
+    },
+    sleep (ms) {
+      return new Promise(resolve => setTimeout(resolve, ms))
     }
   }
 }
 </script>
 
 <style>
+  .chartContainer {
+    width: 100%;
+    overflow-x: auto;
+  }
 </style>
