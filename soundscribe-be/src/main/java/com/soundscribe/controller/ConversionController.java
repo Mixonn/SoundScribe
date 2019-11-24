@@ -2,16 +2,16 @@ package com.soundscribe.controller;
 
 import com.soundscribe.converters.ConverterService;
 import com.soundscribe.jvamp.JvampService;
-import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.io.File;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.PostConstruct;
+import java.io.File;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,9 +22,9 @@ public class ConversionController {
 
   @GetMapping("analyze-file")
   public ResponseEntity<String> analyzeFile(@RequestParam String filename) {
-    File file = new File(filename);
-    File wavFile = converterService.convertMP3toWAV(file, false);
-    jvampService.pyinNotes(wavFile, false);
+    File fileMp3 = new File(filename);
+    File wavFile = converterService.convertMP3toWAV(fileMp3, false);
+    jvampService.pyinNotes(wavFile, fileMp3, false);
     return new ResponseEntity<>("Plik z danymi wyściowymi został utworzony", HttpStatus.OK);
   }
 

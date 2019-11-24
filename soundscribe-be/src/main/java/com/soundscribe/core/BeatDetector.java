@@ -5,21 +5,17 @@ import TrackAnalyzer.KeyDetectionResult;
 import TrackAnalyzer.KeyFinder;
 import at.ofai.music.beatroot.BeatRoot;
 import it.sauronsoftware.jave.*;
+import org.springframework.stereotype.Component;
+
 import java.io.File;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /* This class is a slight modification from tfriedel/trackanalyzer project from GitHub.
  * Original source: https://github.com/tfriedel/trackanalyzer/blob/master/TrackAnalyzer/TrackAnalyzer.java
  */
+@Component
 public class BeatDetector {
-
-  private String filename;
-
-  BeatDetector(String filename) throws Exception {
-    this.filename = filename;
-  }
 
   /**
    * Decodes an audio file (mp3, flac, wav, etc. everything which can be decoded by ffmpeg) to a
@@ -67,7 +63,7 @@ public class BeatDetector {
    * @return
    * @filename, optionally writes tags
    */
-  Optional<Integer> analyzeTrack() {
+  public Integer analyzeTrack(File input) {
     KeyFinder k = new KeyFinder();
     String wavfilename = "";
     AudioData data = new AudioData();
@@ -82,19 +78,19 @@ public class BeatDetector {
         // Delete temp file when program exits.
         temp.deleteOnExit();
         temp2.deleteOnExit();
-        if (filename.toLowerCase().endsWith((".wav"))) {
-          decodeAudioFile(new File(filename), temp2);
+        if (input.getAbsolutePath().toLowerCase().endsWith((".wav"))) {
+          decodeAudioFile(input, temp2);
         } else {
-          decodeAudioFile(new File(filename), temp, 44100);
+          decodeAudioFile(input, temp, 44100);
           decodeAudioFile(temp, temp2);
         }
       } catch (Exception ex) {
         Logger.getLogger(BeatDetector.class.getName())
-            .log(Level.WARNING, "error while decoding" + filename + ".");
+                .log(Level.WARNING, "error while decoding" + input.getName() + ".");
         if (temp.length() == 0) {
           temp.delete();
           temp2.delete();
-          return Optional.empty();
+          return null;
         }
       }
     }
@@ -106,7 +102,7 @@ public class BeatDetector {
     } catch (Exception ex) {
       Logger.getLogger(BeatDetector.class.getName()).log(Level.SEVERE, null, ex);
       deleteTempFiles(temp, temp2);
-      return Optional.empty();
+      return null;
     }
 
     // get bpm
@@ -115,8 +111,10 @@ public class BeatDetector {
       try {
         // bpm couldn't be detected. try again with a higher quality wav.
         Logger.getLogger(BeatDetector.class.getName())
-            .log(Level.WARNING, "bpm couldn't be detected for " + filename + ". Trying again.");
-        decodeAudioFile(new File(filename), temp, 44100);
+                .log(
+                        Level.WARNING,
+                        "bpm couldn't be detected for " + input.getName() + ". Trying again.");
+        decodeAudioFile(input, temp, 44100);
         bpm = BeatRoot.getBPM(wavfilename);
       } catch (Exception e) {
         e.printStackTrace();
@@ -125,15 +123,19 @@ public class BeatDetector {
 
     if (Double.isNaN(bpm)) {
       Logger.getLogger(BeatDetector.class.getName())
-          .log(Level.WARNING, "bpm still couldn't be detected for " + filename + ".");
+              .log(Level.WARNING, "bpm still couldn't be detected for " + input.getName() + ".");
     } else {
       Logger.getLogger(BeatDetector.class.getName())
-          .log(Level.INFO, "bpm now detected correctly for " + filename);
+              .log(Level.INFO, "bpm now detected correctly for " + input.getName());
     }
 
     deleteTempFiles(temp, temp2);
 
-    return Optional.ofNullable(!Double.isNaN(bpm) ? bpm : null).map(Double::intValue);
+    if (!Double.isNaN(bpm)) {
+      return (int) bpm;
+    } else {
+      return null;
+    }
   }
 
   private void deleteTempFiles(File temp, File temp2) {
