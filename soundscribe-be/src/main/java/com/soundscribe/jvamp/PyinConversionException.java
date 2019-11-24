@@ -1,5 +1,12 @@
 package com.soundscribe.jvamp;
 
-public class PyinConversionException extends Exception {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+@AllArgsConstructor
+public class PyinConversionException extends Exception {
+  String message;
 }

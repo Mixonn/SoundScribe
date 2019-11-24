@@ -198,7 +198,7 @@ public class Host {
           || format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED
           || format.isBigEndian()) {
         log.error("Sorry, only 16-bit signed little-endian PCM files supported");
-        throw new PyinConversionException();
+        throw new PyinConversionException("Sorry, only 16-bit signed little-endian PCM files supported");
       }
 
       float rate = format.getFrameRate();
@@ -220,13 +220,13 @@ public class Host {
         for (OutputDescriptor output : outputs) {
           log.error(" " + output.identifier);
         }
-        throw new PyinConversionException();
+        throw new PyinConversionException("Invalid number of keys");
       }
 
       boolean b = p.initialise(channels, blockSize, blockSize);
       if (!b) {
         log.error("Plugin initialise failed");
-        throw new PyinConversionException();
+        throw new PyinConversionException("Plugin initialise failed");
       }
 
       float[][] buffers = new float[channels][blockSize];
@@ -254,7 +254,7 @@ public class Host {
             // last one -- so if the previous block was
             // incomplete, we have trouble
             log.error("Audio file read incomplete! Short buffer detected at " + block * blockSize);
-            throw new PyinConversionException();
+            throw new PyinConversionException("Audio file read incomplete! Short buffer detected at " + block * blockSize);
           }
 
           incomplete = (read < buffers[0].length);
