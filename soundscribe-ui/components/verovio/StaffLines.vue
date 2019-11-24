@@ -141,16 +141,8 @@ export default {
     },
     playMidi () {
       if (this.isPlaying === false) {
-        const base64midi = this.vrvToolkit.renderToMIDI();
-        const decodec = atob(base64midi);
+        const base64midi = this.vrvToolkit.renderToMidi();
         const song1 = 'data:audio/midi;base64,' + base64midi;
-        // console.log(base64midi);
-        // console.log(decodec);
-        if (decodec.startsWith('MThd')) {
-          console.log('EEEE');
-        }
-        const x = str2ab(decodec);
-
         const AudioContext = window.AudioContext || window.webkitAudioContext || false;
         const ac = new AudioContext();
 
@@ -164,24 +156,40 @@ export default {
                 gain: event.velocity / 100
               });
             }
+            const currentTime = this.player.getSongTime() - (this.player.totalTicks - this.player.getCurrentTick()) / this.player.division / this.player.tempo * 60;
+            const elementsattime = this.vrvToolkit.getElementsAtTime(currentTime * 1000);
+            // console.clear();
+            // console.log(`Song time: ${this.player.getSongTime()}`);
+            // console.log(`Song my time2: ${currentTime}`);
+            // console.log(`Song time remaining: ${this.player.getSongTimeRemaining()}`);
+            // console.log(elementsattime);
+            if (elementsattime.page > 0) {
+              if (elementsattime.page !== this.page) {
+                this.page = elementsattime.page;
+                this.loadPage();
+              }
+              if ((elementsattime.notes.length > 0) && (this.ids !== elementsattime.notes)) {
+                this.ids.forEach(function (noteid) {
+                  if ($.inArray(noteid, elementsattime.notes) === -1) {
+                    $(`#${noteid}`).attr('fill', '#000').attr('stroke', '#000');
+                  }
+                });
+                this.ids = elementsattime.notes;
+                this.ids.forEach(function (noteid) {
+                  if ($.inArray(noteid, elementsattime.notes) !== -1) {
+                    $(`#${noteid}`).attr('fill', '#c00').attr('stroke', '#c00');
+                  }
+                });
+                // elementsattime.notes.forEach(function (noteid) {
+                //   console.log(`Kolorujemy: #${noteid}`);
+                // $(`#${noteid}`).attr('fill', '#c00').attr('stroke', '#c00');
+                // });
+              }
+            }
           });
-
-          axios.get(`/songs/ff.mid`, {
-            responseType: 'arraybuffer'
-          }).then(({ data: song }) => {
-            console.log(ab2str(song));
-            console.log(ab2str(x));
-            console.log(song);
-            console.log(x);
-            console.log(song.constructor.name);
-            console.log(x.constructor.name);
-            this.player.loadArrayBuffer(song);
-            // we have access to each track, and each track has events.
-            // console.log(player.tracks);
-            console.log('start playing');
-            this.player.play();
-            this.isPlaying = true;
-          });
+          this.player.loadDataUri(song1);
+          this.player.play();
+          this.isPlaying = true;
         });
         // this.player.loadArrayBuffer(str2ab(base64midi));
       }
@@ -211,9 +219,9 @@ export default {
       }
     },
     midiStop () {
-      this.ids.forEach(function (noteid) {
-        $('#' + noteid).attr('fill', '#000').attr('stroke', '#000');
-      });
+      // this.ids.forEach(function (noteid) {
+      //   $('#' + noteid).attr('fill', '#000').attr('stroke', '#000');
+      // });
       this.isPlaying = false;
     }
   }
