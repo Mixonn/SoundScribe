@@ -2,8 +2,6 @@ package com.soundscribe.converters;
 
 import com.soundscribe.converters.musicxml.converter.MusicXmlConverter;
 import com.soundscribe.utilities.SoundscribeConfiguration;
-import java.io.IOException;
-import java.nio.file.Files;
 import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 @Service
 @Slf4j
@@ -77,5 +77,21 @@ public class ConverterService {
       }
     }
     return midi;
+  }
+
+  public File convertMusicXmlToMei(String filename) {
+    return new CrossPlatformConverter(filename).convertMusicXmlToMei();
+  }
+
+  public File convertMeiToMusicXml(String filename) {
+    return new CrossPlatformConverter(filename).convertMeiToMusicXml();
+  }
+
+  public File convertMusicXmlToAbc(String filename) {
+    return new CrossPlatformConverter(filename).convertMusicXmlToAbc();
+  }
+
+  public File convertAbcToMusicXml(String filename) {
+    return new CrossPlatformConverter(filename).convertAbcToMusicXml();
   }
 }

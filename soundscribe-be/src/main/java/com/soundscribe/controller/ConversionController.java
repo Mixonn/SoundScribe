@@ -2,16 +2,16 @@ package com.soundscribe.controller;
 
 import com.soundscribe.converters.ConverterService;
 import com.soundscribe.jvamp.JvampService;
-import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.io.File;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.PostConstruct;
+import java.io.File;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,5 +52,45 @@ public class ConversionController {
   @PostConstruct
   public void init() {
     jvampService.loadLibraries();
+  }
+
+  @GetMapping("/musicxml-to-mei")
+  public ResponseEntity musicXmlToMei(@RequestParam String filename) {
+    File file = converterService.convertMusicXmlToMei(filename);
+    if (file != null) {
+      return new ResponseEntity("Plik MusicXML został przekonwertowany do MEI", HttpStatus.OK);
+    } else {
+      return new ResponseEntity("Konwersja nieudana", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @GetMapping("/mei-to-musicxml")
+  public ResponseEntity meiToMusicXml(@RequestParam String filename) {
+    File file = converterService.convertMeiToMusicXml(filename);
+    if (file != null) {
+      return new ResponseEntity("Plik MEI został przekonwertowany do MusicXML", HttpStatus.OK);
+    } else {
+      return new ResponseEntity("Konwersja nieudana", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @GetMapping("/musicxml-to-abc")
+  public ResponseEntity musicXmlToAbc(@RequestParam String filename) {
+    File file = converterService.convertMusicXmlToAbc(filename);
+    if (file != null) {
+      return new ResponseEntity("Plik MusicXML został przekonwertowany do ABC", HttpStatus.OK);
+    } else {
+      return new ResponseEntity("Konwersja nieudana", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @GetMapping("/abc-to-musicxml")
+  public ResponseEntity abcToMusicXml(@RequestParam String filename) {
+    File file = converterService.convertAbcToMusicXml(filename);
+    if (file != null) {
+      return new ResponseEntity("Plik ABC został przekonwertowany do MusicXML", HttpStatus.OK);
+    } else {
+      return new ResponseEntity("Konwersja nieudana", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
