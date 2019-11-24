@@ -28,23 +28,9 @@
 <script>
 import { Player } from 'midi-player-js';
 import Soundfont from 'soundfont-player';
-import axios from 'axios';
 const fs = require('fs');
 const $ = require('jquery');
 const verovio = require('verovio').init(512);
-
-function str2ab (str) {
-  const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
-  const bufView = new Uint8Array(buf);
-  for (let i = 0, strLen = str.length; i < strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
-  }
-  return buf;
-}
-
-function ab2str (buf) {
-  return String.fromCharCode.apply(null, new Uint8Array(buf));
-}
 
 export default {
   name: 'StaffLines',
@@ -70,7 +56,18 @@ export default {
     const data = await this.$axios.get(this.$axios.defaults.baseURL + file).then(res => res.data);
     console.log(this.$axios.defaults.baseURL + file);
     this.loadData(data);
-
+    const self = this;
+    $('.note').on('click', function () {
+      const id = $(this).attr('id');
+      const time = self.vrvToolkit.getTimeForElement(id);
+      if (self.isPlaying) {
+        self.player.pause();
+        self.player.skipToPercent((time / 1000) / self.player.getSongTime() * 100);
+        self.player.play();
+      } else {
+        self.playMidi(time);
+      }
+    });
     this.player = new Player((this.midiUpdate));
     this.player.on('endOfFile', this.midiStop)
   },
@@ -93,11 +90,6 @@ export default {
     loadPage () {
       const svg = this.vrvToolkit.renderToSVG(this.page, {});
       $('#svg_output').html(svg);
-      $('.note').click(function () {
-        const id = $(this).attr('id');
-        const time = this.vrvToolkit.getTimeForElement(id);
-        $('#midi-player').midiPlayer.seek(time);
-      });
     },
     loadData (data) {
       this.setOptions();
@@ -139,65 +131,41 @@ export default {
       this.zoom = this.zoom * 2;
       this.refresh();
     },
-    playMidi () {
+    playMidi (startTime = 0) {
       if (this.isPlaying === false) {
-        const base64midi = this.vrvToolkit.renderToMidi();
+        const base64midi = this.vrvToolkit.renderToMIDI();
         const song1 = 'data:audio/midi;base64,' + base64midi;
         const AudioContext = window.AudioContext || window.webkitAudioContext || false;
         const ac = new AudioContext();
 
-        Soundfont.instrument(ac, `https://raw.githubusercontent.com/gleitz/midi-js-soundfonts/gh-pages/MusyngKite/acoustic_guitar_nylon-mp3.js`).then((instrument) => {
+        // Soundfont.instrument(ac, `https://gleitz.github.io/midi-js-soundfonts/MusyngKite/acoustic_guitar_nylon-mp3.js`).then((instrument) => {
+        Soundfont.instrument(ac, 'acoustic_grand_piano', { soundfont: 'FluidR3_GM' }).then((instrument) => {
           this.player = new Player((event) => {
-            if (!this.isPlaying) {
-              this.player.stop();
-            }
-            if (event.name === 'Note on' && event.velocity > 0) {
-              instrument.play(event.noteName, ac.currentTime, {
-                gain: event.velocity / 100
-              });
-            }
-            const currentTime = this.player.getSongTime() - (this.player.totalTicks - this.player.getCurrentTick()) / this.player.division / this.player.tempo * 60;
-            const elementsattime = this.vrvToolkit.getElementsAtTime(currentTime * 1000);
-            // console.clear();
-            // console.log(`Song time: ${this.player.getSongTime()}`);
-            // console.log(`Song my time2: ${currentTime}`);
-            // console.log(`Song time remaining: ${this.player.getSongTimeRemaining()}`);
-            // console.log(elementsattime);
-            if (elementsattime.page > 0) {
-              if (elementsattime.page !== this.page) {
-                this.page = elementsattime.page;
-                this.loadPage();
-              }
-              if ((elementsattime.notes.length > 0) && (this.ids !== elementsattime.notes)) {
-                this.ids.forEach(function (noteid) {
-                  if ($.inArray(noteid, elementsattime.notes) === -1) {
-                    $(`#${noteid}`).attr('fill', '#000').attr('stroke', '#000');
-                  }
-                });
-                this.ids = elementsattime.notes;
-                this.ids.forEach(function (noteid) {
-                  if ($.inArray(noteid, elementsattime.notes) !== -1) {
-                    $(`#${noteid}`).attr('fill', '#c00').attr('stroke', '#c00');
-                  }
-                });
-                // elementsattime.notes.forEach(function (noteid) {
-                //   console.log(`Kolorujemy: #${noteid}`);
-                // $(`#${noteid}`).attr('fill', '#c00').attr('stroke', '#c00');
-                // });
-              }
-            }
+            this.midiUpdate(event, instrument, ac);
           });
           this.player.loadDataUri(song1);
+          this.player.skipToPercent((startTime / 1000) / this.player.getSongTime() * 100);
           this.player.play();
           this.isPlaying = true;
         });
-        // this.player.loadArrayBuffer(str2ab(base64midi));
       }
     },
-    midiUpdate (time) {
-      // time needs to - 400 for adjustment
-      const vrvTime = Math.max(0, time - 400);
-      const elementsattime = this.vrvToolkit.getElementsAtTime(vrvTime);
+    midiUpdate (event, instrument, ac) {
+      if (!this.isPlaying) {
+        this.player.stop();
+      }
+      if (event.name === 'Note on' && event.velocity > 0) {
+        instrument.play(event.noteName, ac.currentTime, {
+          gain: event.velocity / 100
+        });
+      }
+      const currentTime = this.player.getSongTime() - (this.player.totalTicks - this.player.getCurrentTick()) / this.player.division / this.player.tempo * 60;
+      const elementsattime = this.vrvToolkit.getElementsAtTime(currentTime * 1000);
+      // console.clear();
+      // console.log(`Song time: ${this.player.getSongTime()}`);
+      // console.log(`Song my time2: ${currentTime}`);
+      // console.log(`Song time remaining: ${this.player.getSongTimeRemaining()}`);
+      // console.log(elementsattime);
       if (elementsattime.page > 0) {
         if (elementsattime.page !== this.page) {
           this.page = elementsattime.page;
@@ -206,23 +174,23 @@ export default {
         if ((elementsattime.notes.length > 0) && (this.ids !== elementsattime.notes)) {
           this.ids.forEach(function (noteid) {
             if ($.inArray(noteid, elementsattime.notes) === -1) {
-              $('#' + noteid).attr('fill', '#000').attr('stroke', '#000');
+              $(`#${noteid}`).attr('fill', '#000').attr('stroke', '#000');
             }
           });
           this.ids = elementsattime.notes;
           this.ids.forEach(function (noteid) {
             if ($.inArray(noteid, elementsattime.notes) !== -1) {
-              $('#' + noteid).attr('fill', '#c00').attr('stroke', '#c00');
+              $(`#${noteid}`).attr('fill', '#c00').attr('stroke', '#c00');
             }
           });
         }
       }
     },
     midiStop () {
-      // this.ids.forEach(function (noteid) {
-      //   $('#' + noteid).attr('fill', '#000').attr('stroke', '#000');
-      // });
       this.isPlaying = false;
+      this.ids.forEach(function (noteid) {
+        $('#' + noteid).attr('fill', '#000').attr('stroke', '#000');
+      });
     }
   }
 }
