@@ -12,12 +12,13 @@ dependencies {
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test'
     testCompile group: 'org.spockframework', name: 'spock-core', version: '1.3-groovy-2.4'
     testCompile group: 'org.spockframework', name: 'spock-spring', version: '1.3-groovy-2.4'
-    implementation fileTree(dir: 'libs/jvamp-1.3', include: ['*.jar'])
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.springframework.boot:spring-boot-starter-thymeleaf")
     testCompile("org.springframework.boot:spring-boot-starter-test")
+    implementation fileTree(dir: 'libs/jvamp-1.3', include: ['*.jar'])
+    implementation fileTree(dir: 'libs/trackanalyzer', include: ['*.jar', 'lib/*.jar'])
 }
 
 sourceSets {

@@ -19,9 +19,9 @@ public class OnlyForShow {
 
   public void analyzeFile(String filename) {
     try {
-      File file = new File(soundscribeConfiguration.getSongDataStorage() + filename);
-      File wavFile = converterService.convertMP3toWAV(file, false);
-      File xmlFile = jvampService.pyinNotes(wavFile, false);
+      File mp3File = new File(soundscribeConfiguration.getSongDataStorage() + filename);
+      File wavFile = converterService.convertMP3toWAV(mp3File, false);
+      File xmlFile = jvampService.pyinNotes(wavFile,mp3File, false);
       File musicxmlFile = converterService.convertXmltoMusicXml(xmlFile, false);
       converterService.convertMusicXmltoMidi(musicxmlFile, false);
     } catch (Exception e) {

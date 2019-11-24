@@ -29,9 +29,9 @@ public class ConversionController {
   @GetMapping("analyze-file")
   public ResponseEntity<String> analyzeFile(@RequestParam String filename) {
     try {
-      File file = new File(soundscribeConfiguration.getSongDataStorage() + filename);
-      File wavFile = converterService.convertMP3toWAV(file, false);
-      File xmlFile = jvampService.pyinNotes(wavFile, false);
+      File fileMp3 = new File(soundscribeConfiguration.getSongDataStorage() + filename);
+      File wavFile = converterService.convertMP3toWAV(fileMp3, false);
+      File xmlFile = jvampService.pyinNotes(wavFile,fileMp3, false);
       File musicxmlFile = converterService.convertXmltoMusicXml(xmlFile, false);
       converterService.convertMusicXmltoMidi(musicxmlFile, false);
     } catch (Exception e) {
@@ -40,6 +40,27 @@ public class ConversionController {
           HttpStatus.EXPECTATION_FAILED);
     }
     return new ResponseEntity<>("Plik z danymi wyściowymi został utworzony", HttpStatus.OK);
+  }
+
+  @GetMapping("/xml-to-midi")
+  public ResponseEntity<String> xmlToMidi(@RequestParam String filename) {
+    File fileXML = new File(soundscribeConfiguration.getSongDataStorage() + filename);
+    converterService.convertXmltoMidi(fileXML, false);
+    return new ResponseEntity<>("Plik midi został utworzony", HttpStatus.OK);
+  }
+
+  @GetMapping("/xml-to-musicxml")
+  public ResponseEntity<String> xmlToMusicXml(@RequestParam String filename) {
+    File fileXML = new File(soundscribeConfiguration.getSongDataStorage() + filename);
+    converterService.convertXmltoMusicXml(fileXML, false);
+    return new ResponseEntity<>("Plik musicxml został utworzony", HttpStatus.OK);
+  }
+
+  @GetMapping("/musicxml-to-midi")
+  public ResponseEntity<String> musicXmlToMidi(@RequestParam String filename) {
+    File musicXml = new File(soundscribeConfiguration.getSongDataStorage() + filename);
+    converterService.convertMusicXmltoMidi(musicXml, false);
+    return new ResponseEntity<>("Plik musicXml został przekonwertowany do midi", HttpStatus.OK);
   }
 
   @PostConstruct
