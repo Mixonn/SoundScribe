@@ -23,6 +23,7 @@
 <script>
 import 'abcjs/abcjs-midi.css';
 import abcjs from 'abcjs/midi';
+import axios from '../../.nuxt/axios';
 const fs = require('fs');
 const $ = require('jquery');
 
@@ -37,7 +38,7 @@ export default {
       abcjsEditor: null,
       progress: { },
       currentAbcFragment: '(none)',
-      tune: 'X:1\nT: Cooley\'s\nM: 4/4\nL: 1/8\nR: reel\nK: Emin\nD2|:"Em"EB{c}BA B2 EB|~B2 AB dBAG|"D"FDAD BDAD|FDAD dAFD|\n"Em"EBBA B2 EB|B2 AB defg|"D"afe^c dBAF|1"Em"DEFD E2 D2:|2"Em"DEFD E2 gf||\n|:"Em"eB B2 efge|eB B2 gedB|"D"A2 FA DAFA|A2 FA defg|\n"Em"eB B2 eBgB|eB B2 defg|"D"afe^c dBAF|1"Em"DEFD E2 gf:|2"Em"DEFD E4|]\n'
+      tune: 'X:1\nT: Cooley\'s\nM: 4/4\nL: 1/8\nR: reel\nK: Emin\nD2DD||'
     }
   },
   mounted () {
@@ -52,6 +53,7 @@ export default {
         }
       }
     });
+    this.loadData();
   },
   methods: {
     listener (midiControl, progress) {
@@ -71,7 +73,16 @@ export default {
       // This provides the actual visual note being played. It can be used to create the "bouncing ball" effect.
       this.colorRange(lastRange, '#000000'); // Set the old note back to black.
       this.colorRange(currentRange, '#3D9AFC'); // Set the currently sounding note to blue.
-      if (currentRange) { this.currentAbcFragment = this.tune.substring(currentRange.startChar, currentRange.endChar); } else { this.currentAbcFragment = '(none)'; }
+      if (currentRange) {
+        this.currentAbcFragment = this.tune.substring(currentRange.startChar, currentRange.endChar);
+      } else {
+        this.currentAbcFragment = '(none)';
+      }
+    },
+    async loadData () {
+      const data = await this.$axios.$get('/songs/MRegWOs_T0006A_01.abc');
+      console.log(data);
+      this.tune = data;
     }
   }
 }
