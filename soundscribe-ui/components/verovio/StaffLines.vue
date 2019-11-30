@@ -16,6 +16,12 @@
       <div>New Beat? {{ progress.newBeat }}</div>
     </div>
     <div id="midi" />
+    <button @click="nodeUp">
+      Up
+    </button>
+    <button @click="nodeDown">
+      Down
+    </button>
     <div id="paper" />
   </div>
 </template>
@@ -23,7 +29,7 @@
 <script>
 import 'abcjs/abcjs-midi.css';
 import abcjs from 'abcjs/midi';
-import axios from '../../.nuxt/axios';
+import { moveNode, replaceSubstring } from './NodeModifier';
 const fs = require('fs');
 const $ = require('jquery');
 
@@ -38,10 +44,15 @@ export default {
       abcjsEditor: null,
       progress: { },
       currentAbcFragment: '(none)',
-      tune: 'X:1\nT: Cooley\'s\nM: 4/4\nL: 1/8\nR: reel\nK: Emin\nD2DD||'
+      tune: 'X:1\nT: Cooley\'s\nM: 4/4\nL: 1/8\nR: reel\nK: Emin\nD2DD||',
+      currentNode: {
+        start: -1,
+        end: -1
+      }
     }
   },
-  mounted () {
+  async mounted () {
+    await this.loadData();
     this.abcjsEditor = new abcjs.Editor('abc-source', {
       canvas_id: 'paper',
       generate_midi: true,
@@ -50,10 +61,10 @@ export default {
         midiListener: this.listener,
         animate: {
           listener: this.animate
-        }
+        },
+        clickListener: this.onNodeClick
       }
     });
-    this.loadData();
   },
   methods: {
     listener (midiControl, progress) {
@@ -83,6 +94,28 @@ export default {
       const data = await this.$axios.$get('/songs/MRegWOs_T0006A_01.abc');
       console.log(data);
       this.tune = data;
+    },
+    onNodeClick (abcElem, tuneNumber, classes) {
+      console.log(abcElem);
+      this.currentNode.start = abcElem.startChar;
+      this.currentNode.end = abcElem.endChar;
+    },
+    nodeUp () {
+      const nodeStr = this.tune.substr(this.currentNode.start, (this.currentNode.end - this.currentNode.start));
+      const modifiedNode = moveNode('up', nodeStr);
+      this.tune = replaceSubstring(this.tune, this.currentNode.start, this.currentNode.end, 'C4');
+      this.rerenderAbc();
+    },
+    nodeDown () {
+      const nodeStr = this.tune.substr(this.currentNode.start, (this.currentNode.end - this.currentNode.start));
+      const modifiedNode = moveNode('down', nodeStr);
+      this.tune = replaceSubstring(this.tune, this.currentNode.start, this.currentNode.end, 'C4');
+      this.rerenderAbc();
+    },
+    rerenderAbc () {
+      // abcjs.renderAbc('paper', this.tune, { add_classes: true, clickListener: this.listener });
+      this.abcjsEditor.pause(false);
+      this.abcjsEditor.fireChanged();
     }
   }
 }
