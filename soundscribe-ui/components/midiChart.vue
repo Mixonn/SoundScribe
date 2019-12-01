@@ -5,7 +5,7 @@ export default {
   extends: Scatter,
   mixins: mixins.reactiveProp,
   props: {
-    chartdata: {
+    chartData: {
       type: Object,
       default: null
     },
@@ -14,10 +14,13 @@ export default {
       default: null
     }
   },
-  mounted () {
-    this.renderChart(this.chartdata, this.options)
+  watch: {
+    chartData () {
+      this.renderChart(this.chartData, this.options)
+    }
   },
-  methods: {
+  mounted () {
+    this.renderChart(this.chartData, this.options)
   }
 }
 </script>
