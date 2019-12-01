@@ -1,16 +1,11 @@
 package com.soundscribe.converters.musicxml.functions;
 
-import com.soundscribe.converters.MidiConverter;
 import com.soundscribe.converters.PyinNote;
-import com.soundscribe.converters.XmlPojo;
+import com.soundscribe.converters.XmlConverter;
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import com.soundscribe.converters.musicxml.utilities.MusicXmlNoteUtils;
+import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.utilities.MidiNotes;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -21,6 +16,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @Slf4j
@@ -28,19 +29,20 @@ import org.w3c.dom.NodeList;
 @Component
 public class MusicXmlToMidi {
 
-  private final MidiConverter midiConverter;
+  private final XmlConverter xmlConverter;
 
-  public File convertMusicXmlToMidi(File musicXml){
+  public File convertMusicXmlToMidi(File musicXml) {
     XmlPojo xmlPojo = musicXmlToXmlPojo(musicXml);
-    return midiConverter.convertXmlToMidi(xmlPojo);
+    return xmlConverter.convertXmlToMidi(xmlPojo);
   }
 
   /**
    * Parse musicXml data to XmlPojo object
+   *
    * @param musicXml MusicXml file
    * @return XmlPojo object
    */
-  private XmlPojo musicXmlToXmlPojo(File musicXml){
+  private XmlPojo musicXmlToXmlPojo(File musicXml) {
     MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils();
     XmlPojo xmlPojo = new XmlPojo();
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -76,8 +78,8 @@ public class MusicXmlToMidi {
       if (node.getNodeType() == Node.ELEMENT_NODE) {
         Element eElement = (Element) node;
 
-        int duration = Integer
-            .parseInt(eElement.getElementsByTagName("duration").item(0).getTextContent());
+        int duration =
+                Integer.parseInt(eElement.getElementsByTagName("duration").item(0).getTextContent());
         double durationInSeconds = musicXmlNoteUtils.getNoteDurationInSeconds(duration, noteTimes);
 
         if (eElement.getElementsByTagName("pitch").getLength() > 0) {

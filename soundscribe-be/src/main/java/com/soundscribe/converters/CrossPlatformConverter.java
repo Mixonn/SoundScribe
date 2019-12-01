@@ -9,7 +9,7 @@ import java.io.IOException;
 @Slf4j
 class CrossPlatformConverter {
 
-    private File input;
+    private final File input;
     private String directory;
 
     CrossPlatformConverter(File input) {

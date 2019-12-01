@@ -1,29 +1,60 @@
 package com.soundscribe.converters;
 
+import com.soundscribe.converters.musicxml.functions.XmlToMusicXml;
+import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.utilities.SoundscribeConfiguration;
-import java.io.File;
-import javax.sound.midi.MetaMessage;
-import javax.sound.midi.MidiEvent;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.Sequence;
-import javax.sound.midi.ShortMessage;
-import javax.sound.midi.Track;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import javax.sound.midi.*;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import java.io.File;
 
 /**
  * Converts midi to any other music format and creates midi from raw pYIN data.
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
-public class MidiConverter {
+public class XmlConverter extends Converter {
+  private final XmlToMusicXml xmlToMusicXml;
 
-  private final SoundscribeConfiguration soundscribeConfiguration;
+  XmlConverter(SoundscribeConfiguration soundscribeConfiguration) {
+    super(soundscribeConfiguration);
+    xmlToMusicXml = new XmlToMusicXml(soundscribeConfiguration);
+  }
 
-  public File convertXmlToMidi(XmlPojo xml) {
-    return convertXmlPojoToMidi(xml);
+  @Override
+  public File convert(File input, String outputFormat) throws ConversionNotSupported {
+    if ("midi".equals(outputFormat)) {
+      return convertXmlToMidi(input);
+    } else if ("musicxml".equals(outputFormat)) {
+      return convertXmlToMusicXml(input);
+    }
+
+    throw new ConversionNotSupported(getName() + " to " + outputFormat);
+  }
+
+  @Override
+  String getName() {
+    return "xml";
+  }
+
+  /**
+   * Converts raw pYIN algorithm notes to MusicXml format.
+   *
+   * @param xml Xml file with pYIN notes, tempo and divisions.
+   * @return MusicXml file.
+   */
+  private File convertXmlToMusicXml(File xml) {
+    File musicxml;
+    try {
+      musicxml = xmlToMusicXml.convertXmlToMusicXml(xml);
+    } catch (ParserConfigurationException | TransformerException e) {
+      log.error("Unable to create convert xml to musicxml", e);
+      throw new RuntimeException(e);
+    }
+    return musicxml;
   }
 
   /**
@@ -37,6 +68,10 @@ public class MidiConverter {
     XmlPojo xml = XmlPojo.readXMLData(fileXML);
     xml.setDivisions(soundscribeConfiguration.getDefaultDivisions());
     xml.setBpm(soundscribeConfiguration.getDefaultBpm());
+    return convertXmlPojoToMidi(xml);
+  }
+
+  public File convertXmlToMidi(XmlPojo xml) {
     return convertXmlPojoToMidi(xml);
   }
 
@@ -67,8 +102,9 @@ public class MidiConverter {
       }
 
       // write MIDI
-      midiFile = new File(
-          soundscribeConfiguration.getSongDataStorage() + xml.getSongName() + ".mid");
+      midiFile =
+              new File(soundscribeConfiguration.getSongDataStorage() + xml.getSongName() + ".mid");
+      // TODO: Name the new file same as the old old (with new extension)
       MidiSystem.write(sequence, 1, midiFile);
 
     } catch (Exception e) {
@@ -81,11 +117,11 @@ public class MidiConverter {
   /**
    * Creates midi event.
    *
-   * @param command  Type of event for example. 144 - note start, 128 - note stop
+   * @param command Type of event for example. 144 - note start, 128 - note stop
    * @param channel
-   * @param note     Midi value of note
+   * @param note Midi value of note
    * @param velocity A measure of how rapidly and forcefully a key on a keyboard is pressed
-   * @param tick     Time in ticks when event will happen
+   * @param tick Time in ticks when event will happen
    * @return
    */
   private MidiEvent makeEvent(int command, int channel, int note, int velocity, int tick) {
@@ -105,8 +141,8 @@ public class MidiConverter {
   /**
    * Calculate length of notes in ticks.
    *
-   * @param bpm  beat per minute
-   * @param ppq  Midi file parameter
+   * @param bpm beat per minute
+   * @param ppq Midi file parameter
    * @param time Length of note in seconds
    * @return number of ticks
    */
@@ -118,7 +154,7 @@ public class MidiConverter {
   /**
    * Create a Set Tempo meta event. Takes a tempo in BPMs.
    *
-   * @param tick  Tick in which tempo will change
+   * @param tick Tick in which tempo will change
    * @param tempo BPM value
    * @return MidiEvent which changes tempo
    */
@@ -140,7 +176,7 @@ public class MidiConverter {
     try {
       metaMessage.setMessage(81, array, 3);
     } catch (Exception e) {
-      log.error("Could not create tempo MidiEvent",e);
+      log.error("Could not create tempo MidiEvent", e);
     }
 
     return new MidiEvent(metaMessage, tick);

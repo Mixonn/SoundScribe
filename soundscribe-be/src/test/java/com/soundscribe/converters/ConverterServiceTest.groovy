@@ -1,6 +1,6 @@
 package com.soundscribe.converters
 
-import com.soundscribe.converters.musicxml.converter.MusicXmlConverter
+
 import com.soundscribe.utilities.SoundscribeConfiguration
 import spock.lang.Shared
 import spock.lang.Specification
@@ -8,43 +8,46 @@ import spock.lang.Specification
 class ConverterServiceTest extends Specification {
 
     @Shared
-            mxlFile = new File(this.getClass().getClassLoader().getResource("samples/Etude1.mxl").path)
+            dirPath = this.getClass().getClassLoader().getResource("samples").path
+    @Shared
+            mxlFile = new File(dirPath + "/Etude1.mxl")
     @Shared
             converterService
 
     void setup() {
-        converterService = new ConverterService(Stub(MidiConverter),
+        converterService = new ConverterService(Stub(XmlConverter),
                 Stub(MusicXmlConverter),
                 Stub(SoundscribeConfiguration))
     }
 
     def "ConvertMusicXmlToMei"() {
         when:
-        Optional<File> mei = converterService.convert(mxlFile, new ConversionFormat("musicxml", "mei"))
+        println mxlFile.path
+        File mei = converterService.convert(mxlFile, new ConversionFormat("musicxml", "mei"))
 
         then:
-        !mei.isEmpty()
-        mei.get().getAbsolutePath().endsWith("mei")
-        mei.get().exists()
-        mei.get().text.length() == 21000
+        mei != null
+        mei.getAbsolutePath().endsWith("mei")
+        mei.exists()
+        mei.text.length() == 21000
     }
 
     def "ConvertMusicXmlToAbc"() {
         when:
-        Optional<File> abc = converterService.convert(mxlFile, new ConversionFormat("musicxml", "abc"))
+        File abc = converterService.convert(mxlFile, new ConversionFormat("musicxml", "abc"))
 
         then:
-        !abc.isEmpty()
-        abc.get().getAbsolutePath().endsWith("abc")
-        abc.get().exists()
-        abc.get().text.length() == 574
+        abc != null
+        abc.getAbsolutePath().endsWith("abc")
+        abc.exists()
+        abc.text.length() == 574
     }
 
     def "ConvertUnsupportedFormat"() {
         when:
-        Optional<File> abc = converterService.convert(mxlFile, new ConversionFormat("mei", "abc"))
+        converterService.convert(mxlFile, new ConversionFormat("mei", "abc"))
 
         then:
-        abc.isEmpty()
+        thrown Converter.ConversionNotSupported
     }
 }

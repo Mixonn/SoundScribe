@@ -24,7 +24,7 @@ class BeatDetectorTest extends Specification {
         Integer bpm = beatDetector.analyzeTrack(new File(mp3Path))
 
         then:
-        bpm == 124
+        bpm == 116
     }
 
     def "Works as expected on TP0264A_02"() {
@@ -36,7 +36,7 @@ class BeatDetectorTest extends Specification {
         Integer bpm = beatDetector.analyzeTrack(new File(mp3Path))
 
         then:
-        bpm == 143
+        bpm == 150
     }
 
     def "Returns empty on non-existent file"() {
