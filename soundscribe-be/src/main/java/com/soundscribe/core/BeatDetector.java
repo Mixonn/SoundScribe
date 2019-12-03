@@ -27,7 +27,7 @@ public class BeatDetector {
    * @throws InputFormatException
    * @throws EncoderException
    */
-  static void decodeAudioFile(File input, File wavoutput)
+  private static void decodeAudioFile(File input, File wavoutput)
       throws IllegalArgumentException, InputFormatException, EncoderException {
     decodeAudioFile(input, wavoutput, 4410);
   }
@@ -43,7 +43,7 @@ public class BeatDetector {
    * @throws InputFormatException
    * @throws EncoderException
    */
-  static void decodeAudioFile(File input, File wavoutput, int samplerate)
+  private static void decodeAudioFile(File input, File wavoutput, int samplerate)
       throws IllegalArgumentException, InputFormatException, EncoderException {
     assert wavoutput.getName().endsWith(".wav");
     AudioAttributes audio = new AudioAttributes();

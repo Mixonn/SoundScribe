@@ -1,19 +1,18 @@
 package com.soundscribe.converters;
 
-import static org.junit.jupiter.api.Assertions.*;
+import com.soundscribe.converters.xml.XmlPojo;
+import org.junit.jupiter.api.Test;
 
-import com.soundscribe.converters.musicxml.functions.MusicXmlToMidi;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class XmlPojoTest {
 
