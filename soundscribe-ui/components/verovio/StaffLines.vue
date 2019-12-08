@@ -1,7 +1,7 @@
 <template>
   <div>
     <p>Some text</p>
-    <textarea id="abc-source" v-model="tune" />
+    <textarea id="abc-source" ref="tuneInput" v-model="tune" />
     <div class="listener-output">
       <div class="label">
         Currently Playing: <span class="abc-string">{{ currentAbcFragment }}</span>
@@ -29,7 +29,7 @@
 <script>
 import 'abcjs/abcjs-midi.css';
 import abcjs from 'abcjs/midi';
-import { moveNode, replaceSubstring } from './NodeModifier';
+import { modifyNote, replaceSubstring } from './NodeModifier';
 const fs = require('fs');
 const $ = require('jquery');
 
@@ -46,6 +46,7 @@ export default {
       currentAbcFragment: '(none)',
       tune: 'X:1\nT: Cooley\'s\nM: 4/4\nL: 1/8\nR: reel\nK: Emin\nD2DD||',
       currentNode: {
+        id: -1,
         start: -1,
         end: -1
       }
@@ -99,23 +100,28 @@ export default {
       console.log(abcElem);
       this.currentNode.start = abcElem.startChar;
       this.currentNode.end = abcElem.endChar;
+      this.currentNode.id = abcElem.__ob__.id;
     },
     nodeUp () {
-      const nodeStr = this.tune.substr(this.currentNode.start, (this.currentNode.end - this.currentNode.start));
-      const modifiedNode = moveNode('up', nodeStr);
-      this.tune = replaceSubstring(this.tune, this.currentNode.start, this.currentNode.end, 'C4');
-      this.rerenderAbc();
+      this.modifyNoteOperation('up');
     },
     nodeDown () {
-      const nodeStr = this.tune.substr(this.currentNode.start, (this.currentNode.end - this.currentNode.start));
-      const modifiedNode = moveNode('down', nodeStr);
-      this.tune = replaceSubstring(this.tune, this.currentNode.start, this.currentNode.end, 'C4');
-      this.rerenderAbc();
+      this.modifyNoteOperation('down');
     },
-    rerenderAbc () {
-      // abcjs.renderAbc('paper', this.tune, { add_classes: true, clickListener: this.listener });
-      this.abcjsEditor.pause(false);
-      this.abcjsEditor.fireChanged();
+    modifyNoteOperation (operation) {
+      const nodeStr = this.tune.substr(this.currentNode.start, (this.currentNode.end - this.currentNode.start));
+      let modifiedNode = modifyNote(operation, nodeStr);
+      if (nodeStr[nodeStr.length - 1] === ' ' && modifiedNode[modifiedNode.length - 1] !== ' ') {
+        modifiedNode += ' ';
+      }
+      const z = replaceSubstring(this.tune, this.currentNode.start, this.currentNode.end + 1, modifiedNode);
+      this.setTune(z, modifiedNode.length);
+    },
+    setTune (z, modifiedNode) {
+      this.tune = z;
+      this.abcjsEditor.editarea.setString(z);
+      this.currentNode.end = this.currentNode.start + modifiedNode;
+      this.abcjsEditor.editarea.setSelection(this.currentNode.start, this.currentNode.end);
     }
   }
 }
