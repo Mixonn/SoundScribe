@@ -3,6 +3,8 @@ export const MODIFY_OPERATIONS = {
   DOWN: 'down'
 };
 
+const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'c', 'd', 'e', 'f', 'g', 'a', 'b'];
+
 export function modifyNote (direction, note) {
   switch (direction.toLowerCase()) {
     case MODIFY_OPERATIONS.UP:
@@ -37,8 +39,12 @@ class Note {
       return;
     }
     if (toneIdx === 0) {
+      if (this.toneMove.includes('\'')) {
+        this.toneMove = this.toneMove.replace('\'', '');
+      } else {
+        this.toneMove += ',';
+      }
       this.toneName = 'B';
-      this.toneMove += ',';
     } else {
       this.toneName = notes[toneIdx - 1];
     }
@@ -51,8 +57,12 @@ class Note {
       return;
     }
     if (toneIdx === notes.length - 1) {
+      if (this.toneMove.includes(',')) {
+        this.toneMove = this.toneMove.replace(',', '');
+      } else {
+        this.toneMove += '\'';
+      }
       this.toneName = 'c';
-      this.toneMove += '\'';
     } else {
       this.toneName = notes[toneIdx + 1];
     }
@@ -74,8 +84,6 @@ function moveUp (note) {
   noteObj.moveUp();
   return noteObj.toString();
 }
-
-const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'c', 'd', 'e', 'f', 'g', 'a', 'b'];
 
 function split (note) {
   return note.split(/(\d+)/).filter(Boolean);
