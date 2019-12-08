@@ -34,11 +34,7 @@ class MusicXmlToMidiTest {
   @Test
   void convertMusicXmlToMidi() {
     MusicXmlToMidi musicXmlToMidi = new MusicXmlToMidi(xmlConverter);
-    musicXmlToMidi.convertMusicXmlToMidi(musicXmlFile);
-
-    // TODO @Krysu: fix this test
-    String pathToMidi = "test.mid";
-    midiFile = new File(pathToMidi);
+    midiFile = musicXmlToMidi.convertMusicXmlToMidi(musicXmlFile);
     assertTrue(midiFile.exists());
   }
 
