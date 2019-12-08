@@ -1,3 +1,4 @@
+// http://abcnotation.com/examples  --all operations on abc music notation
 export const MODIFY_OPERATIONS = {
   UP: 'up',
   DOWN: 'down'
@@ -23,8 +24,10 @@ export function replaceSubstring (original, start, end, replacement) {
 class Note {
   constructor (note) {
     if (note.includes('z')) {
-      return note;
+      this.isPause = true;
+      return;
     }
+    this.isPause = false;
     const slittedNote = split(note);
     const tonePart = slittedNote[0];
     this.nodeLength = slittedNote[1];
@@ -75,12 +78,18 @@ class Note {
 
 function moveDown (note) {
   const noteObj = new Note(note);
+  if (noteObj.isPause) {
+    return note;
+  }
   noteObj.moveDown();
   return noteObj.toString();
 }
 
 function moveUp (note) {
   const noteObj = new Note(note);
+  if (noteObj.isPause) {
+    return note;
+  }
   noteObj.moveUp();
   return noteObj.toString();
 }
