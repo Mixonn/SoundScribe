@@ -15,9 +15,7 @@ class ConverterServiceTest extends Specification {
             converterService
 
     void setup() {
-        converterService = new ConverterService(Stub(XmlConverter),
-                Stub(MusicXmlConverter),
-                Stub(SoundscribeConfiguration))
+        converterService = new ConverterService(Stub(SoundscribeConfiguration), new MidiConverter(Stub(SoundscribeConfiguration),))
     }
 
     def "ConvertMusicXmlToMei"() {
