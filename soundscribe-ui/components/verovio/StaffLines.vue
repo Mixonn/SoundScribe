@@ -29,7 +29,7 @@
 <script>
 import 'abcjs/abcjs-midi.css';
 import abcjs from 'abcjs/midi';
-import { modifyNote, replaceSubstring } from './NodeModifier';
+import { MODIFY_OPERATIONS, modifyNote, replaceSubstring } from './NodeModifier';
 const fs = require('fs');
 const $ = require('jquery');
 
@@ -103,10 +103,10 @@ export default {
       this.currentNode.id = abcElem.__ob__.id;
     },
     nodeUp () {
-      this.modifyNoteOperation('up');
+      this.modifyNoteOperation(MODIFY_OPERATIONS.UP);
     },
     nodeDown () {
-      this.modifyNoteOperation('down');
+      this.modifyNoteOperation(MODIFY_OPERATIONS.DOWN);
     },
     modifyNoteOperation (operation) {
       const nodeStr = this.tune.substr(this.currentNode.start, (this.currentNode.end - this.currentNode.start));
