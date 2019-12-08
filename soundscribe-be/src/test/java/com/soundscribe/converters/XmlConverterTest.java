@@ -125,7 +125,6 @@ class XmlConverterTest {
 
   @Test
   void testConvertXmlToMidi() {
-      System.out.println(xmlConverter);
       midiFile = xmlConverter.convertXmlToMidi(xmlFile);
     assertTrue(midiFile.exists());
   }

@@ -1,4 +1,4 @@
-package com.soundscribe.converters.musicxml.functions;
+package com.soundscribe.converters.xml.functions;
 
 import com.soundscribe.converters.PyinNote;
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
@@ -37,8 +37,22 @@ public class XmlToMusicXml {
    * @throws TransformerException
    */
   public File convertXmlToMusicXml(File xml)
-      throws ParserConfigurationException, TransformerException {
+      throws TransformerException, ParserConfigurationException {
     XmlPojo xmlPojo = XmlPojo.readXMLData(xml);
+    return convertXmlToMusicXml(xmlPojo);
+
+  }
+
+  /**
+   * Converts XmlPojo object with raw pYIN data to MusicXml file.
+   * @param xmlPojo
+   * @return
+   * @throws ParserConfigurationException
+   * @throws TransformerException
+   */
+  public File convertXmlToMusicXml(XmlPojo xmlPojo)
+      throws ParserConfigurationException, TransformerException {
+
     File musicXmlFile = new File(
         soundscribeConfiguration.getSongDataStorage() + xmlPojo.getSongName() + ".musicxml");
 

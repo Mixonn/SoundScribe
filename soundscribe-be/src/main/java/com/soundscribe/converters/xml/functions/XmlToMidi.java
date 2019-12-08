@@ -1,60 +1,32 @@
-package com.soundscribe.converters;
+package com.soundscribe.converters.xml.functions;
 
-import com.soundscribe.converters.xml.functions.XmlToMusicXml;
+import com.soundscribe.converters.PyinNote;
 import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.utilities.SoundscribeConfiguration;
+import java.io.File;
+import javax.sound.midi.MetaMessage;
+import javax.sound.midi.MidiEvent;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.Sequence;
+import javax.sound.midi.ShortMessage;
+import javax.sound.midi.Track;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.sound.midi.*;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import java.io.File;
-
-/**
- * Converts midi to any other music format and creates midi from raw pYIN data.
- */
 @Slf4j
+@RequiredArgsConstructor
 @Component
-public class XmlConverter extends Converter {
-  private final XmlToMusicXml xmlToMusicXml;
+public class XmlToMidi {
 
-  XmlConverter(SoundscribeConfiguration soundscribeConfiguration) {
-    super(soundscribeConfiguration);
-    xmlToMusicXml = new XmlToMusicXml(soundscribeConfiguration);
-  }
+  private final SoundscribeConfiguration soundscribeConfiguration;
 
-  @Override
-  public File convert(File input, String outputFormat) throws ConversionNotSupported {
-    if ("midi".equals(outputFormat)) {
-      return convertXmlToMidi(input);
-    } else if ("musicxml".equals(outputFormat)) {
-      return convertXmlToMusicXml(input);
-    }
+  private static int SET_TEMPO = 81;
+  private static int NOTE_OFF = 128;
+  private static int NOTE_ON = 144;
 
-    throw new ConversionNotSupported(getName() + " to " + outputFormat);
-  }
-
-  @Override
-  String getName() {
-    return "xml";
-  }
-
-  /**
-   * Converts raw pYIN algorithm notes to MusicXml format.
-   *
-   * @param xml Xml file with pYIN notes, tempo and divisions.
-   * @return MusicXml file.
-   */
-  private File convertXmlToMusicXml(File xml) {
-    File musicxml;
-    try {
-      musicxml = xmlToMusicXml.convertXmlToMusicXml(xml);
-    } catch (ParserConfigurationException | TransformerException e) {
-      log.error("Unable to create convert xml to musicxml", e);
-      throw new RuntimeException(e);
-    }
-    return musicxml;
+  public File convertXmlToMidi(XmlPojo xml) {
+    return convertXmlPojoToMidi(xml);
   }
 
   /**
@@ -66,12 +38,6 @@ public class XmlConverter extends Converter {
    */
   public File convertXmlToMidi(File fileXML) {
     XmlPojo xml = XmlPojo.readXMLData(fileXML);
-    xml.setDivisions(soundscribeConfiguration.getDefaultDivisions());
-    xml.setBpm(soundscribeConfiguration.getDefaultBpm());
-    return convertXmlPojoToMidi(xml);
-  }
-
-  public File convertXmlToMidi(XmlPojo xml) {
     return convertXmlPojoToMidi(xml);
   }
 
@@ -95,16 +61,15 @@ public class XmlConverter extends Converter {
       for (PyinNote note : xml.getNotes()) {
         // Add Note On event
         tickToStart = secondsToTicks(bpm, ppq, note.getTimestamp());
-        track.add(makeEvent(144, 1, note.getMidiValue(), 96, tickToStart));
+        track.add(makeEvent(NOTE_ON, 1, note.getMidiValue(), 96, tickToStart));
         // Add Note Off event
         ticksToStop = secondsToTicks(bpm, ppq, note.getDurationInSeconds());
-        track.add(makeEvent(128, 1, note.getMidiValue(), 96, tickToStart + ticksToStop));
+        track.add(makeEvent(NOTE_OFF, 1, note.getMidiValue(), 96, tickToStart + ticksToStop));
       }
 
       // write MIDI
       midiFile =
-              new File(soundscribeConfiguration.getSongDataStorage() + xml.getSongName() + ".mid");
-      // TODO: Name the new file same as the old old (with new extension)
+          new File(soundscribeConfiguration.getSongDataStorage() + xml.getSongName() + ".mid");
       MidiSystem.write(sequence, 1, midiFile);
 
     } catch (Exception e) {
@@ -163,18 +128,15 @@ public class XmlConverter extends Converter {
     long mpqn = 60000000 / tempo;
 
     MetaMessage metaMessage = new MetaMessage();
-
-    // create the tempo byte array
-    byte[] array = new byte[]{0, 0, 0};
+    byte[] array = new byte[] {0, 0, 0};
 
     for (int i = 0; i < 3; i++) {
       int shift = (3 - 1 - i) * 8;
       array[i] = (byte) (mpqn >> shift);
     }
 
-    // now set the message
     try {
-      metaMessage.setMessage(81, array, 3);
+      metaMessage.setMessage(SET_TEMPO, array, 3);
     } catch (Exception e) {
       log.error("Could not create tempo MidiEvent", e);
     }

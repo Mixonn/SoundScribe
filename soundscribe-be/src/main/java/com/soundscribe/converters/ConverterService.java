@@ -12,9 +12,8 @@ import java.io.File;
 @RequiredArgsConstructor
 public class ConverterService {
 
-    private final XmlConverter xmlConverter;
-  private final MusicXmlConverter musicXmlConverter;
   private final SoundscribeConfiguration soundscribeConfiguration;
+  private final MidiConverter midiConverter;
 
     public File convert(File input, ConversionFormat conversionFormat)
             throws Converter.ConversionNotSupported {
@@ -29,6 +28,8 @@ public class ConverterService {
             converter = new MusicXmlConverter(soundscribeConfiguration);
         } else if ("mp3".equals(conversionFormat.getFromFormat())) {
             converter = new Mp3Converter(soundscribeConfiguration);
+        } else if ("midi".equals(conversionFormat.getFromFormat())) {
+          converter = midiConverter;
         } else {
             throw new Converter.ConversionNotSupported(conversionFormat.toString());
         }
