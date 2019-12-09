@@ -1,7 +1,8 @@
 // http://abcnotation.com/examples  --all operations on abc music notation
 export const MODIFY_OPERATIONS = {
   UP: 'up',
-  DOWN: 'down'
+  DOWN: 'down',
+  REMOVE: 'remove'
 };
 
 const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'c', 'd', 'e', 'f', 'g', 'a', 'b'];
@@ -12,6 +13,8 @@ export function modifyNote (direction, note) {
       return moveUp(note);
     case MODIFY_OPERATIONS.DOWN:
       return moveDown(note);
+    case MODIFY_OPERATIONS.REMOVE:
+      return '';
     default:
       return note;
   }

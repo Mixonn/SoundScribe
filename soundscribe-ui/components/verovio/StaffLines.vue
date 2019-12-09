@@ -22,6 +22,9 @@
     <button @click="nodeDown">
       Down
     </button>
+    <button @click="removeNote">
+      Remove
+    </button>
     <div id="paper" />
   </div>
 </template>
@@ -108,6 +111,9 @@ export default {
     nodeDown () {
       this.modifyNoteOperation(MODIFY_OPERATIONS.DOWN);
     },
+    removeNote () {
+      this.modifyNoteOperation(MODIFY_OPERATIONS.REMOVE)
+    },
     modifyNoteOperation (operation) {
       const nodeStr = this.tune.substr(this.currentNode.start, (this.currentNode.end - this.currentNode.start));
       let modifiedNode = modifyNote(operation, nodeStr);
@@ -115,13 +121,17 @@ export default {
         modifiedNode += ' ';
       }
       const z = replaceSubstring(this.tune, this.currentNode.start, this.currentNode.end + 1, modifiedNode);
-      this.setTune(z, modifiedNode.length);
+      this.setTune(z, modifiedNode);
     },
     setTune (z, modifiedNode) {
       this.tune = z;
       this.abcjsEditor.editarea.setString(z);
-      this.currentNode.end = this.currentNode.start + modifiedNode;
-      this.abcjsEditor.editarea.setSelection(this.currentNode.start, this.currentNode.end);
+      this.currentNode.end = this.currentNode.start + modifiedNode.length;
+      if (modifiedNode === ' ' || modifiedNode === '') {
+        this.abcjsEditor.editarea.setSelection(0, 0);
+      } else {
+        this.abcjsEditor.editarea.setSelection(this.currentNode.start, this.currentNode.end);
+      }
     }
   }
 }
