@@ -33,7 +33,7 @@ class Note {
     this.isPause = false;
     const slittedNote = split(note);
     const tonePart = slittedNote[0];
-    this.nodeLength = slittedNote[1];
+    this.nodeLength = (slittedNote[1] === undefined) ? 1 : slittedNote[1];
     this.toneName = getToneName(tonePart);
     this.toneMove = getToneMove(tonePart);
   }
@@ -110,7 +110,7 @@ function getToneName (tone) {
 }
 
 function getToneMove (tone) {
-  const toneMove = tone.match(/[^a-zA-Z]+/g);
+  const toneMove = tone.match(/[^a-zA-Z ]+/g);
   if (toneMove !== null) {
     return toneMove[0];
   }

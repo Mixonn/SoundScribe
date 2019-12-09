@@ -25,6 +25,9 @@
     <button @click="removeNote">
       Remove
     </button>
+    <button @click="addNote">
+      Add note
+    </button>
     <div id="paper" />
   </div>
 </template>
@@ -49,9 +52,9 @@ export default {
       currentAbcFragment: '(none)',
       tune: 'X:1\nT: Cooley\'s\nM: 4/4\nL: 1/8\nR: reel\nK: Emin\nD2DD||',
       currentNode: {
-        id: -1,
-        start: -1,
-        end: -1
+        id: null,
+        start: null,
+        end: null
       }
     }
   },
@@ -97,7 +100,7 @@ export default {
     async loadData () {
       const data = await this.$axios.$get('/songs/MRegWOs_T0006A_01.abc');
       console.log(data);
-      this.tune = data;
+      this.tune = data.trim();
     },
     onNodeClick (abcElem, tuneNumber, classes) {
       console.log(abcElem);
@@ -114,9 +117,26 @@ export default {
     removeNote () {
       this.modifyNoteOperation(MODIFY_OPERATIONS.REMOVE)
     },
+    addNote () {
+      let selectionLeft, selectionRight;
+      if (this.currentNode.start == null) {
+        this.tune += ' A';
+        selectionLeft = this.tune.length - 3;
+        selectionRight = this.tune.length - 1;
+      } else {
+        const left = this.tune.slice(0, this.currentNode.end).trim();
+        const right = this.tune.slice(this.currentNode.end).trim();
+        selectionLeft = left.length + 1;
+        selectionRight = selectionLeft + 2;
+        this.tune = left + ' A ' + right;
+      }
+      this.redrawTune();
+      this.drawSelection(selectionLeft, selectionRight);
+    },
     modifyNoteOperation (operation) {
       const nodeStr = this.tune.substr(this.currentNode.start, (this.currentNode.end - this.currentNode.start));
       let modifiedNode = modifyNote(operation, nodeStr);
+      console.log(modifiedNode);
       if (nodeStr[nodeStr.length - 1] === ' ' && modifiedNode[modifiedNode.length - 1] !== ' ') {
         modifiedNode += ' ';
       }
@@ -125,13 +145,29 @@ export default {
     },
     setTune (z, modifiedNode) {
       this.tune = z;
-      this.abcjsEditor.editarea.setString(z);
+      this.redrawTune();
       this.currentNode.end = this.currentNode.start + modifiedNode.length;
       if (modifiedNode === ' ' || modifiedNode === '') {
-        this.abcjsEditor.editarea.setSelection(0, 0);
+        this.drawSelection(0, 0);
+        this.resetNoteProperties();
       } else {
+        this.drawSelection(this.currentNode.start, this.currentNode.end);
+      }
+    },
+    redrawTune () {
+      this.abcjsEditor.editarea.setString(this.tune);
+    },
+    drawSelection (from, to) {
+      if (this.abcjsEditor.editarea != null) {
+        this.currentNode.start = from;
+        this.currentNode.end = to;
         this.abcjsEditor.editarea.setSelection(this.currentNode.start, this.currentNode.end);
       }
+    },
+    resetNoteProperties () {
+      this.currentNode.id = null;
+      this.currentNode.start = null;
+      this.currentNode.end = null;
     }
   }
 }

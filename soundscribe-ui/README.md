@@ -7,10 +7,8 @@
 ``` bash
 # install dependencies
 $ npm run install
-
+$ npm install -g nodemon
 # serve with hot reload at localhost:3000
-Need to increase node space to run verovio
-(win/linux: set/export) NODE_OPTIONS=--max_old_space_size=4096
 
 $ npm run dev
 
