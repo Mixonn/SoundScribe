@@ -4,13 +4,10 @@ import com.soundscribe.converters.PyinNote;
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import com.soundscribe.converters.musicxml.utilities.MusicXmlNoteUtils;
 import com.soundscribe.converters.xml.XmlPojo;
+import com.soundscribe.utilities.MidiNotes;
 import com.soundscribe.utilities.SoundscribeConfiguration;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
+import java.io.File;
+import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -19,8 +16,11 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 @Slf4j
 @Component
@@ -88,7 +88,7 @@ public class XmlToMusicXml {
     part.setAttribute("number", "1");
     part.appendChild(measure);
 
-    measure.appendChild(createAttributes(document, xmlPojo.getDivisions()));
+    measure.appendChild(createAttributes(document, xmlPojo));
     measure.appendChild(createTempo(document, xmlPojo.getBpm()));
     addNotesToMusicXml(measure, document, xmlPojo);
 
@@ -105,14 +105,14 @@ public class XmlToMusicXml {
    * Create main attributes for MusicXml file.
    * Divisions per quarter note, type of beat and clef.
    * @param document
-   * @param divisionsValue
+   * @param xmlPojo
    * @return
    */
-  private Element createAttributes(Document document, int divisionsValue) {
+  private Element createAttributes(Document document, XmlPojo xmlPojo) {
     Element attributes = document.createElement("attributes");
 
     Element divisions = document.createElement("divisions");
-    divisions.appendChild(document.createTextNode(String.valueOf(divisionsValue)));
+    divisions.appendChild(document.createTextNode(String.valueOf(xmlPojo.getDivisions())));
     attributes.appendChild(divisions);
 
     Element time = document.createElement("time");
@@ -128,15 +128,36 @@ public class XmlToMusicXml {
         document.createTextNode(String.valueOf(soundscribeConfiguration.getDefaultBeatType())));
     time.appendChild(beatType);
 
+    int numberOfNotesUnderMiddleC = 0;
+    int numberOfNotesOverMiddleC = 0;
+    int middleC = MidiNotes.getMidiValueByNoteSymbol("C4");
+
+    for (PyinNote pyinNote : xmlPojo.getNotes()){
+      if (pyinNote.getMidiValue() < middleC){
+        numberOfNotesUnderMiddleC++;
+      }
+      else if(pyinNote.getMidiValue() > middleC){
+          numberOfNotesOverMiddleC++;
+      }
+    }
+
+    String signSymbol = "G";
+    String lineNumber = "2";
+
+    if(numberOfNotesUnderMiddleC>numberOfNotesOverMiddleC){
+      signSymbol = "F";
+      lineNumber = "4";
+    }
+
     Element clef = document.createElement("clef");
     attributes.appendChild(clef);
 
     Element sign = document.createElement("sign");
-    sign.appendChild(document.createTextNode("G"));
+    sign.appendChild(document.createTextNode(signSymbol));
     clef.appendChild(sign);
 
     Element line = document.createElement("line");
-    line.appendChild(document.createTextNode("2"));
+    line.appendChild(document.createTextNode(lineNumber));
     clef.appendChild(line);
 
     return attributes;
@@ -305,4 +326,6 @@ public class XmlToMusicXml {
 
     return credit;
   }
+
+
 }
