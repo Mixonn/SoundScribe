@@ -39,7 +39,10 @@ public class DLibraService {
     File mainDirectory = new File(soundscribeConfiguration.getUploadDirectory());
     File audioDirectory;
 
-    deleteDir(mainDirectory);
+    if (mainDirectory.exists()) {
+      deleteDir(mainDirectory);
+    }
+
     if (mainDirectory.mkdir()) {
       audioDirectory = new File(mainDirectory.getAbsolutePath() + "/Audio");
       if (audioDirectory.mkdir()) {
@@ -58,6 +61,17 @@ public class DLibraService {
       throw new IOException("Faild to create upload directory.");
     }
 
+    return uploadCreatedDictionary(mainDirectory);
+  }
+
+  /**
+   * Uploads already prepared dictionary as publication to dLibra.
+   *
+   * @param mainDirectory Main folder to upload.
+   * @return Publication ID.
+   * @throws IOException
+   */
+  private int uploadCreatedDictionary(File mainDirectory) throws IOException {
     ProcessBuilder pb =
         new ProcessBuilder(
             "sh",
@@ -73,7 +87,9 @@ public class DLibraService {
         lineWithId = line;
       }
     }
-    deleteDir(mainDirectory);
+    if (mainDirectory.exists()) {
+      deleteDir(mainDirectory);
+    }
 
     if (lineWithId != null) {
       return getIdFromLine(lineWithId);
@@ -160,17 +176,17 @@ public class DLibraService {
   }
 
   /**
-   * Creates properties file for script which uploads data to dLibra. It contains name, ID and other
+   * Creates properties file for script which uploads data to dLibra. It contains name, id and other
    * important information about uploaded publication.
    *
    * @param rootPath Directory where file will be created
    * @param publicationName Publication name
    * @param mainFileName Main file of uploaded publication
-   * @param ID Publication ID. If no ID is specified, new publication will be added to collection.
+   * @param id Publication id. If no id is specified, new publication will be added to collection.
    * @throws IOException
    */
   private void createPublicationProperties(
-      String rootPath, String publicationName, String mainFileName, Integer ID) throws IOException {
+      String rootPath, String publicationName, String mainFileName, Integer id) throws IOException {
     File propertiesFile = new File(rootPath + "/publication.properties");
 
     try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(propertiesFile))) {
@@ -184,8 +200,8 @@ public class DLibraService {
       fileWriter.write("publication.published=true\n");
       fileWriter.newLine();
 
-      if (ID != null) {
-        fileWriter.write(String.format("edition.ID=%d%n", ID));
+      if (id != null) {
+        fileWriter.write(String.format("edition.id=%d%n", id));
         fileWriter.write("update.mode=full\n");
       }
     }
