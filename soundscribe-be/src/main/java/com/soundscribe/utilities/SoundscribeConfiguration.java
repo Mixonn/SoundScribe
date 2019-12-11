@@ -15,6 +15,9 @@ import org.springframework.context.annotation.PropertySource;
 @ConfigurationProperties("settings")
 @PropertySource("classpath:application.yml")
 public class SoundscribeConfiguration {
+  private String uploadDirectory;
+  private String pathToDLibraScript;
+
   private String songDataStorage;
   private String vampPath;
   private int defaultDivisions;
