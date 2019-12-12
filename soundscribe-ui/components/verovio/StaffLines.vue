@@ -1,7 +1,7 @@
 <template>
   <div>
     <p>Some text</p>
-    <textarea id="abc-source" ref="tuneInput" v-model="tune" />
+    <textarea id="abc-source" ref="tuneInput" v-model="tune.text" />
     <div class="listener-output">
       <div class="label">
         Currently Playing: <span class="abc-string">{{ currentAbcFragment }}</span>
@@ -28,6 +28,26 @@
     <button @click="addNote">
       Add note
     </button>
+    <div id="note-length-container">
+      <button @click="changeNoteLength(1)">
+        1
+      </button>
+      <button @click="changeNoteLength(2)">
+        2
+      </button>
+      <button @click="changeNoteLength(4)">
+        4
+      </button>
+      <button @click="changeNoteLength(8)">
+        8
+      </button>
+      <button @click="changeNoteLength(16)">
+        16
+      </button>
+      <button @click="changeNoteLength(32)">
+        32
+      </button>
+    </div>
     <div id="paper" />
   </div>
 </template>
@@ -36,6 +56,7 @@
 import 'abcjs/abcjs-midi.css';
 import abcjs from 'abcjs/midi';
 import { MODIFY_OPERATIONS, modifyNote, replaceSubstring } from './NodeModifier';
+import { extractMetadata } from './TuneService';
 const fs = require('fs');
 const $ = require('jquery');
 
@@ -50,7 +71,10 @@ export default {
       abcjsEditor: null,
       progress: { },
       currentAbcFragment: '(none)',
-      tune: 'X:1\nT: Cooley\'s\nM: 4/4\nL: 1/8\nR: reel\nK: Emin\nD2DD||',
+      tune: {
+        text: 'X:1\nT: Cooley\'s\nM: 4/4\nL: 1/8\nR: reel\nK: Emin\nD2DD||',
+        defaultNoteLength: null
+      },
       currentNode: {
         id: null,
         start: null,
@@ -92,7 +116,7 @@ export default {
       this.colorRange(lastRange, '#000000'); // Set the old note back to black.
       this.colorRange(currentRange, '#3D9AFC'); // Set the currently sounding note to blue.
       if (currentRange) {
-        this.currentAbcFragment = this.tune.substring(currentRange.startChar, currentRange.endChar);
+        this.currentAbcFragment = this.tune.text.substring(currentRange.startChar, currentRange.endChar);
       } else {
         this.currentAbcFragment = '(none)';
       }
@@ -100,7 +124,8 @@ export default {
     async loadData () {
       const data = await this.$axios.$get('/songs/MRegWOs_T0006A_01.abc');
       console.log(data);
-      this.tune = data.trim();
+      this.tune.text = data.trim();
+      this.tune.defaultNoteLength = extractMetadata(this.tune.text);
     },
     onNodeClick (abcElem, tuneNumber, classes) {
       console.log(abcElem);
@@ -120,44 +145,50 @@ export default {
     addNote () {
       let selectionLeft, selectionRight;
       if (this.currentNode.start == null) {
-        this.tune += ' A';
-        selectionLeft = this.tune.length - 3;
-        selectionRight = this.tune.length - 1;
+        this.tune.text += ' A';
+        selectionLeft = this.tune.text.length - 3;
+        selectionRight = this.tune.text.length - 1;
       } else {
-        const left = this.tune.slice(0, this.currentNode.end).trim();
-        const right = this.tune.slice(this.currentNode.end).trim();
+        const left = this.tune.text.slice(0, this.currentNode.end).trim();
+        const right = this.tune.text.slice(this.currentNode.end).trim();
         selectionLeft = left.length + 1;
         selectionRight = selectionLeft + 2;
-        this.tune = left + ' A ' + right;
+        this.tune.text = left + ' A ' + right;
       }
       this.redrawTune();
-      this.drawSelection(selectionLeft, selectionRight);
+      this.showSelection(selectionLeft, selectionRight);
     },
-    modifyNoteOperation (operation) {
-      const nodeStr = this.tune.substr(this.currentNode.start, (this.currentNode.end - this.currentNode.start));
-      let modifiedNode = modifyNote(operation, nodeStr);
+    changeNoteLength (length) {
+      this.modifyNoteOperation(MODIFY_OPERATIONS.CHANGE_LENGTH, {
+        defaultNoteLength: this.tune.defaultNoteLength,
+        targetLength: length
+      });
+    },
+    modifyNoteOperation (operation, opts) {
+      const nodeStr = this.tune.text.substr(this.currentNode.start, (this.currentNode.end - this.currentNode.start));
+      let modifiedNode = modifyNote(operation, nodeStr, opts);
       console.log(modifiedNode);
       if (nodeStr[nodeStr.length - 1] === ' ' && modifiedNode[modifiedNode.length - 1] !== ' ') {
         modifiedNode += ' ';
       }
-      const z = replaceSubstring(this.tune, this.currentNode.start, this.currentNode.end + 1, modifiedNode);
+      const z = replaceSubstring(this.tune.text, this.currentNode.start, this.currentNode.end + 1, modifiedNode);
       this.setTune(z, modifiedNode);
     },
     setTune (z, modifiedNode) {
-      this.tune = z;
+      this.tune.text = z;
       this.redrawTune();
       this.currentNode.end = this.currentNode.start + modifiedNode.length;
       if (modifiedNode === ' ' || modifiedNode === '') {
-        this.drawSelection(0, 0);
+        this.showSelection(0, 0);
         this.resetNoteProperties();
       } else {
-        this.drawSelection(this.currentNode.start, this.currentNode.end);
+        this.showSelection(this.currentNode.start, this.currentNode.end);
       }
     },
     redrawTune () {
-      this.abcjsEditor.editarea.setString(this.tune);
+      this.abcjsEditor.editarea.setString(this.tune.text);
     },
-    drawSelection (from, to) {
+    showSelection (from, to) {
       if (this.abcjsEditor.editarea != null) {
         this.currentNode.start = from;
         this.currentNode.end = to;
@@ -213,5 +244,10 @@ export default {
 
   .label {
     font-weight: bold;
+  }
+
+  #note-length-container {
+    background-color: antiquewhite;
+    color: red;
   }
 </style>
