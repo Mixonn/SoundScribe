@@ -28,7 +28,7 @@ class MusicXmlToMidiTest {
   @BeforeAll
   void init() {
     ClassLoader classLoader = getClass().getClassLoader();
-    musicXmlFile = new File(classLoader.getResource("samples/example.mxl").getFile());
+    musicXmlFile = new File(classLoader.getResource("samples/example.musicxml").getFile());
   }
 
   @Test
