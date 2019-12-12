@@ -1,5 +1,8 @@
 #Path properties
 settings:
+  uploadDirectory: "uploadDirectory/"
+  pathToDLibraScript: "/dlibra-cmdln-tools"
+
   songDataStorage: "audioFilesStorage/"
   vampPath: "/usr/lib/"
 

@@ -5,16 +5,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class MusicXmlNoteUtilsTest {
+class MusicXmlUtilsTest {
 
   @Test
   void getMusicXmlBaseNotes() {
-    MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils();
+    MusicXmlUtils musicXmlUtils = new MusicXmlUtils();
 
-    List<MusicXmlNote> list = musicXmlNoteUtils.getMusicXmlBaseNotes(120, 4);
+    List<MusicXmlNote> list = musicXmlUtils.getMusicXmlBaseNotes(120, 4);
     assertEquals("half", list.get(3).getName());
     assertEquals(1, list.get(3).getSeconds());
     assertEquals(8, list.get(3).getDuration());
@@ -38,27 +40,27 @@ class MusicXmlNoteUtilsTest {
 
   @Test
   void chooseBestNoteByDurationInSeconds() {
-    MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils();
-    List<MusicXmlNote> list = musicXmlNoteUtils.getMusicXmlBaseNotes(120, 4);
+    MusicXmlUtils musicXmlUtils = new MusicXmlUtils();
+    List<MusicXmlNote> list = musicXmlUtils.getMusicXmlBaseNotes(120, 4);
 
-    MusicXmlNote note = musicXmlNoteUtils
+    MusicXmlNote note = musicXmlUtils
         .chooseBestNoteByDurationInSeconds(1.0d, list, false, false);
     assertEquals("half", note.getName());
     assertFalse(note.isWithDot());
 
-    note = musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(1.2d, list, false, false);
+    note = musicXmlUtils.chooseBestNoteByDurationInSeconds(1.2d, list, false, false);
     assertEquals("half", note.getName());
     assertFalse(note.isWithDot());
 
-    note = musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(1.3d, list, false, false);
+    note = musicXmlUtils.chooseBestNoteByDurationInSeconds(1.3d, list, false, false);
     assertEquals("half", note.getName());
     assertTrue(note.isWithDot());
 
-    note = musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(1.7d, list, false, false);
+    note = musicXmlUtils.chooseBestNoteByDurationInSeconds(1.7d, list, false, false);
     assertEquals("whole", note.getName());
     assertFalse(note.isWithDot());
 
-    note = musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(0.7d, list, false, false);
+    note = musicXmlUtils.chooseBestNoteByDurationInSeconds(0.7d, list, false, false);
     assertEquals("quarter", note.getName());
     assertTrue(note.isWithDot());
 
@@ -66,16 +68,27 @@ class MusicXmlNoteUtilsTest {
 
   @Test
   void getNoteDurationInSeconds() {
-    MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils();
-    List<MusicXmlNote> list = musicXmlNoteUtils.getMusicXmlBaseNotes(120, 4);
+    MusicXmlUtils musicXmlUtils = new MusicXmlUtils();
+    List<MusicXmlNote> list = musicXmlUtils.getMusicXmlBaseNotes(120, 4);
 
-    double seconds = musicXmlNoteUtils.getNoteDurationInSeconds(4,list);
+    double seconds = musicXmlUtils.getNoteDurationInSeconds(4,list);
     assertEquals(0.5d, seconds);
 
-    seconds = musicXmlNoteUtils.getNoteDurationInSeconds(2,list);
+    seconds = musicXmlUtils.getNoteDurationInSeconds(2,list);
     assertEquals(0.25d, seconds);
 
-    seconds = musicXmlNoteUtils.getNoteDurationInSeconds(8,list);
+    seconds = musicXmlUtils.getNoteDurationInSeconds(8,list);
     assertEquals(1d, seconds);
+  }
+
+  @Test
+  void getSongNameFromMusicxmlFile() {
+    String result = null;
+    ClassLoader classLoader = getClass().getClassLoader();
+    File musicXmlFile = new File(classLoader.getResource("example.musicxml").getFile());
+    try {
+      result = MusicXmlUtils.getSongNameFromMusicxmlFile(musicXmlFile);
+    } catch (IOException ignored) {}
+    assertEquals("test", result);
   }
 }

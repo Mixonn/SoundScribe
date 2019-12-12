@@ -3,7 +3,7 @@ package com.soundscribe.converters.musicxml.functions;
 import com.soundscribe.converters.PyinNote;
 import com.soundscribe.converters.XmlConverter;
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
-import com.soundscribe.converters.musicxml.utilities.MusicXmlNoteUtils;
+import com.soundscribe.converters.musicxml.utilities.MusicXmlUtils;
 import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.utilities.MidiNotes;
 import lombok.Getter;
@@ -43,7 +43,7 @@ public class MusicXmlToMidi {
    * @return XmlPojo object
    */
   private XmlPojo musicXmlToXmlPojo(File musicXml) {
-    MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils();
+    MusicXmlUtils musicXmlUtils = new MusicXmlUtils();
     XmlPojo xmlPojo = new XmlPojo();
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     DocumentBuilder builder;
@@ -68,7 +68,7 @@ public class MusicXmlToMidi {
     int divisions = Integer.parseInt(divisionsElement.getTextContent());
     xmlPojo.setDivisions(divisions);
 
-    List<MusicXmlNote> noteTimes = musicXmlNoteUtils.getMusicXmlBaseNotes(bpm, divisions);
+    List<MusicXmlNote> noteTimes = musicXmlUtils.getMusicXmlBaseNotes(bpm, divisions);
 
     List<PyinNote> noteList = new ArrayList<>();
     NodeList nList = document.getElementsByTagName("note");
@@ -80,7 +80,7 @@ public class MusicXmlToMidi {
 
         int duration =
                 Integer.parseInt(eElement.getElementsByTagName("duration").item(0).getTextContent());
-        double durationInSeconds = musicXmlNoteUtils.getNoteDurationInSeconds(duration, noteTimes);
+        double durationInSeconds = musicXmlUtils.getNoteDurationInSeconds(duration, noteTimes);
 
         if (eElement.getElementsByTagName("pitch").getLength() > 0) {
           Element pitchElement = (Element) eElement.getElementsByTagName("pitch").item(0);
