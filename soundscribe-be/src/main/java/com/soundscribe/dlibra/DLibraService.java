@@ -1,5 +1,6 @@
 package com.soundscribe.dlibra;
 
+import com.soundscribe.converters.musicxml.utilities.MusicXmlUtils;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -138,27 +139,6 @@ public class DLibraService {
   }
 
   /**
-   * Loads name of the song from musicXml file.
-   *
-   * @param musicxml MusicXml file with song data.
-   * @return Name of song
-   * @throws IOException
-   */
-  private String getSongNameFromMusicxmlFile(File musicxml) throws IOException {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder builder;
-    Document document;
-    try {
-      builder = factory.newDocumentBuilder();
-      document = builder.parse(musicxml);
-    } catch (Exception e) {
-      throw new IOException("Failed to load song name from musicXml file.", e);
-    }
-    document.getDocumentElement().normalize();
-    return document.getElementsByTagName("movement-title").item(0).getTextContent();
-  }
-
-  /**
    * Creates all necessary properties files to upload publication.
    *
    * @param musicxml Main publication file. Contains all necessary information about song.
@@ -170,7 +150,7 @@ public class DLibraService {
       throws IOException {
 
     String mainFileName = musicxml.getName();
-    String title = getSongNameFromMusicxmlFile(musicxml);
+    String title = MusicXmlUtils.getSongNameFromMusicxmlFile(musicxml);
     createPublicationProperties(mainDirectory.getAbsolutePath(), title, mainFileName, id);
     createMetaData(mainDirectory.getAbsolutePath(), title);
   }

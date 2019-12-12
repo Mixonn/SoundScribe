@@ -2,7 +2,7 @@ package com.soundscribe.converters.xml.functions;
 
 import com.soundscribe.converters.PyinNote;
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
-import com.soundscribe.converters.musicxml.utilities.MusicXmlNoteUtils;
+import com.soundscribe.converters.musicxml.utilities.MusicXmlUtils;
 import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import lombok.RequiredArgsConstructor;
@@ -149,15 +149,15 @@ public class XmlToMusicXml {
    * @param xmlPojo Object with song data.
    */
   private void addNotesToMusicXml(Element measure, Document document, XmlPojo xmlPojo) {
-    MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils();
-    List<MusicXmlNote> musicXmlBaseNotes = musicXmlNoteUtils
+    MusicXmlUtils musicXmlUtils = new MusicXmlUtils();
+    List<MusicXmlNote> musicXmlBaseNotes = musicXmlUtils
         .getMusicXmlBaseNotes(xmlPojo.getBpm(), xmlPojo.getDivisions());
     int numberOfNotes = xmlPojo.getNotes().size();
     for (int i = 0; i < numberOfNotes; i++) {
       PyinNote note = xmlPojo.getNotes().get(i);
       String stepValue = getStep(note.getLetterNote());
       String octaveValue = getOctave(note.getLetterNote());
-      MusicXmlNote musicXmlNote = musicXmlNoteUtils
+      MusicXmlNote musicXmlNote = musicXmlUtils
           .chooseBestNoteByDurationInSeconds(note.getDurationInSeconds(), musicXmlBaseNotes, true,
               false);
 
@@ -172,7 +172,7 @@ public class XmlToMusicXml {
         PyinNote nextNote = xmlPojo.getNotes().get(i + 1);
         double secondsForRest =
             nextNote.getTimestamp() - note.getTimestamp() - note.getDurationInSeconds();
-        musicXmlNote = musicXmlNoteUtils
+        musicXmlNote = musicXmlUtils
             .chooseBestNoteByDurationInSeconds(secondsForRest, musicXmlBaseNotes, true, false);
         if (musicXmlNote != null) {
           Element noteElement = createNote(document, stepValue, octaveValue,
