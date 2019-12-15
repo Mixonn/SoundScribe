@@ -73,7 +73,9 @@ export default {
       currentAbcFragment: '(none)',
       tune: {
         text: 'X:1\nT: Cooley\'s\nM: 4/4\nL: 1/8\nR: reel\nK: Emin\nD2DD||',
-        defaultNoteLength: null
+        meta: {
+          defaultNoteLength: null
+        }
       },
       currentNode: {
         id: null,
@@ -125,7 +127,7 @@ export default {
       const data = await this.$axios.$get('/songs/MRegWOs_T0006A_01.abc');
       console.log(data);
       this.tune.text = data.trim();
-      this.tune.defaultNoteLength = extractMetadata(this.tune.text);
+      this.tune.meta = extractMetadata(this.tune.text);
     },
     onNodeClick (abcElem, tuneNumber, classes) {
       console.log(abcElem);
@@ -160,7 +162,7 @@ export default {
     },
     changeNoteLength (length) {
       this.modifyNoteOperation(MODIFY_OPERATIONS.CHANGE_LENGTH, {
-        defaultNoteLength: this.tune.defaultNoteLength,
+        defaultNoteLength: this.tune.meta.defaultNoteLength,
         targetLength: length
       });
     },

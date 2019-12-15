@@ -96,18 +96,27 @@ class Note {
   changeLength (targetLength, defaultNoteLength) {
     let left = 1 / 32;
     let right = 2 / 32;
-    while (this.getNumericNoteLength(this.nodeLength) > left) {
+    while (this.getNumericNoteLength(this.nodeLength) > right) {
       left *= 2;
       right *= 2;
     }
-    if (left === this.getNumericNoteLength(this.nodeLength)) {
-      if (Number.isInteger(defaultNoteLength / targetLength)) {
-        this.nodeLength = (defaultNoteLength / targetLength).toString();
-      } else {
-        this.nodeLength = `${defaultNoteLength}/${targetLength}`;
-      }
+    const dotCount = this.getDotsCount(left, right);
+    if (Number.isInteger(defaultNoteLength / targetLength) && dotCount === 0) {
+      this.nodeLength = (defaultNoteLength / targetLength).toString(); // case when shortening the fraction is avaiable
     } else {
-      console.log('Dots not implemented yet');
+      let x = defaultNoteLength;
+      let y = targetLength;
+      switch (dotCount) {
+        case 1:
+          x = x * 2 + 1;
+          y = y * 2;
+          break;
+        case 2:
+          x = x * 3 + 1;
+          y = y * 2;
+          break;
+      }
+      this.nodeLength = `${x}/${y}`;
     }
   }
 
@@ -152,6 +161,34 @@ class Note {
       return parseFloat(noteLength);
     }
   }
+
+  getFractionNoteLength (noteLength) {
+    if (noteLength.includes('/')) {
+      const split = noteLength.split('/');
+      return {
+        left: parseInt(split[0]),
+        right: parseInt(split[1])
+      };
+    } else {
+      return {
+        left: parseInt(noteLength),
+        right: 1
+      };
+    }
+  }
+
+  getDotsCount (left, right) {
+    const originalFraction = this.getFractionNoteLength(this.nodeLength);
+    const nominator = originalFraction.left;
+    const denominator = originalFraction.right;
+    if (right === this.getNumericNoteLength(this.nodeLength)) {
+      return 0;
+    } else if (nominator / denominator <= (left + right) / 2) {
+      return 1;
+    } else {
+      return 2;
+    }
+  }
 }
 
 function moveDown (note) {
@@ -176,4 +213,8 @@ function changeLength (note, defaultNoteLength, targetLength) {
   const noteObj = new Note(note);
   noteObj.changeLength(targetLength, defaultNoteLength);
   return noteObj.toString();
+}
+
+function nearlyEquals (a, b, epsilon) {
+  return (a - b) < epsilon;
 }

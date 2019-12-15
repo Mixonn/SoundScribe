@@ -5,7 +5,9 @@ export function extractMetadata (tune) {
     if (line.includes('/')) {
       line = line.substring(2, line.length).trim();
       const splitted = line.match(/[^/]+/g);
-      return splitted[1] / splitted[0];
+      return {
+        defaultNoteLength: splitted[1] / splitted[0]
+      };
     }
   }
 }
