@@ -25,8 +25,11 @@
     <button @click="removeNote">
       Remove
     </button>
-    <button @click="addNote">
+    <button @click="addNote('A')">
       Add note
+    </button>
+    <button @click="addNote('z')">
+      Add Pause
     </button>
     <div id="note-length-container">
       <button @click="changeNoteLength(1)">
@@ -155,10 +158,10 @@ export default {
     removeNote () {
       this.modifyNoteOperation(MODIFY_OPERATIONS.REMOVE)
     },
-    addNote () {
+    addNote (noteText) {
       let selectionLeft, selectionRight;
       if (this.currentNode.start == null) {
-        this.tune.text += ' A';
+        this.tune.text += ' ' + noteText;
         selectionLeft = this.tune.text.length - 3;
         selectionRight = this.tune.text.length - 1;
       } else {
@@ -166,7 +169,7 @@ export default {
         const right = this.tune.text.slice(this.currentNode.end).trim();
         selectionLeft = left.length + 1;
         selectionRight = selectionLeft + 2;
-        this.tune.text = left + ' A ' + right;
+        this.tune.text = `${left} ${noteText} ${right}`;
       }
       this.redrawTune();
       this.showSelection(selectionLeft, selectionRight);
