@@ -94,30 +94,34 @@ class Note {
    * @param defaultNoteLength
    */
   changeLength (targetLength, defaultNoteLength) {
-    let left = 1 / 32;
-    let right = 2 / 32;
-    while (this.getNumericNoteLength(this.nodeLength) > right) {
-      left *= 2;
-      right *= 2;
-    }
-    const dotCount = this.getDotsCount(left, right);
+    const dotCount = this.getDotsCount();
     if (Number.isInteger(defaultNoteLength / targetLength) && dotCount === 0) {
       this.nodeLength = (defaultNoteLength / targetLength).toString(); // case when shortening the fraction is avaiable
     } else {
-      let x = defaultNoteLength;
-      let y = targetLength;
-      switch (dotCount) {
-        case 1:
-          x = x * 2 + 1;
-          y = y * 2;
-          break;
-        case 2:
-          x = x * 3 + 1;
-          y = y * 2;
-          break;
-      }
-      this.nodeLength = `${x}/${y}`;
+      this.nodeLength = `${defaultNoteLength}/${targetLength}`;
+      this.setDots(dotCount);
     }
+  }
+
+  setDots (dotsCount) {
+    const noteFractions = this.getFractionNoteLength(this.nodeLength);
+    let left = 0.5;
+    while (noteFractions.left >= left) {
+      left *= 2;
+    }
+    left /= 2;
+    noteFractions.left = left;
+    switch (dotsCount) {
+      case 1:
+        noteFractions.left = noteFractions.left * 2 + 1;
+        noteFractions.right = noteFractions.right * 2;
+        break;
+      case 2:
+        noteFractions.left = noteFractions.left * 3 + 1;
+        noteFractions.right = noteFractions.right * 2;
+        break;
+    }
+    this.nodeLength = `${noteFractions.left}/${noteFractions.right}`;
   }
 
   toString () {
@@ -177,7 +181,13 @@ class Note {
     }
   }
 
-  getDotsCount (left, right) {
+  getDotsCount () {
+    let left = 1 / 32;
+    let right = 2 / 32;
+    while (this.getNumericNoteLength(this.nodeLength) > right) {
+      left *= 2;
+      right *= 2;
+    }
     const originalFraction = this.getFractionNoteLength(this.nodeLength);
     const nominator = originalFraction.left;
     const denominator = originalFraction.right;
