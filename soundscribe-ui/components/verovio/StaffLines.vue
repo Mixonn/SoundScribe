@@ -48,6 +48,14 @@
         32
       </button>
     </div>
+    <div id="note-modifiers-container">
+      <button @click="setDots(1)">
+        .
+      </button>
+      <button @click="setDots(2)">
+        ..
+      </button>
+    </div>
     <div id="paper" />
   </div>
 </template>
@@ -55,7 +63,7 @@
 <script>
 import 'abcjs/abcjs-midi.css';
 import abcjs from 'abcjs/midi';
-import { MODIFY_OPERATIONS, modifyNote, replaceSubstring } from './NodeModifier';
+import { getNoteMetadata, MODIFY_OPERATIONS, modifyNote, replaceSubstring } from './NodeModifier';
 import { extractMetadata } from './TuneService';
 const fs = require('fs');
 const $ = require('jquery');
@@ -80,7 +88,9 @@ export default {
       currentNode: {
         id: null,
         start: null,
-        end: null
+        end: null,
+        text: null,
+        dotCount: null
       }
     }
   },
@@ -134,6 +144,7 @@ export default {
       this.currentNode.start = abcElem.startChar;
       this.currentNode.end = abcElem.endChar;
       this.currentNode.id = abcElem.__ob__.id;
+      this.reloadNote();
     },
     nodeUp () {
       this.modifyNoteOperation(MODIFY_OPERATIONS.UP);
@@ -166,8 +177,14 @@ export default {
         targetLength: length
       });
     },
+    setDots (dotsCount) {
+      this.modifyNoteOperation(MODIFY_OPERATIONS.DOT, { dotCount: dotsCount });
+    },
     modifyNoteOperation (operation, opts) {
-      const nodeStr = this.tune.text.substr(this.currentNode.start, (this.currentNode.end - this.currentNode.start));
+      if (this.currentNode.start === null) {
+        return;
+      }
+      const nodeStr = this.currentNode.text;
       let modifiedNode = modifyNote(operation, nodeStr, opts);
       console.log(modifiedNode);
       if (nodeStr[nodeStr.length - 1] === ' ' && modifiedNode[modifiedNode.length - 1] !== ' ') {
@@ -194,6 +211,7 @@ export default {
       if (this.abcjsEditor.editarea != null) {
         this.currentNode.start = from;
         this.currentNode.end = to;
+        this.reloadNote();
         this.abcjsEditor.editarea.setSelection(this.currentNode.start, this.currentNode.end);
       }
     },
@@ -201,6 +219,14 @@ export default {
       this.currentNode.id = null;
       this.currentNode.start = null;
       this.currentNode.end = null;
+      this.currentNode.text = null;
+      this.currentNode.dotCount = null;
+    },
+    reloadNote () {
+      this.currentNode.text = this.tune.text.substr(
+        this.currentNode.start, (this.currentNode.end - this.currentNode.start)
+      );
+      this.currentNode.dotCount = getNoteMetadata(this.currentNode.text).dotsCount;
     }
   }
 }
@@ -251,5 +277,9 @@ export default {
   #note-length-container {
     background-color: antiquewhite;
     color: red;
+  }
+  #note-modifiers-container {
+    background-color: #abb0fa;
+    color: #0942ff;
   }
 </style>

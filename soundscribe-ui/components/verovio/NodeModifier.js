@@ -3,7 +3,8 @@ export const MODIFY_OPERATIONS = {
   UP: 'up',
   DOWN: 'down',
   REMOVE: 'remove',
-  CHANGE_LENGTH: 'change_length'
+  CHANGE_LENGTH: 'change_length',
+  DOT: 'dot'
 };
 
 const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'c', 'd', 'e', 'f', 'g', 'a', 'b'];
@@ -21,6 +22,11 @@ export function modifyNote (operation, note, opts) {
         return changeLength(note, opts.defaultNoteLength, opts.targetLength);
       }
       throw new Error('Cannot change note length without passing opts.defaultNoteLength or opts.targetLength');
+    case MODIFY_OPERATIONS.DOT:
+      if (opts.dotCount) {
+        return setDotCount(note, opts.dotCount);
+      }
+      return note;
     default:
       return note;
   }
@@ -28,6 +34,13 @@ export function modifyNote (operation, note, opts) {
 
 export function replaceSubstring (original, start, end, replacement) {
   return original.substr(0, start) + replacement + original.substr(end - 1, original.length)
+}
+
+export function getNoteMetadata (note, opts) {
+  const noteObj = new Note(note);
+  return {
+    dotsCount: noteObj.getDotsCount()
+  }
 }
 
 class Note {
@@ -222,6 +235,12 @@ function moveUp (note) {
 function changeLength (note, defaultNoteLength, targetLength) {
   const noteObj = new Note(note);
   noteObj.changeLength(targetLength, defaultNoteLength);
+  return noteObj.toString();
+}
+
+function setDotCount (note, dotCount) {
+  const noteObj = new Note(note);
+  noteObj.setDots(dotCount);
   return noteObj.toString();
 }
 
