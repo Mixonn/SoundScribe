@@ -2,21 +2,14 @@ package com.soundscribe.dlibra;
 
 import com.soundscribe.converters.musicxml.utilities.MusicXmlUtils;
 import com.soundscribe.utilities.SoundscribeConfiguration;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -56,14 +49,60 @@ public class DLibraService {
           }
         }
       } else {
-        throw new IOException("Faild to create Audio directory.");
+          throw new IOException("Failed to create Audio directory.");
       }
     } else {
-      throw new IOException("Faild to create upload directory.");
+        throw new IOException("Failed to create upload directory.");
     }
 
     return uploadCreatedDictionary(mainDirectory);
   }
+
+    /**
+     * Downloads given collection from dLibra. Returns path to the directory with downloaded results.
+     *
+     * @param id Publication ID
+     * @throws IOException if dLibra script failed
+     */
+    public File downloadCollection(Integer id) throws IOException {
+        File mainDirectory = new File(soundscribeConfiguration.getDownloadDirectory());
+        File subDirectory;
+
+        if (!mainDirectory.exists()) {
+            mainDirectory.mkdir();
+        }
+
+        subDirectory = new File(mainDirectory, String.valueOf(id));
+        if (subDirectory.exists()) {
+            deleteDir(subDirectory);
+        }
+
+        if (!subDirectory.mkdir()) {
+            throw new IOException("Failed to create subdirectory.");
+        }
+
+        Process process =
+                new ProcessBuilder(
+                        "sh",
+                        soundscribeConfiguration.getPathToDLibraScript() + "/dlibra-cmdln.sh",
+                        "download-objects",
+                        String.valueOf(id),
+                        subDirectory.getAbsolutePath())
+                        .start();
+
+        int status;
+        try {
+            status = process.waitFor();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            status = 1;
+        }
+
+        if (status != 0) {
+            throw new IOException("DLibra script returned with non-zero code.");
+        }
+        return subDirectory;
+    }
 
   /**
    * Uploads already prepared dictionary as publication to dLibra.
