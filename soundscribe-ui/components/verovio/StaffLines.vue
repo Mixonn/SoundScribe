@@ -49,11 +49,11 @@
       </button>
     </div>
     <div id="note-modifiers-container">
-      <button @click="setDots(1)">
-        .
+      <button :class="{ active: currentNode.dotCount === 1 }" @click="setDots(1)">
+        &#9210;
       </button>
-      <button @click="setDots(2)">
-        ..
+      <button :class="{ active: currentNode.dotCount === 2 }" @click="setDots(2)">
+        &#9210;&#9210;
       </button>
     </div>
     <div id="paper" />
@@ -178,7 +178,11 @@ export default {
       });
     },
     setDots (dotsCount) {
-      this.modifyNoteOperation(MODIFY_OPERATIONS.DOT, { dotCount: dotsCount });
+      if (this.currentNode.dotCount === dotsCount) {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.DOT, { dotCount: 0 });
+      } else {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.DOT, { dotCount: dotsCount });
+      }
     },
     modifyNoteOperation (operation, opts) {
       if (this.currentNode.start === null) {
@@ -280,6 +284,10 @@ export default {
   }
   #note-modifiers-container {
     background-color: #abb0fa;
-    color: #0942ff;
+    color: #695fff;
+    font-size: large;
+    .active {
+      color: #0942ff;
+    }
   }
 </style>
