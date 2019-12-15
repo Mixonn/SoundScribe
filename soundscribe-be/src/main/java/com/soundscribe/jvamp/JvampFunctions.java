@@ -5,5 +5,6 @@ package com.soundscribe.jvamp;
  */
 public enum JvampFunctions {
   NOTES,
-  SMOOTHED_PITCH_TRACK;
+    SMOOTHED_PITCH_TRACK,
+    SIMPLE_FIXED_TEMPO_ESTIMATOR
 }

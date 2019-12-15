@@ -1,6 +1,5 @@
 package com.soundscribe.jvamp;
 
-import com.soundscribe.core.BeatDetector;
 import com.soundscribe.utilities.MidiNotes;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +21,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +34,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class Host {
 
-  private final BeatDetector beatDetector;
   private final SoundscribeConfiguration soundscribeConfiguration;
 
   /**
@@ -54,12 +51,13 @@ public class Host {
           RealTime frameTime,
           Integer output,
           Map<Integer, List<Feature>> features,
-          File xmlFile,
-          File mp3File) {
+          File xmlFile) {
     int midiValue;
     if (!features.containsKey(output)) {
       return;
     }
+      File mp3File = new File(soundscribeConfiguration.getSongDataStorage() + filename + ".mp3");
+      File wavFile = new File(soundscribeConfiguration.getSongDataStorage() + filename + ".wav");
 
     try {
       DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
@@ -70,7 +68,7 @@ public class Host {
       document.appendChild(root);
 
       Element bpm = document.createElement("bpm");
-      bpm.appendChild(document.createTextNode(beatDetector.analyzeTrack(mp3File).toString()));
+        bpm.appendChild(document.createTextNode(estimateTempo(wavFile, mp3File, true)));
       root.appendChild(bpm);
 
       Element divisions = document.createElement("divisions");
@@ -131,7 +129,6 @@ public class Host {
   }
 
   private void printSmoothedPitch(
-          String filename,
           RealTime frameTime,
           Integer output,
           Map<Integer, List<Feature>> features,
@@ -161,6 +158,24 @@ public class Host {
     }
   }
 
+    private void printTempo(Map<Integer, List<Feature>> features, Integer output, File file) {
+        try {
+            PrintWriter writer = new PrintWriter(file, "UTF-8");
+
+            for (Feature f : features.get(output)) {
+                for (float v : f.values) {
+                    writer.println(String.valueOf((int) v));
+                    writer.flush();
+                    writer.close();
+                    return;
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Could not save result of tempo estimator to file", e);
+        }
+    }
+
   private int readBlock(AudioFormat format, AudioInputStream stream, float[][] buffers)
       throws IOException {
     // 16-bit LE signed PCM only
@@ -185,15 +200,20 @@ public class Host {
   public File start(JvampFunctions function, File file, File fileMp3) throws PyinConversionException {
     File xmlFile = null;
     File smoothedFile = null;
+      File tempoFile = null;
     String key = null;
     PluginLoader loader = PluginLoader.getInstance();
     String fileName = file.getName().split("\\.")[0];
     if (function == JvampFunctions.NOTES) {
       key = "pyin:pyin:notes";
       xmlFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".xml");
+    } else if (function == JvampFunctions.SMOOTHED_PITCH_TRACK) {
+        key = "pyin:pyin:smoothedpitchtrack";
+        smoothedFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".txt");
     } else {
-      key = "pyin:pyin:smoothedpitchtrack";
-      smoothedFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".txt");
+        // key = "vamp-aubio:aubiotempo:tempo";
+        key = "vamp-example-plugins:fixedtempo:tempo";
+        tempoFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + "_tempo.txt");
     }
 
     String[] keyparts = key.split(":");
@@ -246,6 +266,8 @@ public class Host {
       boolean incomplete = false;
       int block = 0;
 
+        Map<Integer, List<Feature>> actualFeatures = null;
+
       while (!done) {
 
         for (int c = 0; c < channels; ++c) {
@@ -272,6 +294,14 @@ public class Host {
 
           RealTime timestamp = RealTime.frame2RealTime(block * blockSize, (int) (rate + 0.5));
 
+            Map<Integer, List<Feature>>
+                    features = p.process(buffers, timestamp);
+
+            if (function == JvampFunctions.SIMPLE_FIXED_TEMPO_ESTIMATOR && features != null
+                    && features.containsKey(outputNumber)) {
+                actualFeatures = features;
+            }
+
           p.process(buffers, timestamp);
         }
 
@@ -282,9 +312,11 @@ public class Host {
 
       RealTime timestamp = RealTime.frame2RealTime(block * blockSize, (int) (rate + 0.5));
       if (function == JvampFunctions.NOTES) {
-        printNotes(fileName, timestamp, outputNumber, features, xmlFile, fileMp3);
+          printNotes(fileName, timestamp, outputNumber, features, xmlFile);
+      } else if (function == JvampFunctions.SMOOTHED_PITCH_TRACK) {
+          printSmoothedPitch(timestamp, outputNumber, features, smoothedFile);
       } else {
-        printSmoothedPitch(fileName, timestamp, outputNumber, features, smoothedFile);
+          printTempo(actualFeatures, outputNumber, tempoFile);
       }
 
       p.dispose();
@@ -297,6 +329,56 @@ public class Host {
     } catch (PluginLoader.LoadFailedException e) {
       log.error("Plugin load failed (unknown plugin?): key is " + key);
     }
-    return xmlFile;
+
+      if (function == JvampFunctions.NOTES) {
+          return xmlFile;
+      } else if (function == JvampFunctions.SMOOTHED_PITCH_TRACK) {
+          return smoothedFile;
+      } else {
+          return tempoFile;
+      }
+  }
+
+    /**
+     * Estimates tempo using one of JVamp plugins.
+     *
+     * @param fileWav     WAV file
+     * @param fileMp3     MP3 file
+     * @param deleteAfter Should the file be treated as temporary
+     * @return
+     */
+    String estimateTempo(File fileWav, File fileMp3, boolean deleteAfter) {
+        File tempoFile = null;
+        String defaultBpm = "120";
+
+        try {
+            tempoFile = start(JvampFunctions.SIMPLE_FIXED_TEMPO_ESTIMATOR, fileWav, fileMp3);
+        } catch (PyinConversionException e) {
+            log.debug("Cannot run tempo estimator plugin");
+            return defaultBpm;
+        }
+        String bpmRaw;
+
+        try {
+            InputStream is = new FileInputStream(tempoFile);
+            bpmRaw = new BufferedReader(new InputStreamReader(is)).readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return defaultBpm;
+        }
+
+        if (deleteAfter) {
+            try {
+                Files.delete(fileWav.toPath());
+            } catch (IOException e) {
+                log.debug("The wav file cannot be deleted. This file no longer exists.");
+            }
+        }
+
+        if (bpmRaw == null) {
+            return defaultBpm;
+        } else {
+            return bpmRaw;
+        }
   }
 }
