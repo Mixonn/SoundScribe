@@ -1,6 +1,5 @@
 package com.soundscribe.jvamp;
 
-import com.soundscribe.core.BeatDetector;
 import com.soundscribe.utilities.MidiNotes;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import lombok.RequiredArgsConstructor;
@@ -22,22 +21,165 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Host is slightly modified jVAMP class. It provides support for loading VAMP plugins.
+ * Source: https://github.com/c4dm/jvamp
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class Host {
 
-  private final BeatDetector beatDetector;
   private final SoundscribeConfiguration soundscribeConfiguration;
+
+  public File start(JvampFunctions function, File file) throws PyinConversionException {
+    File xmlFile = null;
+    File smoothedFile = null;
+    File tempoFile = null;
+    String key;
+    PluginLoader loader = PluginLoader.getInstance();
+    String fileName = file.getName().split("\\.")[0];
+    if (function == JvampFunctions.NOTES) {
+      key = "pyin:pyin:notes";
+      xmlFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".xml");
+    } else if (function == JvampFunctions.SMOOTHED_PITCH_TRACK) {
+      key = "pyin:pyin:smoothedpitchtrack";
+      smoothedFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".txt");
+    } else {
+      // key = "vamp-aubio:aubiotempo:tempo";
+      key = "vamp-example-plugins:fixedtempo:tempo";
+      tempoFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + "_tempo.txt");
+    }
+
+    String[] keyparts = key.split(":");
+
+    String pluginKey = keyparts[0] + ":" + keyparts[1];
+    String outputKey = keyparts[2];
+
+    try {
+      AudioInputStream stream = AudioSystem.getAudioInputStream(file);
+      AudioFormat format = stream.getFormat();
+
+      if (format.getSampleSizeInBits() != 16
+              || format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED
+              || format.isBigEndian()) {
+        log.error("Sorry, only 16-bit signed little-endian PCM files supported");
+        throw new PyinConversionException(
+                "Sorry, only 16-bit signed little-endian PCM files supported");
+      }
+
+      float rate = format.getFrameRate();
+      int channels = format.getChannels();
+      int blockSize = 1024; // frames
+
+      Plugin p = loader.loadPlugin(pluginKey, rate, PluginLoader.AdapterFlags.ADAPT_ALL);
+
+      OutputDescriptor[] outputs = p.getOutputDescriptors();
+      int outputNumber = -1;
+      for (int i = 0; i < outputs.length; ++i) {
+        if (outputs[i].identifier.equals(outputKey)) {
+          outputNumber = i;
+        }
+      }
+      if (outputNumber < 0) {
+        log.error("Plugin lacks output id: " + outputKey);
+        log.error("Outputs are:");
+        for (OutputDescriptor output : outputs) {
+          log.error(" " + output.identifier);
+        }
+        throw new PyinConversionException("Invalid number of keys");
+      }
+
+      boolean b = p.initialise(channels, blockSize, blockSize);
+      if (!b) {
+        log.error("Plugin initialise failed");
+        throw new PyinConversionException("Plugin initialise failed");
+      }
+
+      float[][] buffers = new float[channels][blockSize];
+
+      boolean done = false;
+      boolean incomplete = false;
+      int block = 0;
+
+      Map<Integer, List<Feature>> actualFeatures = null;
+
+      while (!done) {
+
+        for (int c = 0; c < channels; ++c) {
+          for (int i = 0; i < blockSize; ++i) {
+            buffers[c][i] = 0.0f;
+          }
+        }
+
+        int read = readBlock(format, stream, buffers);
+
+        if (read < 0) {
+          done = true;
+        } else {
+
+          if (incomplete) {
+            // An incomplete block is only OK if it's the
+            // last one -- so if the previous block was
+            // incomplete, we have trouble
+            log.error("Audio file read incomplete! Short buffer detected at " + block * blockSize);
+            throw new PyinConversionException(
+                    "Audio file read incomplete! Short buffer detected at " + block * blockSize);
+          }
+
+          incomplete = (read < buffers[0].length);
+
+          RealTime timestamp = RealTime.frame2RealTime(block * blockSize, (int) (rate + 0.5));
+
+          Map<Integer, List<Feature>> features = p.process(buffers, timestamp);
+
+          if (function == JvampFunctions.SIMPLE_FIXED_TEMPO_ESTIMATOR
+                  && features != null
+                  && features.containsKey(outputNumber)) {
+            actualFeatures = features;
+          }
+
+          p.process(buffers, timestamp);
+        }
+
+        ++block;
+      }
+
+      Map<Integer, List<Feature>> features = p.getRemainingFeatures();
+
+      RealTime timestamp = RealTime.frame2RealTime(block * blockSize, (int) (rate + 0.5));
+      if (function == JvampFunctions.NOTES) {
+        printNotes(fileName, timestamp, outputNumber, features, xmlFile);
+      } else if (function == JvampFunctions.SMOOTHED_PITCH_TRACK) {
+        printSmoothedPitch(timestamp, outputNumber, features, smoothedFile);
+      } else {
+        printTempo(actualFeatures, outputNumber, tempoFile);
+      }
+
+      p.dispose();
+    } catch (IOException e) {
+      log.error("Failed to read audio file: " + e.getMessage());
+
+    } catch (UnsupportedAudioFileException e) {
+      log.error("Unsupported audio file format: " + e.getMessage());
+
+    } catch (PluginLoader.LoadFailedException e) {
+      log.error("Plugin load failed (unknown plugin?): key is " + key);
+    }
+
+    if (function == JvampFunctions.NOTES) {
+      return xmlFile;
+    } else if (function == JvampFunctions.SMOOTHED_PITCH_TRACK) {
+      return smoothedFile;
+    } else {
+      return tempoFile;
+    }
+  }
 
   /**
    * Generates xml file from data calculated by pYIN algorithm. Additionaly it adds letterNote
@@ -54,12 +196,12 @@ public class Host {
           RealTime frameTime,
           Integer output,
           Map<Integer, List<Feature>> features,
-          File xmlFile,
-          File mp3File) {
+          File xmlFile) {
     int midiValue;
     if (!features.containsKey(output)) {
       return;
     }
+    File wavFile = new File(soundscribeConfiguration.getSongDataStorage() + filename + ".wav");
 
     try {
       DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
@@ -70,7 +212,7 @@ public class Host {
       document.appendChild(root);
 
       Element bpm = document.createElement("bpm");
-      bpm.appendChild(document.createTextNode(beatDetector.analyzeTrack(mp3File).toString()));
+      bpm.appendChild(document.createTextNode(estimateTempo(wavFile, true)));
       root.appendChild(bpm);
 
       Element divisions = document.createElement("divisions");
@@ -131,11 +273,7 @@ public class Host {
   }
 
   private void printSmoothedPitch(
-          String filename,
-          RealTime frameTime,
-          Integer output,
-          Map<Integer, List<Feature>> features,
-          File file) {
+          RealTime frameTime, Integer output, Map<Integer, List<Feature>> features, File file) {
     if (!features.containsKey(output)) {
       return;
     }
@@ -161,6 +299,31 @@ public class Host {
     }
   }
 
+  /**
+   * Prints single fixed tempo to given file.
+   *
+   * @param features Features calculated by Vamp plugin
+   * @param output   An identifier calculated by Vamp plugin
+   * @param file     File to which the content is written to
+   */
+  private void printTempo(Map<Integer, List<Feature>> features, Integer output, File file) {
+    try {
+      PrintWriter writer = new PrintWriter(file, "UTF-8");
+
+      for (Feature f : features.get(output)) {
+        for (float v : f.values) {
+          writer.println((int) v);
+          writer.flush();
+          writer.close();
+          return;
+        }
+      }
+
+    } catch (Exception e) {
+      log.error("Could not save result of tempo estimator to file", e);
+    }
+  }
+
   private int readBlock(AudioFormat format, AudioInputStream stream, float[][] buffers)
       throws IOException {
     // 16-bit LE signed PCM only
@@ -182,121 +345,45 @@ public class Host {
     return frames;
   }
 
-  public File start(JvampFunctions function, File file, File fileMp3) throws PyinConversionException {
-    File xmlFile = null;
-    File smoothedFile = null;
-    String key = null;
-    PluginLoader loader = PluginLoader.getInstance();
-    String fileName = file.getName().split("\\.")[0];
-    if (function == JvampFunctions.NOTES) {
-      key = "pyin:pyin:notes";
-      xmlFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".xml");
-    } else {
-      key = "pyin:pyin:smoothedpitchtrack";
-      smoothedFile = new File(soundscribeConfiguration.getSongDataStorage() + fileName + ".txt");
-    }
-
-    String[] keyparts = key.split(":");
-
-    String pluginKey = keyparts[0] + ":" + keyparts[1];
-    String outputKey = keyparts[2];
+  /**
+   * Estimates tempo using one of JVamp plugins.
+   *
+   * @param fileWav     WAV file
+   * @param deleteAfter Should the file be treated as temporary
+   * @return String with bpm, i.e. "129"
+   */
+  private String estimateTempo(File fileWav, boolean deleteAfter) {
+    File tempoFile;
+    String defaultBpm = "120";
 
     try {
-      AudioInputStream stream = AudioSystem.getAudioInputStream(file);
-      AudioFormat format = stream.getFormat();
-
-      if (format.getSampleSizeInBits() != 16
-          || format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED
-          || format.isBigEndian()) {
-        log.error("Sorry, only 16-bit signed little-endian PCM files supported");
-        throw new PyinConversionException("Sorry, only 16-bit signed little-endian PCM files supported");
-      }
-
-      float rate = format.getFrameRate();
-      int channels = format.getChannels();
-      int blockSize = 1024; // frames
-
-      Plugin p = loader.loadPlugin(pluginKey, rate, PluginLoader.AdapterFlags.ADAPT_ALL);
-
-      OutputDescriptor[] outputs = p.getOutputDescriptors();
-      int outputNumber = -1;
-      for (int i = 0; i < outputs.length; ++i) {
-        if (outputs[i].identifier.equals(outputKey)) {
-          outputNumber = i;
-        }
-      }
-      if (outputNumber < 0) {
-        log.error("Plugin lacks output id: " + outputKey);
-        log.error("Outputs are:");
-        for (OutputDescriptor output : outputs) {
-          log.error(" " + output.identifier);
-        }
-        throw new PyinConversionException("Invalid number of keys");
-      }
-
-      boolean b = p.initialise(channels, blockSize, blockSize);
-      if (!b) {
-        log.error("Plugin initialise failed");
-        throw new PyinConversionException("Plugin initialise failed");
-      }
-
-      float[][] buffers = new float[channels][blockSize];
-
-      boolean done = false;
-      boolean incomplete = false;
-      int block = 0;
-
-      while (!done) {
-
-        for (int c = 0; c < channels; ++c) {
-          for (int i = 0; i < blockSize; ++i) {
-            buffers[c][i] = 0.0f;
-          }
-        }
-
-        int read = readBlock(format, stream, buffers);
-
-        if (read < 0) {
-          done = true;
-        } else {
-
-          if (incomplete) {
-            // An incomplete block is only OK if it's the
-            // last one -- so if the previous block was
-            // incomplete, we have trouble
-            log.error("Audio file read incomplete! Short buffer detected at " + block * blockSize);
-            throw new PyinConversionException("Audio file read incomplete! Short buffer detected at " + block * blockSize);
-          }
-
-          incomplete = (read < buffers[0].length);
-
-          RealTime timestamp = RealTime.frame2RealTime(block * blockSize, (int) (rate + 0.5));
-
-          p.process(buffers, timestamp);
-        }
-
-        ++block;
-      }
-
-      Map<Integer, List<Feature>> features = p.getRemainingFeatures();
-
-      RealTime timestamp = RealTime.frame2RealTime(block * blockSize, (int) (rate + 0.5));
-      if (function == JvampFunctions.NOTES) {
-        printNotes(fileName, timestamp, outputNumber, features, xmlFile, fileMp3);
-      } else {
-        printSmoothedPitch(fileName, timestamp, outputNumber, features, smoothedFile);
-      }
-
-      p.dispose();
-    } catch (IOException e) {
-      log.error("Failed to read audio file: " + e.getMessage());
-
-    } catch (UnsupportedAudioFileException e) {
-      log.error("Unsupported audio file format: " + e.getMessage());
-
-    } catch (PluginLoader.LoadFailedException e) {
-      log.error("Plugin load failed (unknown plugin?): key is " + key);
+      tempoFile = start(JvampFunctions.SIMPLE_FIXED_TEMPO_ESTIMATOR, fileWav);
+    } catch (PyinConversionException e) {
+      log.debug("Cannot run tempo estimator plugin", e);
+      return defaultBpm;
     }
-    return xmlFile;
+    String bpmRaw;
+
+    try {
+      InputStream is = new FileInputStream(tempoFile);
+      bpmRaw = new BufferedReader(new InputStreamReader(is)).readLine();
+    } catch (IOException e) {
+      log.debug("Cannot read the output of tempo estimator plugin", e);
+      return defaultBpm;
+    }
+
+    if (deleteAfter) {
+      try {
+        Files.delete(fileWav.toPath());
+      } catch (IOException e) {
+        log.debug("The wav file cannot be deleted. This file no longer exists.");
+      }
+    }
+
+    if (bpmRaw == null) {
+      return defaultBpm;
+    } else {
+      return bpmRaw;
+    }
   }
 }

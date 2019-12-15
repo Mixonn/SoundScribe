@@ -74,7 +74,6 @@ class CrossPlatformConverter {
 
   private boolean executeCommand(String... commands) {
     try {
-      System.out.println(Arrays.toString(commands));
       Process process =
               new ProcessBuilder().command(commands).directory(new File(directory)).start();
 
