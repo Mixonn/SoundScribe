@@ -14,3 +14,10 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+
+musicxml:
+  useBassKey: false
+  useDots: false
+
+  delete16thRest: true
+  delete16thPitch: false

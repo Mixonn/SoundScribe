@@ -2,6 +2,7 @@ package com.soundscribe.converters;
 
 import com.soundscribe.converters.xml.functions.XmlToMusicXml;
 import com.soundscribe.converters.xml.XmlPojo;
+import com.soundscribe.utilities.MusicXmlConfiguration;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,7 @@ public class XmlConverter extends Converter {
 
   XmlConverter(SoundscribeConfiguration soundscribeConfiguration) {
     super(soundscribeConfiguration);
-    xmlToMusicXml = new XmlToMusicXml(soundscribeConfiguration);
+    xmlToMusicXml = new XmlToMusicXml(soundscribeConfiguration, new MusicXmlConfiguration());
   }
 
   @Override

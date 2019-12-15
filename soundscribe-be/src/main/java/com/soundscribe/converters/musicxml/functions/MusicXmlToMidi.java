@@ -6,6 +6,7 @@ import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import com.soundscribe.converters.musicxml.utilities.MusicXmlNoteUtils;
 import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.utilities.MidiNotes;
+import com.soundscribe.utilities.MusicXmlConfiguration;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -30,6 +31,7 @@ import java.util.List;
 public class MusicXmlToMidi {
 
   private final XmlConverter xmlConverter;
+  private final MusicXmlNoteUtils musicXmlNoteUtils;
 
   public File convertMusicXmlToMidi(File musicXml) {
     XmlPojo xmlPojo = musicXmlToXmlPojo(musicXml);
@@ -43,7 +45,6 @@ public class MusicXmlToMidi {
    * @return XmlPojo object
    */
   private XmlPojo musicXmlToXmlPojo(File musicXml) {
-    MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils();
     XmlPojo xmlPojo = new XmlPojo();
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     DocumentBuilder builder;

@@ -1,6 +1,8 @@
 package com.soundscribe.converters;
 
 import com.soundscribe.converters.musicxml.functions.MusicXmlToMidi;
+import com.soundscribe.converters.musicxml.utilities.MusicXmlNoteUtils;
+import com.soundscribe.utilities.MusicXmlConfiguration;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,7 +18,7 @@ public class MusicXmlConverter extends Converter {
 
     MusicXmlConverter(SoundscribeConfiguration soundscribeConfiguration) {
         super(soundscribeConfiguration);
-        musicXmlToMidi = new MusicXmlToMidi(new XmlConverter(soundscribeConfiguration));
+        musicXmlToMidi = new MusicXmlToMidi(new XmlConverter(soundscribeConfiguration),new MusicXmlNoteUtils(new MusicXmlConfiguration()));
     }
 
     @Override
