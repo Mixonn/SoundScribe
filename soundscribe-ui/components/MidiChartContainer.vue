@@ -3,11 +3,12 @@
     <div ref="containerId" class="chartContainer">
       <midi-chart
         v-if="loaded"
+        ref="chart"
         :chart-data="chartData"
         :options="options"
         :style="chartStyles"
       />
-      <div id="zoomview-container" />
+      <div id="zoomview-container" class="zoomviewContainer" />
     </div>
     <button class="btn" @click="zoomIn">
       +
@@ -37,7 +38,34 @@ export default {
       loaded: false,
       chartData: {
       },
-      options: {
+      midiFileContent: '',
+      baseFrequencyFileContent: '',
+      chartPosition: {
+        startTime: 0,
+        endTime: 10
+      },
+      fileNameFormatted: '',
+      midiDataFormatted: [],
+      maxTime: 0,
+      secondsOnChart: 10,
+      peaksInstance: {},
+      dataLoading: false,
+      playerTime: 0,
+      contextImageData: {},
+      drawVerticalLineId: null,
+      chartRendered: false
+    }
+  },
+  computed: {
+    chartStyles () {
+      return {
+        height: '10%',
+        width: '100%',
+        position: 'relative'
+      }
+    },
+    options () {
+      return {
         maintainAspectRatio: false,
         showLines: true,
         responsive: true,
@@ -51,29 +79,22 @@ export default {
               min: 200,
               stepSize: 20
             }
+          }],
+          xAxes: [{
+            ticks: {
+              stepSize: 1
+            }
           }]
+        },
+        animation: {
+          onComplete: () => {
+            console.log(this.dataLoading)
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+            this.dataLoading = false
+            this.saveContext()
+            console.log(this.dataLoading)
+          }
         }
-      },
-      midiFileContent: '',
-      baseFrequencyFileContent: '',
-      chartPosition: {
-        startTime: 0,
-        endTime: 10
-      },
-      fileNameFormatted: '',
-      midiDataFormatted: [],
-      maxTime: 0,
-      secondsOnChart: 10,
-      peaksInstance: {},
-      dataLoading: false
-    }
-  },
-  computed: {
-    chartStyles () {
-      return {
-        height: '10%',
-        width: '100%',
-        position: 'relative'
       }
     }
   },
@@ -83,8 +104,8 @@ export default {
   },
   methods: {
     init () {
-      this.loadFiles()
       this.buildWaveform()
+      this.loadFiles()
     },
     loadFiles () {
       const contentUrl = 'https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3'
@@ -118,7 +139,6 @@ export default {
           datasets: chartData
         }
         this.loaded = true
-        this.dataLoading = false
       }
     },
     prepareMidiChartData () {
@@ -133,8 +153,7 @@ export default {
           midiValue: parseInt(notes[i].children[3].textContent),
           letterNote: notes[i].children[4].textContent
         }
-        if (midiWrapper.startTime > this.chartPosition.endTime || midiWrapper.endTime < this.chartPosition.startTime) {
-        } else {
+        if (this.chartPosition.startTime <= midiWrapper.startTime && this.chartPosition.endTime >= midiWrapper.endTime) {
           this.midiDataFormatted.push(midiWrapper)
           const midiEvent = []
           midiEvent.push({
@@ -206,6 +225,7 @@ export default {
       if (this.secondsOnChart > 2) {
         this.secondsOnChart -= 1
       }
+      this.drawTimeLine()
     },
     zoomOut () {
       if (this.secondsOnChart < this.maxTime) {
@@ -252,14 +272,61 @@ export default {
           // eslint-disable-next-line handle-callback-err
           vm.peaksInstance = Peaks.init(options, function (err, peaks) {
           })
+          vm.saveContext()
           vm.peaksInstance.on('zoomview.displaying', function (startTime, endTime) {
-            if (vm.chartPosition.startTime !== startTime && vm.chartPosition.endTime !== endTime) {
+            startTime = Math.round(startTime)
+            endTime = Math.round(endTime)
+            if (vm.chartPosition.startTime !== startTime || vm.chartPosition.endTime !== endTime) {
               vm.chartPosition.startTime = startTime
               vm.chartPosition.endTime = endTime
               vm.generateChartDataSet()
             }
           })
+          vm.peaksInstance.on('player_play', function () {
+            vm.reloadContext()
+            vm.drawTimeLine()
+          })
+          vm.peaksInstance.on('player_pause', function () {
+            clearInterval(vm.drawVerticalLineId)
+          })
         })
+    },
+    drawTimeLine () {
+      const vm = this
+      const c = vm.$children[0].$refs.canvas
+      const ctx = c.getContext('2d')
+      vm.saveContext()
+      vm.drawVerticalLineId = setInterval(function () {
+        if (!vm.dataLoading) {
+          vm.playerTime = vm.peaksInstance.player.getCurrentTime()
+          const xposition = vm.$children[0].$data._chart.scales['x-axis-1'].getPixelForValue(vm.playerTime)
+          ctx.fillStyle = '#ff0000'
+          vm.reloadContext()
+          ctx.beginPath()
+          ctx.moveTo(xposition, 0)
+          ctx.strokeStyle = '#ff0000'
+          ctx.lineTo(xposition, c.height)
+          ctx.stroke()
+        }
+      }, 10)
+    },
+    saveContext () {
+      if (this.$children[0]) {
+        const c = this.$children[0].$refs.canvas
+        if (c) {
+          const ctx = c.getContext('2d')
+          this.contextImageData = ctx.getImageData(0, 0, c.width, c.height)
+        }
+      }
+    },
+    reloadContext () {
+      if (this.$children[0]) {
+        const c = this.$children[0].$refs.canvas
+        if (c) {
+          const ctx = c.getContext('2d')
+          ctx.putImageData(this.contextImageData, 0, 0)
+        }
+      }
     }
   }
 }
@@ -269,5 +336,9 @@ export default {
   .chartContainer {
     width: 100%;
     overflow-x: hidden;
+  }
+  .zoomviewContainer {
+    width: 100%;
+    margin-left: 2.2em;
   }
 </style>
