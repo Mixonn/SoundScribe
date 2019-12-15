@@ -59,6 +59,31 @@
         &#9210;&#9210;
       </button>
     </div>
+    <v-card-text>
+      <v-row>
+        <v-col class="pr-4">
+          <v-slider
+            v-model="tune.meta.bpm"
+            class="align-center"
+            :max="360"
+            :min="20"
+            hide-details
+            @change="updateBpm(tune.meta.bpm)"
+          >
+            <template v-slot:append>
+              <v-text-field
+                v-model="tune.meta.bpm"
+                class="mt-0 pt-0"
+                hide-details
+                single-line
+                type="number"
+                style="width: 60px"
+              />
+            </template>
+          </v-slider>
+        </v-col>
+      </v-row>
+    </v-card-text>
     <div id="paper" />
   </div>
 </template>
@@ -67,7 +92,7 @@
 import 'abcjs/abcjs-midi.css';
 import abcjs from 'abcjs/midi';
 import { getNoteMetadata, MODIFY_OPERATIONS, modifyNote, replaceSubstring } from './NodeModifier';
-import { extractMetadata } from './TuneService';
+import { extractMetadata, setBpm } from './TuneService';
 const fs = require('fs');
 const $ = require('jquery');
 
@@ -233,7 +258,18 @@ export default {
       this.currentNode.text = this.tune.text.substr(
         this.currentNode.start, (this.currentNode.end - this.currentNode.start)
       );
+      if (this.currentNode.text === '' || this.currentNode.text === ' ') {
+        return;
+      }
       this.currentNode.dotCount = getNoteMetadata(this.currentNode.text).dotsCount;
+    },
+    updateBpm (bpm) {
+      this.tune.text = setBpm(this.tune.text, bpm);
+      this.showSelection(0, 0);
+      this.resetNoteProperties();
+      this.redrawTune();
+      // this.abcjsEditor.pauseMidi(false);
+      // this.abcjsEditor.redrawMidi();
     }
   }
 }

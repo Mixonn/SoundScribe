@@ -1,17 +1,47 @@
 export function extractMetadata (tune) {
   const linesWithNoteLength = tune.match(/[^\r\n]+/g).filter(ifLineContainsNoteLength);
-  if (linesWithNoteLength.length !== 0) {
-    let line = linesWithNoteLength[0];
-    if (line.includes('/')) {
-      line = line.substring(2, line.length).trim();
-      const splitted = line.match(/[^/]+/g);
-      return {
-        defaultNoteLength: splitted[1] / splitted[0]
-      };
-    }
+  const result = {};
+  if (linesWithNoteLength.length === 0) {
+    return;
   }
+  let line = linesWithNoteLength[0];
+  if (line.includes('/')) {
+    line = line.substring(2, line.length).trim();
+    const splitted = line.match(/[^/]+/g);
+    result.defaultNoteLength = splitted[1] / splitted[0];
+  }
+  const linesWithBpm = tune.match(/[^\r\n]+/g).filter(ifLineContainsTempo);
+  if (linesWithBpm.length === 0) {
+    return tune;
+  }
+  line = linesWithBpm[0];
+  if (line.includes('=')) {
+    line = line.split('=')[1];
+    result.bpm = parseInt(line);
+  }
+  return result;
+}
+
+export function setBpm (tune, bpm) {
+  const linesWithBpm = tune.match(/[^\r\n]+/g).filter(ifLineContainsTempo);
+  if (linesWithBpm.length === 0) {
+    return tune;
+  }
+  let line = linesWithBpm[0];
+  if (line.includes('=')) {
+    const metrum = line.split('=')[0];
+    line = `${metrum}=${bpm}`;
+  } else {
+    line = `${line}=${bpm}`;
+  }
+  const resultTune = tune.replace(/^Q:.*$/mg, line);
+  return resultTune;
 }
 
 function ifLineContainsNoteLength (line) {
   return line.includes('L:');
+}
+
+function ifLineContainsTempo (line) {
+  return line.includes('Q:');
 }
