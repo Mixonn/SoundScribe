@@ -1,6 +1,7 @@
 #Path properties
 settings:
-  uploadDirectory: "uploadDirectory/"
+  uploadDirectory: "dlibraUpload/"
+  downloadDirectory: "dlibraDownload/"
   pathToDLibraScript: "/dlibra-cmdln-tools"
 
   songDataStorage: "audioFilesStorage/"
