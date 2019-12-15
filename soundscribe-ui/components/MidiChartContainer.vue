@@ -20,6 +20,14 @@
     <audio controls="controls">
       <source src="https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3" type="audio/mpeg">
     </audio>
+    <div id="audio-controls">
+      <input id="original-audio" v-model="checkedSoundOptions" type="checkbox" value="original">
+      <label for="original-audio">Original</label>
+      <input id="midi-audio" v-model="checkedSoundOptions" type="checkbox" value="midi">
+      <label for="midi-audio">Midi</label>
+      <input id="f0-audio" v-model="checkedSoundOptions" type="checkbox" value="f0">
+      <label for="f0-audio">F0</label>
+    </div>
   </div>
 </template>
 
@@ -53,7 +61,9 @@ export default {
       playerTime: 0,
       contextImageData: {},
       drawVerticalLineId: null,
-      chartRendered: false
+      chartRendered: false,
+      checkedSoundOptions: ['original'],
+      lastMidiPlayerValue: null
     }
   },
   computed: {
@@ -88,11 +98,7 @@ export default {
         },
         animation: {
           onComplete: () => {
-            console.log(this.dataLoading)
-            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-            this.dataLoading = false
             this.saveContext()
-            console.log(this.dataLoading)
           }
         }
       }
@@ -106,6 +112,7 @@ export default {
     init () {
       this.buildWaveform()
       this.loadFiles()
+      this.overrideDefaultPlayer()
     },
     loadFiles () {
       const contentUrl = 'https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3'
@@ -139,6 +146,7 @@ export default {
           datasets: chartData
         }
         this.loaded = true
+        this.dataLoading = false
       }
     },
     prepareMidiChartData () {
@@ -225,7 +233,6 @@ export default {
       if (this.secondsOnChart > 2) {
         this.secondsOnChart -= 1
       }
-      this.drawTimeLine()
     },
     zoomOut () {
       if (this.secondsOnChart < this.maxTime) {
@@ -285,30 +292,41 @@ export default {
           vm.peaksInstance.on('player_play', function () {
             vm.reloadContext()
             vm.drawTimeLine()
+            if (!vm.checkedSoundOptions.includes('original')) {
+              document.querySelector('audio').muted = true
+            }
+            if (vm.checkedSoundOptions.includes('midi')) {
+              vm.playMidi()
+            }
           })
           vm.peaksInstance.on('player_pause', function () {
             clearInterval(vm.drawVerticalLineId)
+            clearInterval(vm.playMidiId)
           })
         })
     },
     drawTimeLine () {
       const vm = this
-      const c = vm.$children[0].$refs.canvas
-      const ctx = c.getContext('2d')
-      vm.saveContext()
-      vm.drawVerticalLineId = setInterval(function () {
-        if (!vm.dataLoading) {
-          vm.playerTime = vm.peaksInstance.player.getCurrentTime()
-          const xposition = vm.$children[0].$data._chart.scales['x-axis-1'].getPixelForValue(vm.playerTime)
-          ctx.fillStyle = '#ff0000'
-          vm.reloadContext()
-          ctx.beginPath()
-          ctx.moveTo(xposition, 0)
-          ctx.strokeStyle = '#ff0000'
-          ctx.lineTo(xposition, c.height)
-          ctx.stroke()
+      if (vm.$children[0]) {
+        const c = vm.$children[0].$refs.canvas
+        if (c) {
+          const ctx = c.getContext('2d')
+          vm.saveContext()
+          vm.drawVerticalLineId = setInterval(function () {
+            if (!vm.dataLoading) {
+              vm.playerTime = vm.peaksInstance.player.getCurrentTime()
+              const xposition = vm.$children[0].$data._chart.scales['x-axis-1'].getPixelForValue(vm.playerTime)
+              ctx.fillStyle = '#ff0000'
+              vm.reloadContext()
+              ctx.beginPath()
+              ctx.moveTo(xposition, 0)
+              ctx.strokeStyle = '#ff0000'
+              ctx.lineTo(xposition, c.height)
+              ctx.stroke()
+            }
+          }, 10)
         }
-      }, 10)
+      }
     },
     saveContext () {
       if (this.$children[0]) {
@@ -327,6 +345,39 @@ export default {
           ctx.putImageData(this.contextImageData, 0, 0)
         }
       }
+    },
+    overrideDefaultPlayer () {
+    },
+    playMidi () {
+      const vm = this
+      const audioContext = new AudioContext()
+      const o = audioContext.createOscillator()
+      o.type = 'square'
+      o.connect(audioContext.destination)
+      o.start()
+      o.frequency.value = 0
+      vm.playMidiId = setInterval(function () {
+        if (!vm.lastMidiPlayerValue || (vm.lastMidiPlayerValue && (vm.playerTime < vm.lastMidiPlayerValue.startTime || vm.playerTime > vm.lastMidiPlayerValue.endTime))) {
+          if (vm.lastMidiPlayerValue) {
+          }
+          const currentWrapper = vm.midiDataFormatted.find(function (el) {
+            return el.startTime <= vm.playerTime && el.endTime >= vm.playerTime
+          })
+          if (currentWrapper) {
+            vm.lastMidiPlayerValue = currentWrapper
+            vm.playMidiNote(o, currentWrapper)
+          }
+        }
+      }, 10)
+    },
+    playMidiNote (o, midiWrapper) {
+      console.log(midiWrapper.value)
+      console.log(midiWrapper.duration)
+      o.frequency.value = midiWrapper.value
+      setTimeout(
+        function () {
+          o.frequency.value = 0
+        }, midiWrapper.duration * 1000)
     }
   }
 }
