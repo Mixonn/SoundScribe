@@ -32,6 +32,9 @@
       <button @click="addNote('z')">
         Add pause
       </button>
+      <button @click="addNote('|')">
+        Add bar line
+      </button>
       <button @click="lineBreak(true)">
         Add Line break
       </button>
@@ -195,14 +198,14 @@ export default {
     addNote (noteText) {
       let selectionLeft, selectionRight;
       if (this.noNoteSelected() || this.currentNode.start === 0) {
+        selectionLeft = this.tune.text.length + 1;
         this.tune.text += ' ' + noteText;
-        selectionLeft = this.tune.text.length - 3;
-        selectionRight = this.tune.text.length - 1;
+        selectionRight = this.tune.text.length;
       } else {
         const left = this.tune.text.slice(0, this.currentNode.end).trim();
         const right = this.tune.text.slice(this.currentNode.end).trim();
         selectionLeft = left.length + 1;
-        selectionRight = selectionLeft + 2;
+        selectionRight = selectionLeft + noteText.length;
         this.tune.text = `${left} ${noteText} ${right}`;
       }
       this.redrawTune();
