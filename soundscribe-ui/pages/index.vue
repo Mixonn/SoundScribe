@@ -69,9 +69,9 @@
           <v-btn
             color="primary"
             nuxt
-            to="/inspire"
+            to="/stuff"
           >
-            Continue
+            Go to stuff
           </v-btn>
         </v-card-actions>
       </v-card>

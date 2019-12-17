@@ -1,4 +1,5 @@
 import colors from 'vuetify/es5/util/colors'
+import webpack from 'webpack'
 
 export default {
   mode: 'spa',
@@ -15,7 +16,7 @@ export default {
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
-    ]
+    ],
   },
   /*
   ** Customize the progress-bar color
@@ -43,6 +44,8 @@ export default {
   ** Nuxt.js modules
   */
   modules: [
+    '@nuxtjs/axios',
+    '@nuxtjs/font-awesome'
   ],
   /*
   ** vuetify module configuration
@@ -65,6 +68,9 @@ export default {
       }
     }
   },
+  axios: {
+    baseURL: 'http://localhost:3000'
+  },
   /*
   ** Build configuration
   */
@@ -73,6 +79,17 @@ export default {
     ** You can extend webpack config here
     */
     extend (config, ctx) {
-    }
+      config.devtool = ctx.isClient ? 'eval-source-map' : 'inline-source-map';
+      config.node = {
+        fs: 'empty'
+      }
+    },
+    plugins: [
+      new webpack.ProvidePlugin({
+        '$': 'jquery',
+        '_': 'lodash'
+        // ...etc.
+      })
+    ]
   }
 }
