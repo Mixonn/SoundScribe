@@ -7,7 +7,6 @@
 ``` bash
 # install dependencies
 $ npm run install
-$ npm install -g nodemon
 # serve with hot reload at localhost:3000
 
 $ npm run dev
