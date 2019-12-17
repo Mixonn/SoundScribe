@@ -202,8 +202,8 @@ export default {
         this.tune.text += ' ' + noteText;
         selectionRight = this.tune.text.length;
       } else {
-        const left = this.tune.text.slice(0, this.currentNode.end).trim();
-        const right = this.tune.text.slice(this.currentNode.end).trim();
+        const left = this.tune.text.slice(0, this.currentNode.end);
+        const right = this.tune.text.slice(this.currentNode.end);
         selectionLeft = left.length + 1;
         selectionRight = selectionLeft + noteText.length;
         this.tune.text = `${left} ${noteText} ${right}`;
