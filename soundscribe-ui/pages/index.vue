@@ -73,6 +73,13 @@
           >
             Go to stuff
           </v-btn>
+          <v-btn
+            color="primary"
+            nuxt
+            to="/midi"
+          >
+            Go to midi
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-flex>
