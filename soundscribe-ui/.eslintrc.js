@@ -13,5 +13,10 @@ module.exports = {
   ],
   // add your custom rules here
   rules: {
+    "semi": 0,
+    "no-unused-vars": 0,
+    "new-cap": 0,
+    "html-self-closing": 0,
+    "no-console": 0
   }
 }
