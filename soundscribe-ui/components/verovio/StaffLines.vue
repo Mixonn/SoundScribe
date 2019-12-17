@@ -16,21 +16,29 @@
       <div>New Beat? {{ progress.newBeat }}</div>
     </div>
     <div id="midi" />
-    <button @click="nodeUp">
-      Up
-    </button>
-    <button @click="nodeDown">
-      Down
-    </button>
-    <button @click="removeNote">
-      Remove
-    </button>
-    <button @click="addNote('A')">
-      Add note
-    </button>
-    <button @click="addNote('z')">
-      Add Pause
-    </button>
+    <div id="note-operations">
+      <button @click="nodeUp">
+        Up
+      </button>
+      <button @click="nodeDown">
+        Down
+      </button>
+      <button @click="removeNote">
+        Remove
+      </button>
+      <button @click="addNote('A')">
+        Add note
+      </button>
+      <button @click="addNote('z')">
+        Add pause
+      </button>
+      <button @click="lineBreak(true)">
+        Add Line break
+      </button>
+      <button @click="lineBreak(false)">
+        Remove Line break
+      </button>
+    </div>
     <div id="note-length-container">
       <button @click="changeNoteLength(1)">
         1
@@ -51,6 +59,7 @@
         32
       </button>
     </div>
+
     <div id="note-modifiers-container">
       <button :class="{ active: currentNode.dotCount === 1 }" @click="setDots(1)">
         &#9210;
@@ -185,7 +194,7 @@ export default {
     },
     addNote (noteText) {
       let selectionLeft, selectionRight;
-      if (this.currentNode.start == null) {
+      if (this.noNoteSelected() || this.currentNode.start === 0) {
         this.tune.text += ' ' + noteText;
         selectionLeft = this.tune.text.length - 3;
         selectionRight = this.tune.text.length - 1;
@@ -199,6 +208,21 @@ export default {
       this.redrawTune();
       this.showSelection(selectionLeft, selectionRight);
     },
+    lineBreak (shouldAdd) {
+      if (this.noNoteSelected() || this.currentNode.start === 0) {
+        return;
+      }
+      if (shouldAdd) {
+        const before = this.tune.text.substring(0, this.currentNode.end);
+        this.tune.text = `${before} \n ${this.tune.text.substring(this.currentNode.end, this.tune.text.length)}`;
+      } else {
+        let toRemoveFirstEol = this.tune.text.substring(this.currentNode.end, this.tune.text.length);
+        toRemoveFirstEol = toRemoveFirstEol.replace('\n', '');
+        this.tune.text = this.tune.text.substring(0, this.currentNode.end) + toRemoveFirstEol;
+      }
+      this.redrawTune();
+      this.showSelection();
+    },
     changeNoteLength (length) {
       this.modifyNoteOperation(MODIFY_OPERATIONS.CHANGE_LENGTH, {
         defaultNoteLength: this.tune.meta.defaultNoteLength,
@@ -206,6 +230,9 @@ export default {
       });
     },
     setDots (dotsCount) {
+      if (this.noNoteSelected()) {
+        return;
+      }
       if (this.currentNode.dotCount === dotsCount) {
         this.modifyNoteOperation(MODIFY_OPERATIONS.DOT, { dotCount: 0 });
       } else {
@@ -213,7 +240,7 @@ export default {
       }
     },
     modifyNoteOperation (operation, opts) {
-      if (this.currentNode.start === null) {
+      if (this.noNoteSelected()) {
         return;
       }
       const nodeStr = this.currentNode.text;
@@ -223,15 +250,14 @@ export default {
         modifiedNode += ' ';
       }
       const z = replaceSubstring(this.tune.text, this.currentNode.start, this.currentNode.end + 1, modifiedNode);
-      this.setTune(z, modifiedNode);
+      this.setTuneWithModifiedNote(z, modifiedNode);
     },
-    setTune (z, modifiedNode) {
+    setTuneWithModifiedNote (z, modifiedNode) {
       this.tune.text = z;
       this.redrawTune();
       this.currentNode.end = this.currentNode.start + modifiedNode.length;
       if (modifiedNode === ' ' || modifiedNode === '') {
-        this.showSelection(0, 0);
-        this.resetNoteProperties();
+        this.unselectNote();
       } else {
         this.showSelection(this.currentNode.start, this.currentNode.end);
       }
@@ -240,6 +266,10 @@ export default {
       this.abcjsEditor.editarea.setString(this.tune.text);
     },
     showSelection (from, to) {
+      if (from === undefined && to === undefined) {
+        from = this.currentNode.start;
+        to = this.currentNode.end;
+      }
       if (this.abcjsEditor.editarea != null) {
         this.currentNode.start = from;
         this.currentNode.end = to;
@@ -265,11 +295,17 @@ export default {
     },
     updateBpm (bpm) {
       this.tune.text = setBpm(this.tune.text, bpm);
-      this.showSelection(0, 0);
-      this.resetNoteProperties();
+      this.unselectNote();
       this.redrawTune();
       // this.abcjsEditor.pauseMidi(false);
       // this.abcjsEditor.redrawMidi();
+    },
+    noNoteSelected () {
+      return this.currentNode.start == null || this.currentNode.start === 0;
+    },
+    unselectNote () {
+      this.showSelection(0, 0);
+      this.resetNoteProperties();
     }
   }
 }
@@ -327,6 +363,11 @@ export default {
     font-size: large;
     .active {
       color: #0942ff;
+    }
+  }
+  #note-operations {
+    button {
+      border: 1px solid #949297;
     }
   }
 </style>

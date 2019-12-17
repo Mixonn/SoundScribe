@@ -50,11 +50,7 @@ class Note {
     this.nodeLength = (slittedNote[1] === undefined) ? '1' : slittedNote[1];
     this.toneName = this.getToneName(tonePart);
     this.toneMove = this.getToneMove(tonePart);
-    if (note.includes('z')) {
-      this.isPause = true;
-    } else {
-      this.isPause = false;
-    }
+    this.isPause = !!note.includes('z');
   }
 
   moveDown () {
