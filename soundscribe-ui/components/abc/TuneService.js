@@ -34,8 +34,7 @@ export function setBpm (tune, bpm) {
   } else {
     line = `${line}=${bpm}`;
   }
-  const resultTune = tune.replace(/^Q:.*$/mg, line);
-  return resultTune;
+  return tune.replace(/^Q:.*$/mg, line);
 }
 
 function ifLineContainsNoteLength (line) {

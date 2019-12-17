@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import StaffLines from '../components/verovio/StaffLines'
+import StaffLines from '../components/abc/StaffLines'
 
 export default {
   components: { StaffLines }

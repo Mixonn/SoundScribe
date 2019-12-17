@@ -23,7 +23,7 @@ export function modifyNote (operation, note, opts) {
       }
       throw new Error('Cannot change note length without passing opts.defaultNoteLength or opts.targetLength');
     case MODIFY_OPERATIONS.DOT:
-      if (opts.dotCount === undefined && opts.dotCount === null) {
+      if (opts.dotCount === undefined || opts.dotCount === null) {
         return note;
       }
       return setDotCount(note, opts.dotCount);
