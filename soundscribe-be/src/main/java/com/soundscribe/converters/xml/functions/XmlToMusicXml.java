@@ -201,24 +201,26 @@ public class XmlToMusicXml {
         measure.appendChild(noteElement);
       }
 
-      if (i < numberOfNotesToInsert - 1) {
-        PyinNote nextNote = xmlPojo.getNotes().get(i + 1);
-        double secondsForRest =
-            nextNote.getTimestamp() - note.getTimestamp() - note.getDurationInSeconds();
-        musicXmlNote =
-            musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(
-                secondsForRest, musicXmlBaseNotes, true);
-        if (musicXmlNote != null) {
-          Element noteElement =
-              createNote(
-                  document,
-                  stepValue,
-                  octaveValue,
-                  musicXmlNote.getDuration(),
-                  musicXmlNote.getName(),
-                  true,
-                  musicXmlNote.isWithDot());
-          measure.appendChild(noteElement);
+      if (musicXmlConfiguration.isUseRest()) {
+        if (i < numberOfNotesToInsert - 1) {
+          PyinNote nextNote = xmlPojo.getNotes().get(i + 1);
+          double secondsForRest =
+              nextNote.getTimestamp() - note.getTimestamp() - note.getDurationInSeconds();
+          musicXmlNote =
+              musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(
+                  secondsForRest, musicXmlBaseNotes, true);
+          if (musicXmlNote != null) {
+            Element noteElement =
+                createNote(
+                    document,
+                    stepValue,
+                    octaveValue,
+                    musicXmlNote.getDuration(),
+                    musicXmlNote.getName(),
+                    true,
+                    musicXmlNote.isWithDot());
+            measure.appendChild(noteElement);
+          }
         }
       }
     }

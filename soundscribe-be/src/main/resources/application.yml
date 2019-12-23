@@ -18,6 +18,7 @@ spring:
 musicxml:
   useBassKey: false
   useDots: false
+  useRest: true
 
-  delete16thRest: true
+  delete16thRest: false
   delete16thPitch: false

@@ -17,6 +17,8 @@ import org.springframework.context.annotation.PropertySource;
 public class MusicXmlConfiguration {
   private boolean useBassKey;
   private boolean useDots;
+  private boolean useRest;
+
   private boolean delete16thRest;
   private boolean delete16thPitch;
 }
