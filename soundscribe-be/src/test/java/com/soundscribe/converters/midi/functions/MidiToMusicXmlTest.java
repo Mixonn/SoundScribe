@@ -1,11 +1,9 @@
 package com.soundscribe.converters.midi.functions;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.soundscribe.converters.MidiConverter;
-import com.soundscribe.converters.XmlConverter;
-import com.soundscribe.converters.musicxml.functions.MusicXmlToMidi;
 import com.soundscribe.converters.xml.functions.XmlToMusicXml;
+import com.soundscribe.utilities.MusicXmlConfiguration;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
 import java.io.IOException;
@@ -15,16 +13,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 @TestInstance(Lifecycle.PER_CLASS)
-@SpringBootTest
 class MidiToMusicXmlTest {
-
-  @Autowired
-  private MidiConverter midiConverter;
-
   private File midiFile;
   private File musicXmlFile;
 
@@ -36,7 +27,9 @@ class MidiToMusicXmlTest {
 
   @Test
   void convertMidiToMusicXml() {
-    MidiToMusicXml midiToMusicXml = new MidiToMusicXml(new XmlToMusicXml(new SoundscribeConfiguration()));
+    MidiToMusicXml midiToMusicXml =
+        new MidiToMusicXml(
+            new XmlToMusicXml(new SoundscribeConfiguration(), new MusicXmlConfiguration()));
     musicXmlFile = midiToMusicXml.convertMidiToMusicXml(midiFile);
     assertTrue(musicXmlFile.exists());
   }

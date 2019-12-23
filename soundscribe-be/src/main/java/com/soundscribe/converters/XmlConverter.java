@@ -20,7 +20,7 @@ import java.io.File;
 public class XmlConverter extends Converter {
   private final XmlToMusicXml xmlToMusicXml;
 
-  XmlConverter(SoundscribeConfiguration soundscribeConfiguration) {
+  public XmlConverter(SoundscribeConfiguration soundscribeConfiguration) {
     super(soundscribeConfiguration);
     xmlToMusicXml = new XmlToMusicXml(soundscribeConfiguration, new MusicXmlConfiguration());
   }
@@ -67,8 +67,6 @@ public class XmlConverter extends Converter {
    */
   public File convertXmlToMidi(File fileXML) {
     XmlPojo xml = XmlPojo.readXMLData(fileXML);
-    xml.setDivisions(soundscribeConfiguration.getDefaultDivisions());
-    xml.setBpm(soundscribeConfiguration.getDefaultBpm());
     return convertXmlPojoToMidi(xml);
   }
 
