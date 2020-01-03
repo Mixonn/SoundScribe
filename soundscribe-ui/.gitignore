@@ -88,9 +88,3 @@ sw.*
 
 # Vim swap files
 *.swp
-
-# (binary is a macro for -text -diff)
-*.png binary
-*.jpg binary
-*.jpeg binary
-*.gif binary
