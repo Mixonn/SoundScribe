@@ -6,6 +6,7 @@
       permanent
       fixed
       app
+      dark
       color="drawerBackground"
     >
       <v-list>
@@ -23,7 +24,7 @@
             <v-list-item-title v-text="item.title" />
           </v-list-item-content>
         </v-list-item>
-        <v-spacer/>
+        <v-spacer />
       </v-list>
     </v-navigation-drawer>
     <v-app-bar
@@ -40,14 +41,15 @@
           column
           wrap
         >
-          <v-flex
-            fill-height
-            fluid
-          >
-            <div class="application">
+          <v-app style="color: black;">
+            <v-card
+              height="100%"
+              elevation="0"
+              style="color: black; border-radius: 0;"
+              class="sideBackground" >
               <nuxt />
-            </div>
-          </v-flex>
+            </v-card>
+          </v-app>
         </v-layout>
       </v-container>
     </v-content>
@@ -56,8 +58,9 @@
       app
       color="headerBackground"
     >
-      <span>
-        Inżynierowie Dźwięku &copy; 2020</span>
+      <span style="color: white">
+        Inżynierowie Dźwięku &copy; 2020
+      </span>
     </v-footer>
   </v-app>
 </template>
@@ -108,13 +111,7 @@ export default {
 </script>
 
 <style lang="scss">
-  .mainContainer {
-    background: #ffffff;
-  }
-  .footer {
-    background: #e9ef96;
-  }
-  .application{
-    color:black;
+  .application {
+    color: white;
   }
 </style>

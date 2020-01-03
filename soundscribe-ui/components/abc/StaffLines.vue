@@ -173,8 +173,8 @@ export default {
       }
     },
     async loadData () {
-      const url = 'download/' + this.$route.params.song
-      const data = await this.$axios.$get(url);
+      const abcUrl = 'download/' + this.$route.params.song
+      const data = await this.$axios.$get(abcUrl);
       this.tune.text = data.trim();
       this.tune.meta = extractMetadata(this.tune.text);
     },

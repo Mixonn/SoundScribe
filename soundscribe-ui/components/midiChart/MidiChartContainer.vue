@@ -63,7 +63,9 @@ export default {
       drawVerticalLineId: null,
       chartRendered: false,
       checkedSoundOptions: ['original'],
-      lastMidiPlayerValue: null
+      lastMidiPlayerValue: null,
+      abcUrl: null,
+      mp3Url: null
     }
   },
   computed: {
@@ -105,6 +107,8 @@ export default {
     }
   },
   mounted () {
+    this.abcUrl = this.$axios.defaults.baseURL + '/download/' + this.$route.params.song
+    this.mp3Url = this.abcUrl.substr(0, this.abcUrl.lastIndexOf('.abc')) + '.mp3'
     this.loaded = false;
     this.init()
   },
@@ -115,11 +119,12 @@ export default {
       this.overrideDefaultPlayer()
     },
     loadFiles () {
-      // Example path: http://localhost:8080/files/TP0264A_01.mp3
-      const contentUrl = 'https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3';
+      // URL for local testing: https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3
+      const contentUrl = this.mp3Url
       const root = contentUrl.split('/');
       const fileName = root[root.length - 1];
       this.fileNameFormatted = 'Song_' + fileName.replace('.mp3', '');
+      console.log(this.fileNameFormatted)
       const fileTXTAddr = contentUrl.replace('.mp3', '.txt');
       const fileXMLAddr = contentUrl.replace('.mp3', '.xml');
       const baseFrequencyFilePromise = fetch(fileTXTAddr).then((element) => {
@@ -243,8 +248,8 @@ export default {
     buildWaveform () {
       const vm = this;
       const audioContext = new AudioContext();
-      // Example path: http://localhost:8080/files/TP0264A_01.mp3
-      fetch('https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3')
+      // URL for local testing: https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3
+      fetch(this.mp3Url)
         .then(response => response.arrayBuffer())
         .then((buffer) => {
           const options = {
@@ -386,9 +391,6 @@ export default {
 </script>
 
 <style>
-  .app {
-    color: black;
-  }
   .chartContainer {
     width: 100%;
     overflow-x: hidden;
