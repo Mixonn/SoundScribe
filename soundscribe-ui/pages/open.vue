@@ -11,17 +11,16 @@
     >
       <div class="text-center">
       </div>
-      <v-card dar ik>
+      <v-card>
         <v-card-title class="headline">
+          Available files
         </v-card-title>
         <v-card-text>
-          <p>SoundScribe performs automatic music transcription, visualizes gathered data and enables user to modify the
-            results.
-          <p>
-            Click
-            <v-icon>mdi-folder-open</v-icon>
-            to start a journey with our platform :-)
-          </p>
+          <ul>
+            <li v-for="file in files" v-bind:key="file" class="item">
+              {{ file }}
+            </li>
+          </ul>
         </v-card-text>
       </v-card>
     </v-flex>
@@ -31,6 +30,10 @@
 <script>
 
 export default {
-  components: {}
+  async asyncData ({ $axios }) {
+    const res = await $axios.get('/download/list-files?extension=mp3')
+    return { files: res.data }
+  }
 }
+
 </script>
