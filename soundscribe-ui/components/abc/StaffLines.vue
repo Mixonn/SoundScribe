@@ -1,6 +1,5 @@
 <template>
-  <div>
-    <p>Some text</p>
+  <div class="app">
     <textarea id="abc-source" ref="tuneInput" v-model="tune.text" />
     <div class="listener-output">
       <div class="label">
@@ -174,8 +173,8 @@ export default {
       }
     },
     async loadData () {
-      const data = await this.$axios.$get('/songs/MRegWOs_T0006A_01.abc');
-      console.log(data);
+      const url = 'download/' + this.$route.params.song
+      const data = await this.$axios.$get(url);
       this.tune.text = data.trim();
       this.tune.meta = extractMetadata(this.tune.text);
     },
@@ -315,9 +314,14 @@ export default {
 </script>
 
 <style scoped lang="scss">
+  .app {
+    color: black;
+  }
+
   .hello {
     text-align: left;
   }
+
   #abc-source {
     width: 460px;
     height: 160px;

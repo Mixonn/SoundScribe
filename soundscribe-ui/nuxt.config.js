@@ -1,4 +1,4 @@
-import colors from 'vuetify/es5/util/colors'
+import colors from 'vuetify/lib/util/colors'
 import webpack from 'webpack'
 
 export default {
@@ -53,8 +53,10 @@ export default {
   ** https://github.com/nuxt-community/vuetify-module
   */
   vuetify: {
+    treeShake: true,
     customVariables: ['~/assets/variables.scss'],
     theme: {
+      options: { customProperties: true },
       dark: true,
       themes: {
         dark: {
@@ -64,7 +66,12 @@ export default {
           info: colors.teal.lighten1,
           warning: colors.amber.base,
           error: colors.deepOrange.accent4,
-          success: colors.green.accent3
+          success: colors.green.accent3,
+          mainBackground: '#ffffff',
+          sideBackground: '#efefef',
+          headerBackground: '#5b5b5a',
+          drawerBackground: '#424242'
+
         }
       }
     }

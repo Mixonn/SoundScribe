@@ -1,11 +1,12 @@
 <template>
-  <v-app dark>
+  <v-app>
     <v-navigation-drawer
       v-model="drawer"
       :mini-variant.sync="miniVariant"
       permanent
       fixed
       app
+      color="drawerBackground"
     >
       <v-list>
         <v-list-item
@@ -29,19 +30,34 @@
       :clipped-left="clipped"
       fixed
       app
+      color="headerBackground"
     >
       <v-img :src="require('@/static/logo.png')" height="50px" contain/>
     </v-app-bar>
     <v-content>
-      <v-container>
-        <nuxt />
+      <v-container class="mainContainer ma-0 pa-0" fluid fill-height>
+        <v-layout
+          column
+          wrap
+        >
+          <v-flex
+            fill-height
+            fluid
+          >
+            <div class="application">
+              <nuxt />
+            </div>
+          </v-flex>
+        </v-layout>
       </v-container>
     </v-content>
     <v-footer
       :fixed="fixed"
       app
+      color="headerBackground"
     >
-      <span>Inżynierowie Dźwięku &copy; 2020</span>
+      <span>
+        Inżynierowie Dźwięku &copy; 2020</span>
     </v-footer>
   </v-app>
 </template>
@@ -55,7 +71,7 @@ export default {
       fixed: false,
       items: [
         {
-          icon: 'mdi-home-floor-1',
+          icon: 'mdi-folder-home',
           title: 'Overview',
           to: '/',
           color: 'primary'
@@ -90,3 +106,15 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+  .mainContainer {
+    background: #ffffff;
+  }
+  .footer {
+    background: #e9ef96;
+  }
+  .application{
+    color:black;
+  }
+</style>

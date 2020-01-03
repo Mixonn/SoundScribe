@@ -1,31 +1,20 @@
 <template>
-  <v-layout
-    column
-    justify-center
-    align-center
-  >
-    <v-flex
-      xs12
-      sm8
-      md6
-    >
-      <div class="text-center">
-      </div>
-      <v-card dar ik>
-        <v-card-title class="headline">
-        </v-card-title>
-        <v-card-text>
-          <p>SoundScribe performs automatic music transcription, visualizes gathered data and enables user to modify the
-            results.
-          <p>
-            Click
-            <v-icon>mdi-folder-open</v-icon>
-            to start a journey with our platform :-)
-          </p>
-        </v-card-text>
-      </v-card>
-    </v-flex>
-  </v-layout>
+  <div>
+    <v-card dar ik>
+      <v-card-title class="headline">
+        Overview
+      </v-card-title>
+      <v-card-text>
+        <p>SoundScribe performs automatic music transcription, visualizes gathered data and enables user to modify the
+          results.
+        <p>
+          Click
+          <v-icon>mdi-folder-open</v-icon>
+          to start a journey with our platform :-)
+        </p>
+      </v-card-text>
+    </v-card>
+  </div>
 </template>
 
 <script>

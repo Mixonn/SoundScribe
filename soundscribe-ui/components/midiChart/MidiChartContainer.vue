@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="app">
     <div ref="containerId" class="chartContainer">
       <midi-chart
         v-if="loaded"
@@ -115,6 +115,7 @@ export default {
       this.overrideDefaultPlayer()
     },
     loadFiles () {
+      // Example path: http://localhost:8080/files/TP0264A_01.mp3
       const contentUrl = 'https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3';
       const root = contentUrl.split('/');
       const fileName = root[root.length - 1];
@@ -242,6 +243,7 @@ export default {
     buildWaveform () {
       const vm = this;
       const audioContext = new AudioContext();
+      // Example path: http://localhost:8080/files/TP0264A_01.mp3
       fetch('https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3')
         .then(response => response.arrayBuffer())
         .then((buffer) => {
@@ -384,6 +386,9 @@ export default {
 </script>
 
 <style>
+  .app {
+    color: black;
+  }
   .chartContainer {
     width: 100%;
     overflow-x: hidden;
