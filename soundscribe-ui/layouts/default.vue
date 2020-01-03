@@ -2,7 +2,7 @@
   <v-app dark>
     <v-navigation-drawer
       v-model="drawer"
-      :mini-variant.sync="mini"
+      :mini-variant.sync="miniVariant"
       permanent
       fixed
       app
@@ -69,7 +69,7 @@ export default {
         {
           icon: 'mdi-file-upload',
           title: 'Upload',
-          to: '/inspire'
+          to: '/upload'
         },
         {
           icon: 'mdi-file-import',

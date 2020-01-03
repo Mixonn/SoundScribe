@@ -1,3 +1,4 @@
+<!-- https://scotch.io/tutorials/how-to-handle-file-uploads-in-vue-2 -->
 <template>
   <v-layout
     column
@@ -13,14 +14,10 @@
       </div>
       <v-card>
         <v-card-title class="headline">
-          Available files
+          Upload
         </v-card-title>
         <v-card-text>
-          <ul>
-            <li v-for="file in files" v-bind:key="file" class="item">
-              <nuxt-link :to="'/staff/' + file">{{ file }}</nuxt-link>
-            </li>
-          </ul>
+          <Upload />
         </v-card-text>
       </v-card>
     </v-flex>
@@ -28,12 +25,13 @@
 </template>
 
 <script>
+  import Upload from '../components/Upload'
 
-export default {
-  async asyncData ({ $axios }) {
-    const res = await $axios.get('/download/list-files?extension=mp3')
-    return { files: res.data }
+  export default {
+  components: {
+    Upload
   }
+
 }
 
 </script>
