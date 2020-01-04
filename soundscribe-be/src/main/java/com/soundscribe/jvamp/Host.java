@@ -212,7 +212,7 @@ public class Host {
       document.appendChild(root);
 
       Element bpm = document.createElement("bpm");
-      bpm.appendChild(document.createTextNode(estimateTempo(wavFile, true)));
+      bpm.appendChild(document.createTextNode(estimateTempo(wavFile, false)));
       root.appendChild(bpm);
 
       Element divisions = document.createElement("divisions");

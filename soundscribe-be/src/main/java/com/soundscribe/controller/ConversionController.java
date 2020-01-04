@@ -38,6 +38,7 @@ public class ConversionController {
       File mp3 = new File(soundscribeConfiguration.getSongDataStorage() + filename);
       File wav = converterService.convert(mp3, new ConversionFormat("mp3", "wav"));
       File xml = jvampService.pyinNotes(wav, false);
+      jvampService.pyinSmoothedPitchTrack(wav, false);
       File musicXml = converterService.convert(xml, new ConversionFormat("xml", "musicxml"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
