@@ -4,9 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-/**
- * Stores all possible midi notes.
- */
+/** Stores all possible midi notes. */
 public class MidiNotes {
 
   private static Map<Integer, String> notesDict;

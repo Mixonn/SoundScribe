@@ -6,9 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-/**
- * Common variables used in project.
- */
+/** Common variables used in project. */
 @Getter
 @Setter
 @Configuration
@@ -16,7 +14,7 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:application.yml")
 public class SoundscribeConfiguration {
   private String uploadDirectory;
-    private String downloadDirectory;
+  private String downloadDirectory;
   private String pathToDLibraScript;
 
   private String songDataStorage;

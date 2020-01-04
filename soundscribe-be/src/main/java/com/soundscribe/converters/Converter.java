@@ -1,21 +1,20 @@
 package com.soundscribe.converters;
 
 import com.soundscribe.utilities.SoundscribeConfiguration;
-import lombok.AllArgsConstructor;
-
 import java.io.File;
+import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public abstract class Converter {
-    protected SoundscribeConfiguration soundscribeConfiguration;
+  protected SoundscribeConfiguration soundscribeConfiguration;
 
-    abstract File convert(File input, String outputFormat) throws ConversionNotSupported;
+  abstract File convert(File input, String outputFormat) throws ConversionNotSupported;
 
-    abstract String getName();
+  abstract String getName();
 
-    public static class ConversionNotSupported extends Exception {
-        public ConversionNotSupported(String message) {
-            super(message);
-        }
+  public static class ConversionNotSupported extends Exception {
+    public ConversionNotSupported(String message) {
+      super(message);
     }
+  }
 }

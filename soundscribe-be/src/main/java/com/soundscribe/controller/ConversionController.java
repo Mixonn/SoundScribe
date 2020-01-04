@@ -5,6 +5,8 @@ import com.soundscribe.converters.Converter;
 import com.soundscribe.converters.ConverterService;
 import com.soundscribe.jvamp.JvampService;
 import com.soundscribe.utilities.SoundscribeConfiguration;
+import java.io.File;
+import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,9 +15,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.PostConstruct;
-import java.io.File;
 
 @Slf4j
 @RestController
@@ -46,14 +45,14 @@ public class ConversionController {
     } catch (Exception e) {
       log.error("Analyze file exception", e);
       return new ResponseEntity<>(
-              "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
+          "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
     }
     return new ResponseEntity<>("Plik z danymi wyściowymi został utworzony", HttpStatus.OK);
   }
 
   @GetMapping("")
   public ResponseEntity<String> convert(
-          @RequestParam String from, @RequestParam String to, @RequestParam String filename) {
+      @RequestParam String from, @RequestParam String to, @RequestParam String filename) {
     File input = new File(soundscribeConfiguration.getSongDataStorage() + filename);
     String responsePrefix = "Konwersja z " + from + " do " + to + " ";
 
