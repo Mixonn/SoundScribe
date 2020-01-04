@@ -33,7 +33,7 @@
       app
       color="headerBackground"
     >
-      <v-img :src="require('@/static/logo.png')" height="50px" contain/>
+      <v-img :src="require('@/static/logo.png')" height="50px" contain />
     </v-app-bar>
     <v-content>
       <v-container class="mainContainer ma-0 pa-0" fluid fill-height>
@@ -46,7 +46,8 @@
               height="100%"
               elevation="0"
               style="color: black; border-radius: 0;"
-              class="sideBackground" >
+              class="sideBackground"
+            >
               <nuxt />
             </v-card>
           </v-app>

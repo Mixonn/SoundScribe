@@ -5,8 +5,10 @@
     </v-card-title>
     <v-card-text class="sider">
       <ul>
-        <li v-for="file in files" v-bind:key="file" class="item">
-          <nuxt-link :to="'/logic/staff/' + file">{{ file }}</nuxt-link>
+        <li v-for="file in files" :key="file" class="item">
+          <nuxt-link :to="'/logic/staff/' + file">
+            {{ file }}
+          </nuxt-link>
         </li>
       </ul>
     </v-card-text>

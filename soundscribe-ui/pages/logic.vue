@@ -5,14 +5,18 @@
         <v-col>
           <v-card class="headerBackground">
             <v-card-title class="justify-center">
-                <nuxt-link style="color: white;" :to="'/logic/midi/' + this.$route.params.song">MIDI</nuxt-link>
+              <nuxt-link style="color: white;" :to="'/logic/midi/' + this.$route.params.song">
+                MIDI
+              </nuxt-link>
             </v-card-title>
           </v-card>
         </v-col>
         <v-col>
           <v-card class="headerBackground">
             <v-card-title class="justify-center">
-              <nuxt-link style="color: white;" :to="'/logic/staff/' + this.$route.params.song">Sheet music</nuxt-link>
+              <nuxt-link style="color: white;" :to="'/logic/staff/' + this.$route.params.song">
+                Sheet music
+              </nuxt-link>
             </v-card-title>
           </v-card>
         </v-col>
@@ -22,7 +26,7 @@
           <v-card width="300px" elevation="0" class="mainBackground">
             <v-card-text class="justify-center center" style="color: black;">
               <div style="text-align: center;">
-                <b>{{this.$route.params.song}}</b>
+                <b>{{ this.$route.params.song }}</b>
               </div>
             </v-card-text>
           </v-card>

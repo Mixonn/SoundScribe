@@ -4,9 +4,10 @@
       Overview
     </v-card-title>
     <v-card-text>
-      <p>SoundScribe performs automatic music transcription, visualizes gathered data and enables user to modify the
-        results.
       <p>
+        SoundScribe performs automatic music transcription, visualizes gathered data and enables user to modify the
+        results.
+      </p><p>
         Click
         <v-icon>
           mdi-folder-open
