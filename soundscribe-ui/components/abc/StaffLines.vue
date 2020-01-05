@@ -13,12 +13,12 @@
       <img alt="Select" class="controlButtons" src="/buttons/select.png">
       <img alt="Undo" class="controlButtons" src="/buttons/undo.png">
       <img alt="Redo" class="controlButtons" src="/buttons/redo.png">
-      <img alt="Elevate" class="controlButtons" src="/buttons/elevate.png">
-      <img alt="Lower" class="controlButtons" src="/buttons/lower.png">
+      <img alt="Elevate" class="controlButtons" src="/buttons/elevate.png" @click="noteUp">
+      <img alt="Lower" class="controlButtons" src="/buttons/lower.png" @click="noteDown">
       <img alt="Lengthen" class="controlButtons" src="/buttons/lengthen.png">
       <img alt="Shorten" class="controlButtons" src="/buttons/shorten.png">
-      <img alt="Add" class="controlButtons" src="/buttons/plus.png">
-      <img alt="Remove" class="controlButtons" src="/buttons/minus.png">
+      <img alt="Add" class="controlButtons" src="/buttons/plus.png" @click="addNote('A')">
+      <img alt="Remove" class="controlButtons" src="/buttons/minus.png" @click="removeNote">
       <img alt="Update" class="controlButtons" src="/buttons/update.png">
     </div>
 
