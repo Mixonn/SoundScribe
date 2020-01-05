@@ -1,5 +1,18 @@
 <template>
   <div class="app">
+    <div id="buttons-container">
+      <img alt="Select" class="controlButtons" src="/buttons/select.png">
+      <img alt="Undo" class="controlButtons" src="/buttons/undo.png">
+      <img alt="Redo" class="controlButtons" src="/buttons/redo.png">
+      <img alt="Elevate" class="controlButtons" src="/buttons/elevate.png">
+      <img alt="Lower" class="controlButtons" src="/buttons/lower.png">
+      <img alt="Lengthen" class="controlButtons" src="/buttons/lengthen.png">
+      <img alt="Shorten" class="controlButtons" src="/buttons/shorten.png">
+      <img alt="Add" class="controlButtons" src="/buttons/plus.png">
+      <img alt="Remove" class="controlButtons" src="/buttons/minus.png">
+      <img alt="Update" class="controlButtons" src="/buttons/update.png">
+    </div>
+
     <div ref="containerId" class="chartContainer">
       <midi-chart
         v-if="loaded"
@@ -398,5 +411,14 @@ export default {
   .zoomviewContainer {
     width: 100%;
     margin-left: 2.2em;
+  }
+
+  .controlButtons {
+    width: 50px;
+    height: 50px;
+  }
+
+  #buttons-container {
+    background-color: #f7f7f7;
   }
 </style>

@@ -1,5 +1,61 @@
 <template>
   <div class="app">
+    <div id="note-modifiers-container">
+      <button :class="{ active: currentNode.dotCount === 1 }" @click="setDots(1)">
+        &#9210;
+      </button>
+      <button :class="{ active: currentNode.dotCount === 2 }" @click="setDots(2)">
+        &#9210;&#9210;
+      </button>
+    </div>
+
+    <div id="buttons-container">
+      <img alt="Select" class="controlButtons" src="/buttons/select.png">
+      <img alt="Undo" class="controlButtons" src="/buttons/undo.png">
+      <img alt="Redo" class="controlButtons" src="/buttons/redo.png">
+      <img alt="Elevate" class="controlButtons" src="/buttons/elevate.png">
+      <img alt="Lower" class="controlButtons" src="/buttons/lower.png">
+      <img alt="Lengthen" class="controlButtons" src="/buttons/lengthen.png">
+      <img alt="Shorten" class="controlButtons" src="/buttons/shorten.png">
+      <img alt="Add" class="controlButtons" src="/buttons/plus.png">
+      <img alt="Remove" class="controlButtons" src="/buttons/minus.png">
+      <img alt="Update" class="controlButtons" src="/buttons/update.png">
+    </div>
+
+    <div id="note-length-container">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/1.png')" @click="changeNoteLength(1)">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/2.png')" @click="changeNoteLength(2)">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/4.png')" @click="changeNoteLength(4)">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/8.png')" @click="changeNoteLength(8)">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/16.png')" @click="changeNoteLength(16)">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/32.png')" @click="changeNoteLength(32)">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/b1.png')">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/b2.png')">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/b3.png')">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/b4.png')">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/b5.png')">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/b6.png')">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/b7.png')">
+      <img class="controlButtons" :src="require('@/static/buttons/notes/b8.png')">
+    </div>
+
+    <div id="note-operations">
+      <button @click="addNote('z')">
+        Add pause
+      </button>
+      <button @click="addNote('|')">
+        Add bar line
+      </button>
+      <button @click="lineBreak(true)">
+        Add Line break
+      </button>
+      <button @click="lineBreak(false)">
+        Remove Line break
+      </button>
+    </div>
+
+    <div id="paper" />
+
     <textarea id="abc-source" ref="tuneInput" v-model="tune.text" />
     <div class="listener-output">
       <div class="label">
@@ -15,67 +71,13 @@
       <div>New Beat? {{ progress.newBeat }}</div>
     </div>
     <div id="midi" />
-    <div id="note-operations">
-      <button @click="nodeUp">
-        Up
-      </button>
-      <button @click="nodeDown">
-        Down
-      </button>
-      <button @click="removeNote">
-        Remove
-      </button>
-      <button @click="addNote('A')">
-        Add note
-      </button>
-      <button @click="addNote('z')">
-        Add pause
-      </button>
-      <button @click="addNote('|')">
-        Add bar line
-      </button>
-      <button @click="lineBreak(true)">
-        Add Line break
-      </button>
-      <button @click="lineBreak(false)">
-        Remove Line break
-      </button>
-    </div>
-    <div id="note-length-container">
-      <button @click="changeNoteLength(1)">
-        1
-      </button>
-      <button @click="changeNoteLength(2)">
-        2
-      </button>
-      <button @click="changeNoteLength(4)">
-        4
-      </button>
-      <button @click="changeNoteLength(8)">
-        8
-      </button>
-      <button @click="changeNoteLength(16)">
-        16
-      </button>
-      <button @click="changeNoteLength(32)">
-        32
-      </button>
-    </div>
 
-    <div id="note-modifiers-container">
-      <button :class="{ active: currentNode.dotCount === 1 }" @click="setDots(1)">
-        &#9210;
-      </button>
-      <button :class="{ active: currentNode.dotCount === 2 }" @click="setDots(2)">
-        &#9210;&#9210;
-      </button>
-    </div>
     <v-card-text>
       <v-row>
         <v-col class="pr-4">
           <v-slider
             v-model="tune.meta.bpm"
-            class="align-center"
+            class="align-center bpm-slider"
             :max="360"
             :min="20"
             hide-details
@@ -95,7 +97,6 @@
         </v-col>
       </v-row>
     </v-card-text>
-    <div id="paper" />
   </div>
 </template>
 
@@ -185,10 +186,10 @@ export default {
       this.currentNode.id = abcElem.__ob__.id;
       this.reloadNote();
     },
-    nodeUp () {
+    noteUp () {
       this.modifyNoteOperation(MODIFY_OPERATIONS.UP);
     },
-    nodeDown () {
+    noteDown () {
       this.modifyNoteOperation(MODIFY_OPERATIONS.DOWN);
     },
     removeNote () {
@@ -360,12 +361,20 @@ export default {
     font-weight: bold;
   }
 
+  .controlButtons {
+    width: 50px;
+    height: 50px;
+  }
+
+  #buttons-container {
+    background-color: #f7f7f7;
+  }
   #note-length-container {
-    background-color: antiquewhite;
+    background-color: #f7f7f7;
     color: red;
   }
   #note-modifiers-container {
-    background-color: #abb0fa;
+    background-color: #f7f7f7;
     color: #695fff;
     font-size: large;
     .active {
@@ -376,5 +385,9 @@ export default {
     button {
       border: 1px solid #949297;
     }
+  }
+
+  .bpm-slider {
+    width: 300px !important;
   }
 </style>

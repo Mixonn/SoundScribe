@@ -23,12 +23,18 @@
       </v-row>
       <v-row>
         <v-col>
-          <v-card width="300px" elevation="0" class="mainBackground">
+          <v-card width="300px" elevation="0" class="mainBackground center">
             <v-card-text class="justify-center center" style="color: black;">
               <div style="text-align: center;">
                 <b>{{ this.$route.params.song }}</b>
               </div>
             </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col>
+          <v-card class="sideBackground" elevation="0">
+            <v-row>
+            </v-row>
           </v-card>
         </v-col>
       </v-row>
@@ -37,7 +43,6 @@
       <nuxt-child />
     </v-container>
     <v-footer color="sideBackground">
-      footer
     </v-footer>
   </v-app>
 </template>
