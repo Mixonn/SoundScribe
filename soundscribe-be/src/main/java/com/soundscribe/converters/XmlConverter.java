@@ -100,7 +100,7 @@ public class XmlConverter extends Converter {
 
       // write MIDI
       midiFile =
-          new File(soundscribeConfiguration.getSongDataStorage() + xml.getSongName() + ".mid");
+          new File(soundscribeConfiguration.getSongDataStorage() + xml.getSongName() + ".midi");
       // TODO: Name the new file same as the old old (with new extension)
       MidiSystem.write(sequence, 1, midiFile);
 

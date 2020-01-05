@@ -28,7 +28,7 @@ class MidiToMusicXmlTest {
   @BeforeAll
   void init() {
     ClassLoader classLoader = getClass().getClassLoader();
-    midiFile = new File(classLoader.getResource("samples/example.mid").getFile());
+    midiFile = new File(classLoader.getResource("samples/example.midi").getFile());
   }
 
   @Test
