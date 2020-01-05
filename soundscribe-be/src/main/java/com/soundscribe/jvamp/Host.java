@@ -2,13 +2,10 @@ package com.soundscribe.jvamp;
 
 import com.soundscribe.utilities.MidiNotes;
 import com.soundscribe.utilities.SoundscribeConfiguration;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.vamp_plugins.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
+import java.io.*;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.Map;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -21,14 +18,16 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
-import java.nio.file.Files;
-import java.util.List;
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.vamp_plugins.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
- * Host is slightly modified jVAMP class. It provides support for loading VAMP plugins.
- * Source: https://github.com/c4dm/jvamp
+ * Host is slightly modified jVAMP class. It provides support for loading VAMP plugins. Source:
+ * https://github.com/c4dm/jvamp
  */
 @Slf4j
 @Component
@@ -66,11 +65,11 @@ public class Host {
       AudioFormat format = stream.getFormat();
 
       if (format.getSampleSizeInBits() != 16
-              || format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED
-              || format.isBigEndian()) {
+          || format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED
+          || format.isBigEndian()) {
         log.error("Sorry, only 16-bit signed little-endian PCM files supported");
         throw new PyinConversionException(
-                "Sorry, only 16-bit signed little-endian PCM files supported");
+            "Sorry, only 16-bit signed little-endian PCM files supported");
       }
 
       float rate = format.getFrameRate();
@@ -129,7 +128,7 @@ public class Host {
             // incomplete, we have trouble
             log.error("Audio file read incomplete! Short buffer detected at " + block * blockSize);
             throw new PyinConversionException(
-                    "Audio file read incomplete! Short buffer detected at " + block * blockSize);
+                "Audio file read incomplete! Short buffer detected at " + block * blockSize);
           }
 
           incomplete = (read < buffers[0].length);
@@ -139,8 +138,8 @@ public class Host {
           Map<Integer, List<Feature>> features = p.process(buffers, timestamp);
 
           if (function == JvampFunctions.SIMPLE_FIXED_TEMPO_ESTIMATOR
-                  && features != null
-                  && features.containsKey(outputNumber)) {
+              && features != null
+              && features.containsKey(outputNumber)) {
             actualFeatures = features;
           }
 
@@ -192,11 +191,11 @@ public class Host {
    * @param xmlFile Xml file with pYIN data
    */
   private void printNotes(
-          String filename,
-          RealTime frameTime,
-          Integer output,
-          Map<Integer, List<Feature>> features,
-          File xmlFile) {
+      String filename,
+      RealTime frameTime,
+      Integer output,
+      Map<Integer, List<Feature>> features,
+      File xmlFile) {
     int midiValue;
     if (!features.containsKey(output)) {
       return;
@@ -212,7 +211,7 @@ public class Host {
       document.appendChild(root);
 
       Element bpm = document.createElement("bpm");
-      bpm.appendChild(document.createTextNode(estimateTempo(wavFile, true)));
+      bpm.appendChild(document.createTextNode(estimateTempo(wavFile, false)));
       root.appendChild(bpm);
 
       Element divisions = document.createElement("divisions");
@@ -252,7 +251,7 @@ public class Host {
 
           Element letterNote = document.createElement("letterNote");
           letterNote.appendChild(
-                  document.createTextNode(MidiNotes.getNoteSymbolByMidiValue(midiValue)));
+              document.createTextNode(MidiNotes.getNoteSymbolByMidiValue(midiValue)));
           note.appendChild(letterNote);
         }
 
@@ -273,7 +272,7 @@ public class Host {
   }
 
   private void printSmoothedPitch(
-          RealTime frameTime, Integer output, Map<Integer, List<Feature>> features, File file) {
+      RealTime frameTime, Integer output, Map<Integer, List<Feature>> features, File file) {
     if (!features.containsKey(output)) {
       return;
     }
@@ -303,8 +302,8 @@ public class Host {
    * Prints single fixed tempo to given file.
    *
    * @param features Features calculated by Vamp plugin
-   * @param output   An identifier calculated by Vamp plugin
-   * @param file     File to which the content is written to
+   * @param output An identifier calculated by Vamp plugin
+   * @param file File to which the content is written to
    */
   private void printTempo(Map<Integer, List<Feature>> features, Integer output, File file) {
     try {
@@ -348,7 +347,7 @@ public class Host {
   /**
    * Estimates tempo using one of JVamp plugins.
    *
-   * @param fileWav     WAV file
+   * @param fileWav WAV file
    * @param deleteAfter Should the file be treated as temporary
    * @return String with bpm, i.e. "129"
    */

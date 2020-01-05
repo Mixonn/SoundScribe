@@ -6,6 +6,11 @@ import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import com.soundscribe.converters.musicxml.utilities.MusicXmlUtils;
 import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.utilities.MidiNotes;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -15,12 +20,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
@@ -57,11 +56,15 @@ public class MusicXmlToMidi {
     }
     document.getDocumentElement().normalize();
 
-    String title = document.getElementsByTagName("movement-title").item(0).getTextContent();
-    xmlPojo.setSongName(title);
+    try {
+      String title = document.getElementsByTagName("movement-title").item(0).getTextContent();
+      xmlPojo.setSongName(title);
+    } catch (NullPointerException e) {
+      xmlPojo.setSongName(musicXml.getName());
+    }
 
     Element soundElement = (Element) document.getElementsByTagName("sound").item(0);
-    int bpm = Integer.parseInt(soundElement.getAttribute("tempo"));
+    int bpm = (int) Double.parseDouble(soundElement.getAttribute("tempo"));
     xmlPojo.setBpm(bpm);
 
     Element divisionsElement = (Element) document.getElementsByTagName("divisions").item(0);
@@ -79,7 +82,7 @@ public class MusicXmlToMidi {
         Element eElement = (Element) node;
 
         int duration =
-                Integer.parseInt(eElement.getElementsByTagName("duration").item(0).getTextContent());
+            Integer.parseInt(eElement.getElementsByTagName("duration").item(0).getTextContent());
         double durationInSeconds = musicXmlUtils.getNoteDurationInSeconds(duration, noteTimes);
 
         if (eElement.getElementsByTagName("pitch").getLength() > 0) {

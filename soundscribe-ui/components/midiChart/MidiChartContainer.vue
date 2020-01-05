@@ -1,5 +1,18 @@
 <template>
-  <div>
+  <div class="app">
+    <div id="buttons-container">
+      <img alt="Select" class="controlButtons" src="/buttons/select.png">
+      <img alt="Undo" class="controlButtons" src="/buttons/undo.png">
+      <img alt="Redo" class="controlButtons" src="/buttons/redo.png">
+      <img alt="Elevate" class="controlButtons" src="/buttons/elevate.png">
+      <img alt="Lower" class="controlButtons" src="/buttons/lower.png">
+      <img alt="Lengthen" class="controlButtons" src="/buttons/lengthen.png">
+      <img alt="Shorten" class="controlButtons" src="/buttons/shorten.png">
+      <img alt="Add" class="controlButtons" src="/buttons/plus.png">
+      <img alt="Remove" class="controlButtons" src="/buttons/minus.png">
+      <img alt="Update" class="controlButtons" src="/buttons/update.png">
+    </div>
+
     <div ref="containerId" class="chartContainer">
       <midi-chart
         v-if="loaded"
@@ -63,7 +76,9 @@ export default {
       drawVerticalLineId: null,
       chartRendered: false,
       checkedSoundOptions: ['original'],
-      lastMidiPlayerValue: null
+      lastMidiPlayerValue: null,
+      abcUrl: null,
+      mp3Url: null
     }
   },
   computed: {
@@ -105,6 +120,8 @@ export default {
     }
   },
   mounted () {
+    this.abcUrl = this.$axios.defaults.baseURL + '/download/' + this.$route.params.song
+    this.mp3Url = this.abcUrl.substr(0, this.abcUrl.lastIndexOf('.abc')) + '.mp3'
     this.loaded = false;
     this.init()
   },
@@ -115,10 +132,12 @@ export default {
       this.overrideDefaultPlayer()
     },
     loadFiles () {
-      const contentUrl = 'https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3';
+      // URL for local testing: https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3
+      const contentUrl = this.mp3Url
       const root = contentUrl.split('/');
       const fileName = root[root.length - 1];
       this.fileNameFormatted = 'Song_' + fileName.replace('.mp3', '');
+      console.log(this.fileNameFormatted)
       const fileTXTAddr = contentUrl.replace('.mp3', '.txt');
       const fileXMLAddr = contentUrl.replace('.mp3', '.xml');
       const baseFrequencyFilePromise = fetch(fileTXTAddr).then((element) => {
@@ -242,7 +261,8 @@ export default {
     buildWaveform () {
       const vm = this;
       const audioContext = new AudioContext();
-      fetch('https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3')
+      // URL for local testing: https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3
+      fetch(this.mp3Url)
         .then(response => response.arrayBuffer())
         .then((buffer) => {
           const options = {
@@ -391,5 +411,14 @@ export default {
   .zoomviewContainer {
     width: 100%;
     margin-left: 2.2em;
+  }
+
+  .controlButtons {
+    width: 50px;
+    height: 50px;
+  }
+
+  #buttons-container {
+    background-color: #f7f7f7;
   }
 </style>

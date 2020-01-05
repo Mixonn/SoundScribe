@@ -1,19 +1,16 @@
 package com.soundscribe.converters;
 
-import com.soundscribe.converters.xml.functions.XmlToMusicXml;
 import com.soundscribe.converters.xml.XmlPojo;
+import com.soundscribe.converters.xml.functions.XmlToMusicXml;
 import com.soundscribe.utilities.SoundscribeConfiguration;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
+import java.io.File;
 import javax.sound.midi.*;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import java.io.File;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
-/**
- * Converts midi to any other music format and creates midi from raw pYIN data.
- */
+/** Converts midi to any other music format and creates midi from raw pYIN data. */
 @Slf4j
 @Component
 public class XmlConverter extends Converter {
@@ -103,7 +100,7 @@ public class XmlConverter extends Converter {
 
       // write MIDI
       midiFile =
-              new File(soundscribeConfiguration.getSongDataStorage() + xml.getSongName() + ".mid");
+          new File(soundscribeConfiguration.getSongDataStorage() + xml.getSongName() + ".midi");
       // TODO: Name the new file same as the old old (with new extension)
       MidiSystem.write(sequence, 1, midiFile);
 
@@ -165,7 +162,7 @@ public class XmlConverter extends Converter {
     MetaMessage metaMessage = new MetaMessage();
 
     // create the tempo byte array
-    byte[] array = new byte[]{0, 0, 0};
+    byte[] array = new byte[] {0, 0, 0};
 
     for (int i = 0; i < 3; i++) {
       int shift = (3 - 1 - i) * 8;
