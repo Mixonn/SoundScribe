@@ -1,11 +1,10 @@
 package com.soundscribe.converters;
 
 import com.google.common.io.Files;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class CrossPlatformConverter {
@@ -28,10 +27,10 @@ class CrossPlatformConverter {
 
   File convertMusicXmlToMei() {
     boolean isSuccess =
-            executeCommand("verovio", input.getName(), "-f", "musicxml", "-t", "mei", "-a");
+        executeCommand("verovio", input.getName(), "-f", "musicxml", "-t", "mei", "-a");
     if (isSuccess) {
       String meiFilename =
-              directory + "/" + Files.getNameWithoutExtension(input.getName()) + ".mei";
+          directory + "/" + Files.getNameWithoutExtension(input.getName()) + ".mei";
       return new File(meiFilename);
     } else {
       return null;
@@ -40,7 +39,7 @@ class CrossPlatformConverter {
 
   File convertMeiToMusicXml() {
     String mxlFilename =
-            directory + "/" + Files.getNameWithoutExtension(input.getName()) + ".musicxml";
+        directory + "/" + Files.getNameWithoutExtension(input.getName()) + ".musicxml";
     boolean isSuccess = executeCommand("meitomusicxml", input.getName(), mxlFilename);
     if (isSuccess) {
       return new File(mxlFilename);
@@ -53,8 +52,8 @@ class CrossPlatformConverter {
     String abcFilename = directory + "/" + Files.getNameWithoutExtension(input.getName()) + ".abc";
     boolean isSuccess = executeCommand("xml2abc", input.getName(), "-o", directory);
     isSuccess &=
-            executeCommand(
-                    "perl", "-i", "-pe", "s/(\\S)(#)/^$1/g", abcFilename); // Fix # occurrences in abc
+        executeCommand(
+            "perl", "-i", "-pe", "s/(\\S)(#)/^$1/g", abcFilename); // Fix # occurrences in abc
     if (isSuccess) {
       return new File(abcFilename);
     } else {
@@ -63,10 +62,13 @@ class CrossPlatformConverter {
   }
 
   File convertAbcToMusicXml() {
-    String abcFilename = directory + "/" + Files.getNameWithoutExtension(input.getName()) + ".abc";
+    String baseFileName = Files.getNameWithoutExtension(input.getName());
+    File mxlFile = new File(directory, baseFileName + ".mxl");
+    File musicXmlFile = new File(directory + "/" + baseFileName + ".musicxml");
     boolean isSuccess = executeCommand("abc2xml", input.getName(), "-o", directory);
+    isSuccess &= executeCommand("mv", mxlFile.getAbsolutePath(), musicXmlFile.getAbsolutePath());
     if (isSuccess) {
-      return new File(abcFilename);
+      return musicXmlFile;
     } else {
       return null;
     }
@@ -75,7 +77,7 @@ class CrossPlatformConverter {
   private boolean executeCommand(String... commands) {
     try {
       Process process =
-              new ProcessBuilder().command(commands).directory(new File(directory)).start();
+          new ProcessBuilder().command(commands).directory(new File(directory)).start();
 
       int exitCode = process.waitFor();
       if (exitCode != 0) {

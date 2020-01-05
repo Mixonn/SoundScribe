@@ -125,7 +125,7 @@ class XmlConverterTest {
 
   @Test
   void testConvertXmlToMidi() {
-      midiFile = xmlConverter.convertXmlToMidi(xmlFile);
+    midiFile = xmlConverter.convertXmlToMidi(xmlFile);
     assertTrue(midiFile.exists());
   }
 }

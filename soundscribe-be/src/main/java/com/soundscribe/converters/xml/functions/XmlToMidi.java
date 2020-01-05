@@ -69,7 +69,7 @@ public class XmlToMidi {
 
       // write MIDI
       midiFile =
-          new File(soundscribeConfiguration.getSongDataStorage() + xml.getSongName() + ".mid");
+          new File(soundscribeConfiguration.getSongDataStorage() + xml.getSongName() + ".midi");
       MidiSystem.write(sequence, 1, midiFile);
 
     } catch (Exception e) {

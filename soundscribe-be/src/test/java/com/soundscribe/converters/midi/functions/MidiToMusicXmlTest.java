@@ -3,8 +3,6 @@ package com.soundscribe.converters.midi.functions;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.soundscribe.converters.MidiConverter;
-import com.soundscribe.converters.XmlConverter;
-import com.soundscribe.converters.musicxml.functions.MusicXmlToMidi;
 import com.soundscribe.converters.xml.functions.XmlToMusicXml;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
@@ -22,8 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class MidiToMusicXmlTest {
 
-  @Autowired
-  private MidiConverter midiConverter;
+  @Autowired private MidiConverter midiConverter;
 
   private File midiFile;
   private File musicXmlFile;
@@ -31,12 +28,13 @@ class MidiToMusicXmlTest {
   @BeforeAll
   void init() {
     ClassLoader classLoader = getClass().getClassLoader();
-    midiFile = new File(classLoader.getResource("samples/example.mid").getFile());
+    midiFile = new File(classLoader.getResource("samples/example.midi").getFile());
   }
 
   @Test
   void convertMidiToMusicXml() {
-    MidiToMusicXml midiToMusicXml = new MidiToMusicXml(new XmlToMusicXml(new SoundscribeConfiguration()));
+    MidiToMusicXml midiToMusicXml =
+        new MidiToMusicXml(new XmlToMusicXml(new SoundscribeConfiguration()));
     musicXmlFile = midiToMusicXml.convertMidiToMusicXml(midiFile);
     assertTrue(musicXmlFile.exists());
   }

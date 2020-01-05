@@ -57,11 +57,15 @@ public class MusicXmlToMidi {
     }
     document.getDocumentElement().normalize();
 
-    String title = document.getElementsByTagName("movement-title").item(0).getTextContent();
-    xmlPojo.setSongName(title);
+    try {
+      String title = document.getElementsByTagName("movement-title").item(0).getTextContent();
+      xmlPojo.setSongName(title);
+    } catch (NullPointerException e) {
+      xmlPojo.setSongName(musicXml.getName());
+    }
 
     Element soundElement = (Element) document.getElementsByTagName("sound").item(0);
-    int bpm = Integer.parseInt(soundElement.getAttribute("tempo"));
+    int bpm = (int) Double.parseDouble(soundElement.getAttribute("tempo"));
     xmlPojo.setBpm(bpm);
 
     Element divisionsElement = (Element) document.getElementsByTagName("divisions").item(0);
