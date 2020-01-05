@@ -43,8 +43,7 @@ class MusicXmlUtilsTest {
     MusicXmlUtils musicXmlUtils = new MusicXmlUtils();
     List<MusicXmlNote> list = musicXmlUtils.getMusicXmlBaseNotes(120, 4);
 
-    MusicXmlNote note = musicXmlUtils
-        .chooseBestNoteByDurationInSeconds(1.0d, list, false, false);
+    MusicXmlNote note = musicXmlUtils.chooseBestNoteByDurationInSeconds(1.0d, list, false, false);
     assertEquals("half", note.getName());
     assertFalse(note.isWithDot());
 
@@ -63,7 +62,6 @@ class MusicXmlUtilsTest {
     note = musicXmlUtils.chooseBestNoteByDurationInSeconds(0.7d, list, false, false);
     assertEquals("quarter", note.getName());
     assertTrue(note.isWithDot());
-
   }
 
   @Test
@@ -71,13 +69,13 @@ class MusicXmlUtilsTest {
     MusicXmlUtils musicXmlUtils = new MusicXmlUtils();
     List<MusicXmlNote> list = musicXmlUtils.getMusicXmlBaseNotes(120, 4);
 
-    double seconds = musicXmlUtils.getNoteDurationInSeconds(4,list);
+    double seconds = musicXmlUtils.getNoteDurationInSeconds(4, list);
     assertEquals(0.5d, seconds);
 
-    seconds = musicXmlUtils.getNoteDurationInSeconds(2,list);
+    seconds = musicXmlUtils.getNoteDurationInSeconds(2, list);
     assertEquals(0.25d, seconds);
 
-    seconds = musicXmlUtils.getNoteDurationInSeconds(8,list);
+    seconds = musicXmlUtils.getNoteDurationInSeconds(8, list);
     assertEquals(1d, seconds);
   }
 
@@ -88,7 +86,8 @@ class MusicXmlUtilsTest {
     File musicXmlFile = new File(classLoader.getResource("example.musicxml").getFile());
     try {
       result = MusicXmlUtils.getSongNameFromMusicxmlFile(musicXmlFile);
-    } catch (IOException ignored) {}
+    } catch (IOException ignored) {
+    }
     assertEquals("test", result);
   }
 }

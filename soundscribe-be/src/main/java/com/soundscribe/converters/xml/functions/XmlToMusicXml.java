@@ -5,12 +5,8 @@ import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import com.soundscribe.converters.musicxml.utilities.MusicXmlUtils;
 import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.utilities.SoundscribeConfiguration;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
+import java.io.File;
+import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -19,8 +15,11 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 @Slf4j
 @Component
@@ -31,6 +30,7 @@ public class XmlToMusicXml {
 
   /**
    * Converts raw pYIN data to MusicXml file.
+   *
    * @param xml
    * @return
    * @throws ParserConfigurationException
@@ -40,11 +40,11 @@ public class XmlToMusicXml {
       throws TransformerException, ParserConfigurationException {
     XmlPojo xmlPojo = XmlPojo.readXMLData(xml);
     return convertXmlToMusicXml(xmlPojo);
-
   }
 
   /**
    * Converts XmlPojo object with raw pYIN data to MusicXml file.
+   *
    * @param xmlPojo
    * @return
    * @throws ParserConfigurationException
@@ -53,8 +53,9 @@ public class XmlToMusicXml {
   public File convertXmlToMusicXml(XmlPojo xmlPojo)
       throws ParserConfigurationException, TransformerException {
 
-    File musicXmlFile = new File(
-        soundscribeConfiguration.getSongDataStorage() + xmlPojo.getSongName() + ".musicxml");
+    File musicXmlFile =
+        new File(
+            soundscribeConfiguration.getSongDataStorage() + xmlPojo.getSongName() + ".musicxml");
 
     DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
@@ -102,8 +103,8 @@ public class XmlToMusicXml {
   }
 
   /**
-   * Create main attributes for MusicXml file.
-   * Divisions per quarter note, type of beat and clef.
+   * Create main attributes for MusicXml file. Divisions per quarter note, type of beat and clef.
+   *
    * @param document
    * @param divisionsValue
    * @return
@@ -144,27 +145,34 @@ public class XmlToMusicXml {
 
   /**
    * Process xmlPojo and all its notes, bpm, divisions, name to MusicXml file.
+   *
    * @param measure
    * @param document
    * @param xmlPojo Object with song data.
    */
   private void addNotesToMusicXml(Element measure, Document document, XmlPojo xmlPojo) {
     MusicXmlUtils musicXmlUtils = new MusicXmlUtils();
-    List<MusicXmlNote> musicXmlBaseNotes = musicXmlUtils
-        .getMusicXmlBaseNotes(xmlPojo.getBpm(), xmlPojo.getDivisions());
+    List<MusicXmlNote> musicXmlBaseNotes =
+        musicXmlUtils.getMusicXmlBaseNotes(xmlPojo.getBpm(), xmlPojo.getDivisions());
     int numberOfNotes = xmlPojo.getNotes().size();
     for (int i = 0; i < numberOfNotes; i++) {
       PyinNote note = xmlPojo.getNotes().get(i);
       String stepValue = getStep(note.getLetterNote());
       String octaveValue = getOctave(note.getLetterNote());
-      MusicXmlNote musicXmlNote = musicXmlUtils
-          .chooseBestNoteByDurationInSeconds(note.getDurationInSeconds(), musicXmlBaseNotes, true,
-              false);
+      MusicXmlNote musicXmlNote =
+          musicXmlUtils.chooseBestNoteByDurationInSeconds(
+              note.getDurationInSeconds(), musicXmlBaseNotes, true, false);
 
       if (musicXmlNote != null) {
-        Element noteElement = createNote(document, stepValue, octaveValue,
-            musicXmlNote.getDuration(),
-            musicXmlNote.getName(), false, musicXmlNote.isWithDot());
+        Element noteElement =
+            createNote(
+                document,
+                stepValue,
+                octaveValue,
+                musicXmlNote.getDuration(),
+                musicXmlNote.getName(),
+                false,
+                musicXmlNote.isWithDot());
         measure.appendChild(noteElement);
       }
 
@@ -172,21 +180,28 @@ public class XmlToMusicXml {
         PyinNote nextNote = xmlPojo.getNotes().get(i + 1);
         double secondsForRest =
             nextNote.getTimestamp() - note.getTimestamp() - note.getDurationInSeconds();
-        musicXmlNote = musicXmlUtils
-            .chooseBestNoteByDurationInSeconds(secondsForRest, musicXmlBaseNotes, true, false);
+        musicXmlNote =
+            musicXmlUtils.chooseBestNoteByDurationInSeconds(
+                secondsForRest, musicXmlBaseNotes, true, false);
         if (musicXmlNote != null) {
-          Element noteElement = createNote(document, stepValue, octaveValue,
-              musicXmlNote.getDuration(),
-              musicXmlNote.getName(), true, musicXmlNote.isWithDot());
+          Element noteElement =
+              createNote(
+                  document,
+                  stepValue,
+                  octaveValue,
+                  musicXmlNote.getDuration(),
+                  musicXmlNote.getName(),
+                  true,
+                  musicXmlNote.isWithDot());
           measure.appendChild(noteElement);
         }
       }
-
     }
   }
 
   /**
    * Creates pich or rest notes for MusicXml file.
+   *
    * @param document
    * @param stepValue Note step
    * @param octaveValue Note octave
@@ -196,9 +211,14 @@ public class XmlToMusicXml {
    * @param withDot Note with dot it 1.5 times longer then original.
    * @return
    */
-  private Element createNote(Document document, String stepValue, String octaveValue,
-      Integer durationValue, String typeValue,
-      boolean noteIsRest, boolean withDot) {
+  private Element createNote(
+      Document document,
+      String stepValue,
+      String octaveValue,
+      Integer durationValue,
+      String typeValue,
+      boolean noteIsRest,
+      boolean withDot) {
     Element note = document.createElement("note");
 
     if (noteIsRest) {
@@ -234,6 +254,7 @@ public class XmlToMusicXml {
 
   /**
    * Cuts step value from MidiNotes string.
+   *
    * @param noteSymbol
    * @return
    */
@@ -241,9 +262,9 @@ public class XmlToMusicXml {
     return noteSymbol.substring(0, noteSymbol.length() - 1);
   }
 
-
   /**
    * Cuts octave value from MidiNotes string.
+   *
    * @param noteSymbol
    * @return
    */
@@ -253,6 +274,7 @@ public class XmlToMusicXml {
 
   /**
    * Create attributes with tempo for MusicXml file.
+   *
    * @param document
    * @param bpm
    * @return
@@ -284,6 +306,7 @@ public class XmlToMusicXml {
 
   /**
    * Create attributes with title for MusicXml file.
+   *
    * @param document
    * @param title Song name.
    * @return

@@ -9,8 +9,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.stream.Stream;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -37,12 +35,11 @@ public class FileSystemStorageService implements StorageService {
       if (filename.contains("..")) {
         // This is a security check
         throw new StorageException(
-            "Cannot store file with relative path outside current directory "
-                + filename);
+            "Cannot store file with relative path outside current directory " + filename);
       }
       try (InputStream inputStream = file.getInputStream()) {
-        Files.copy(inputStream, this.rootLocation.resolve(filename),
-            StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(
+            inputStream, this.rootLocation.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
       }
     } catch (IOException e) {
       throw new StorageException("Failed to store file " + filename, e);
@@ -58,7 +55,6 @@ public class FileSystemStorageService implements StorageService {
     } catch (IOException e) {
       throw new StorageException("Failed to read stored files", e);
     }
-
   }
 
   @Override
@@ -74,9 +70,7 @@ public class FileSystemStorageService implements StorageService {
       if (resource.exists() || resource.isReadable()) {
         return resource;
       } else {
-        throw new StorageFileNotFoundException(
-            "Could not read file: " + filename);
-
+        throw new StorageFileNotFoundException("Could not read file: " + filename);
       }
     } catch (MalformedURLException e) {
       throw new StorageFileNotFoundException("Could not read file: " + filename, e);

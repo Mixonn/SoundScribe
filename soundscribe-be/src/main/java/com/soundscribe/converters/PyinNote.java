@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Stores detailed data about notes.
- */
+/** Stores detailed data about notes. */
 @Getter
 @Setter
 @AllArgsConstructor
