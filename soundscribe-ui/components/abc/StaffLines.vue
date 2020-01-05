@@ -70,6 +70,21 @@
       <button :class="{ active: currentNode.dotCount === 2 }" @click="setDots(2)">
         &#9210;&#9210;
       </button>
+      <button :class="{ active: currentNode.sharpCount === 1 }" @click="setSharps(1)">
+        sharp
+      </button>
+      <button :class="{ active: currentNode.sharpCount === 2 }" @click="setSharps(2)">
+        sharp2
+      </button>
+      <button :class="{ active: currentNode.flatCount === 1 }" @click="setFlats(1)">
+        flat
+      </button>
+      <button :class="{ active: currentNode.flatCount === 2 }" @click="setFlats(2)">
+        flat2
+      </button>
+      <button :class="{ active: currentNode.natural === true }" @click="setNatural(!currentNode.natural)">
+        natural
+      </button>
     </div>
     <v-card-text>
       <v-row>
@@ -130,7 +145,10 @@ export default {
         start: null,
         end: null,
         text: null,
-        dotCount: null
+        dotCount: null,
+        sharpCount: null,
+        flatCount: null,
+        natural: null
       }
     }
   },
@@ -242,6 +260,36 @@ export default {
         this.modifyNoteOperation(MODIFY_OPERATIONS.DOT, { dotCount: dotsCount });
       }
     },
+    setSharps (sharpCount) {
+      if (this.noNoteSelected()) {
+        return;
+      }
+      if (this.currentNode.sharpCount === sharpCount) {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.SHARP, { sharpCount: 0 });
+      } else {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.SHARP, { sharpCount });
+      }
+    },
+    setFlats (flatCount) {
+      if (this.noNoteSelected()) {
+        return;
+      }
+      if (this.currentNode.flatCount === flatCount) {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.FLAT, { flatCount: 0 });
+      } else {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.FLAT, { flatCount });
+      }
+    },
+    setNatural (isNatural) {
+      if (this.noNoteSelected()) {
+        return;
+      }
+      if (this.currentNode.natural === false) {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.NATURAL, { isNatural });
+      } else {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.NATURAL, { isNatural: false });
+      }
+    },
     modifyNoteOperation (operation, opts) {
       if (this.noNoteSelected()) {
         return;
@@ -286,6 +334,9 @@ export default {
       this.currentNode.end = null;
       this.currentNode.text = null;
       this.currentNode.dotCount = null;
+      this.currentNode.sharpCount = null;
+      this.currentNode.flatCount = null;
+      this.currentNode.natural = null;
     },
     reloadNote () {
       this.currentNode.text = this.tune.text.substr(
@@ -294,7 +345,11 @@ export default {
       if (this.currentNode.text === '' || this.currentNode.text === ' ') {
         return;
       }
-      this.currentNode.dotCount = getNoteMetadata(this.currentNode.text).dotsCount;
+      const noteMetadata = getNoteMetadata(this.currentNode.text);
+      this.currentNode.dotCount = noteMetadata.dotsCount;
+      this.currentNode.sharpCount = noteMetadata.sharpCount;
+      this.currentNode.flatCount = noteMetadata.flatCount;
+      this.currentNode.natural = noteMetadata.natural;
     },
     updateBpm (bpm) {
       this.tune.text = setBpm(this.tune.text, bpm);
