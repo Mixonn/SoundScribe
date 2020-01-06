@@ -45,7 +45,7 @@
       <img
         class="controlButtons"
         :class="{ active: currentNode.flatCount === 2 }"
-        :src="require('@/static/buttons/notes/flat.png')"
+        :src="require('@/static/buttons/notes/doubleFlat.png')"
         @click="setFlats(2)"
       >
       <img
