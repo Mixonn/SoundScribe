@@ -9,9 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-/**
- * Stores data about MusicXml notes.
- */
+/** Stores data about MusicXml notes. */
 public class MusicXmlNote {
 
   private String name;

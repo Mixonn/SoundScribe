@@ -3,13 +3,11 @@ package com.soundscribe.jvamp;
 import com.soundscribe.core.BeatDetector;
 import com.soundscribe.utilities.MidiNotes;
 import com.soundscribe.utilities.SoundscribeConfiguration;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.vamp_plugins.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -22,15 +20,14 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.List;
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.vamp_plugins.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-/**
- * Host is slightly modified jVAMP class. It provides support for loading VAMP plugins.
- */
+/** Host is slightly modified jVAMP class. It provides support for loading VAMP plugins. */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -50,12 +47,12 @@ public class Host {
    * @param xmlFile Xml file with pYIN data
    */
   private void printNotes(
-          String filename,
-          RealTime frameTime,
-          Integer output,
-          Map<Integer, List<Feature>> features,
-          File xmlFile,
-          File mp3File) {
+      String filename,
+      RealTime frameTime,
+      Integer output,
+      Map<Integer, List<Feature>> features,
+      File xmlFile,
+      File mp3File) {
     int midiValue;
     if (!features.containsKey(output)) {
       return;
@@ -110,7 +107,7 @@ public class Host {
 
           Element letterNote = document.createElement("letterNote");
           letterNote.appendChild(
-                  document.createTextNode(MidiNotes.getNoteSymbolByMidiValue(midiValue)));
+              document.createTextNode(MidiNotes.getNoteSymbolByMidiValue(midiValue)));
           note.appendChild(letterNote);
         }
 
@@ -131,11 +128,11 @@ public class Host {
   }
 
   private void printSmoothedPitch(
-          String filename,
-          RealTime frameTime,
-          Integer output,
-          Map<Integer, List<Feature>> features,
-          File file) {
+      String filename,
+      RealTime frameTime,
+      Integer output,
+      Map<Integer, List<Feature>> features,
+      File file) {
     if (!features.containsKey(output)) {
       return;
     }
@@ -182,7 +179,8 @@ public class Host {
     return frames;
   }
 
-  public File start(JvampFunctions function, File file, File fileMp3) throws PyinConversionException {
+  public File start(JvampFunctions function, File file, File fileMp3)
+      throws PyinConversionException {
     File xmlFile = null;
     File smoothedFile = null;
     String key = null;
@@ -209,7 +207,8 @@ public class Host {
           || format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED
           || format.isBigEndian()) {
         log.error("Sorry, only 16-bit signed little-endian PCM files supported");
-        throw new PyinConversionException("Sorry, only 16-bit signed little-endian PCM files supported");
+        throw new PyinConversionException(
+            "Sorry, only 16-bit signed little-endian PCM files supported");
       }
 
       float rate = format.getFrameRate();
@@ -265,7 +264,8 @@ public class Host {
             // last one -- so if the previous block was
             // incomplete, we have trouble
             log.error("Audio file read incomplete! Short buffer detected at " + block * blockSize);
-            throw new PyinConversionException("Audio file read incomplete! Short buffer detected at " + block * blockSize);
+            throw new PyinConversionException(
+                "Audio file read incomplete! Short buffer detected at " + block * blockSize);
           }
 
           incomplete = (read < buffers[0].length);

@@ -17,7 +17,9 @@ public class MidiConverter extends Converter {
 
   public MidiConverter(SoundscribeConfiguration soundscribeConfiguration) {
     super(soundscribeConfiguration);
-    midiToMusicXml = new MidiToMusicXml(new XmlToMusicXml(soundscribeConfiguration,new MusicXmlConfiguration()));
+    midiToMusicXml =
+        new MidiToMusicXml(
+            new XmlToMusicXml(soundscribeConfiguration, new MusicXmlConfiguration()));
   }
 
   @Override

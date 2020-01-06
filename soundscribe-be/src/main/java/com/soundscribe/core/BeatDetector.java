@@ -5,11 +5,10 @@ import TrackAnalyzer.KeyDetectionResult;
 import TrackAnalyzer.KeyFinder;
 import at.ofai.music.beatroot.BeatRoot;
 import it.sauronsoftware.jave.*;
-import org.springframework.stereotype.Component;
-
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.springframework.stereotype.Component;
 
 /* This class is a slight modification from tfriedel/trackanalyzer project from GitHub.
  * Original source: https://github.com/tfriedel/trackanalyzer/blob/master/TrackAnalyzer/TrackAnalyzer.java
@@ -86,7 +85,7 @@ public class BeatDetector {
         }
       } catch (Exception ex) {
         Logger.getLogger(BeatDetector.class.getName())
-                .log(Level.WARNING, "error while decoding" + input.getName() + ".");
+            .log(Level.WARNING, "error while decoding" + input.getName() + ".");
         if (temp.length() == 0) {
           temp.delete();
           temp2.delete();
@@ -111,9 +110,9 @@ public class BeatDetector {
       try {
         // bpm couldn't be detected. try again with a higher quality wav.
         Logger.getLogger(BeatDetector.class.getName())
-                .log(
-                        Level.WARNING,
-                        "bpm couldn't be detected for " + input.getName() + ". Trying again.");
+            .log(
+                Level.WARNING,
+                "bpm couldn't be detected for " + input.getName() + ". Trying again.");
         decodeAudioFile(input, temp, 44100);
         bpm = BeatRoot.getBPM(wavfilename);
       } catch (Exception e) {
@@ -123,10 +122,10 @@ public class BeatDetector {
 
     if (Double.isNaN(bpm)) {
       Logger.getLogger(BeatDetector.class.getName())
-              .log(Level.WARNING, "bpm still couldn't be detected for " + input.getName() + ".");
+          .log(Level.WARNING, "bpm still couldn't be detected for " + input.getName() + ".");
     } else {
       Logger.getLogger(BeatDetector.class.getName())
-              .log(Level.INFO, "bpm now detected correctly for " + input.getName());
+          .log(Level.INFO, "bpm now detected correctly for " + input.getName());
     }
 
     deleteTempFiles(temp, temp2);

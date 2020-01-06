@@ -2,7 +2,6 @@ package com.soundscribe.converters.musicxml.utilities;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import com.soundscribe.utilities.MusicXmlConfiguration;
@@ -40,8 +39,7 @@ class MusicXmlNoteUtilsTest {
     MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils(new MusicXmlConfiguration());
     List<MusicXmlNote> list = musicXmlNoteUtils.getMusicXmlBaseNotes(120, 4);
 
-    MusicXmlNote note = musicXmlNoteUtils
-        .chooseBestNoteByDurationInSeconds(1.0d, list, false);
+    MusicXmlNote note = musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(1.0d, list, false);
     assertEquals("half", note.getName());
     assertFalse(note.isWithDot());
 
@@ -60,7 +58,6 @@ class MusicXmlNoteUtilsTest {
     note = musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(0.7d, list, false);
     assertEquals("quarter", note.getName());
     assertFalse(note.isWithDot());
-
   }
 
   @Test
@@ -68,13 +65,13 @@ class MusicXmlNoteUtilsTest {
     MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils(new MusicXmlConfiguration());
     List<MusicXmlNote> list = musicXmlNoteUtils.getMusicXmlBaseNotes(120, 4);
 
-    double seconds = musicXmlNoteUtils.getNoteDurationInSeconds(4,list);
+    double seconds = musicXmlNoteUtils.getNoteDurationInSeconds(4, list);
     assertEquals(0.5d, seconds);
 
-    seconds = musicXmlNoteUtils.getNoteDurationInSeconds(2,list);
+    seconds = musicXmlNoteUtils.getNoteDurationInSeconds(2, list);
     assertEquals(0.25d, seconds);
 
-    seconds = musicXmlNoteUtils.getNoteDurationInSeconds(8,list);
+    seconds = musicXmlNoteUtils.getNoteDurationInSeconds(8, list);
     assertEquals(1d, seconds);
   }
 }
