@@ -18,7 +18,6 @@
       <img class="controlButtons" :src="require('@/static/buttons/notes/8.png')" @click="changeNoteLength(8)">
       <img class="controlButtons" :src="require('@/static/buttons/notes/16.png')" @click="changeNoteLength(16)">
       <img class="controlButtons" :src="require('@/static/buttons/notes/32.png')" @click="changeNoteLength(32)">
-      <!--      <img class="controlButtons" :src="require('@/static/buttons/notes/b1.png')">-->
       <img
         class="controlButtons"
         :class="{ active: currentNode.dotCount === 1 }"
@@ -87,58 +86,62 @@
         @click="lineBreak(false)"
       >
     </div>
-
-    <div id="paper" />
-
-    <textarea id="abc-source" ref="tuneInput" v-model="tune.text" />
-    <div class="listener-output">
-      <div class="label">
-        Currently Playing: <span class="abc-string">{{ currentAbcFragment }}</span>
+    <div id="metadata-container">
+      <div id="metrum-container">
+        <p v-if=" tune.error.metre != null " class="input-error">
+          {{ tune.error.metre }}
+        </p>
+        <v-text-field
+          :value="tune.meta.metre"
+          label="Metrum"
+          @input="handleMetreInput"
+        />
       </div>
-
-      <div class="label">
-        Parameters sent to listener callback:
+      <div id="bpm">
+        <v-slider
+          v-model="tune.meta.bpm"
+          class="align-center bpm-slider"
+          label="BPM"
+          :max="360"
+          :min="20"
+          hide-details
+          @change="updateBpm(tune.meta.bpm)"
+        >
+          <template v-slot:append>
+            <v-text-field
+              v-model="tune.meta.bpm"
+              class="mt-0 pt-0"
+              hide-details
+              single-line
+              type="number"
+              style="width: 60px"
+            />
+          </template>
+        </v-slider>
       </div>
-      <div>Progress: {{ progress.progress }}</div>
-      <div>Current Time: {{ progress.currentTime }}</div>
-      <div>Total Duration: {{ progress.duration }}</div>
-      <div>New Beat? {{ progress.newBeat }}</div>
     </div>
+    <v-container
+      id="scroll-target"
+      style="max-height: 400px"
+      class="overflow-y-auto"
+    >
+      <div id="paper" />
+    </v-container>
+    <textarea id="abc-source" ref="tuneInput" v-model="tune.text" style="display: none" />
+<!--    <div class="listener-output">-->
+<!--      <div class="label">-->
+<!--        Currently Playing: <span class="abc-string">{{ currentAbcFragment }}</span>-->
+<!--      </div>-->
+
+<!--      <div class="label">-->
+<!--        Parameters sent to listener callback:-->
+<!--      </div>-->
+<!--      <div>Progress: {{ progress.progress }}</div>-->
+<!--      <div>Current Time: {{ progress.currentTime }}</div>-->
+<!--      <div>Total Duration: {{ progress.duration }}</div>-->
+<!--      <div>New Beat? {{ progress.newBeat }}</div>-->
+<!--    </div>-->
     <div id="midi" />
-    <p v-if=" tune.error.metre != null " class="input-error">
-      {{ tune.error.metre }}
-    </p>
-    <v-text-field
-      :value="tune.meta.metre"
-      return-masked-value
-      mask="#/#"
-      @input="handleMetreInput"
-    />
-    <v-card-text>
-      <v-row>
-        <v-col class="pr-4">
-          <v-slider
-            v-model="tune.meta.bpm"
-            class="align-center bpm-slider"
-            :max="360"
-            :min="20"
-            hide-details
-            @change="updateBpm(tune.meta.bpm)"
-          >
-            <template v-slot:append>
-              <v-text-field
-                v-model="tune.meta.bpm"
-                class="mt-0 pt-0"
-                hide-details
-                single-line
-                type="number"
-                style="width: 60px"
-              />
-            </template>
-          </v-slider>
-        </v-col>
-      </v-row>
-    </v-card-text>
   </div>
 </template>
 
@@ -449,6 +452,14 @@ export default {
     border-radius: 4px;
     width: 460px;
   }
+  #metadata-container {
+    display: flex;
+    align-items: center;
+    #metrum-container {
+      width: 100px;
+      padding: 20px;
+    }
+  }
 
   #midi {
     width: 756px;
@@ -467,7 +478,9 @@ export default {
     height: 50px;
     &:hover,
     &:focus {
-      box-shadow: inset 0 0 0 2em rgba(0, 0, 0, .4)
+      box-shadow: inset 0 0 0 2em rgba(0, 0, 0, .4);
+      transition: box-shadow .1s;
+      -webkit-transition: box-shadow .1s;
     }
   }
 
