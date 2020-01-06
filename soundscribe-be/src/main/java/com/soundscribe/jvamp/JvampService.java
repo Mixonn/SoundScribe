@@ -29,9 +29,9 @@ public class JvampService {
    * @param deleteAfter Boolean, if set on true wav file will be deleted after the process is
    *     completed.
    */
-  public File pyinSmoothedPitchTrack(File fileWav, File fileMp3, boolean deleteAfter)
+  public File pyinSmoothedPitchTrack(File fileWav, boolean deleteAfter)
       throws PyinConversionException {
-    File resultFile = host.start(SMOOTHED_PITCH_TRACK, fileWav, fileMp3);
+    File resultFile = host.start(SMOOTHED_PITCH_TRACK, fileWav);
     if (deleteAfter) {
       try {
         Files.delete(fileWav.toPath());
@@ -49,9 +49,8 @@ public class JvampService {
    * @param deleteAfter Boolean, if set on true wav file will be deleted after the process is
    *     completed.
    */
-  public File pyinNotes(File fileWav, File fileMp3, boolean deleteAfter)
-      throws PyinConversionException {
-    File xmlFile = host.start(NOTES, fileWav, fileMp3);
+  public File pyinNotes(File fileWav, boolean deleteAfter) throws PyinConversionException {
+    File xmlFile = host.start(NOTES, fileWav);
     if (deleteAfter) {
       try {
         Files.delete(fileWav.toPath());

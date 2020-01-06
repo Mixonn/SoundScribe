@@ -41,7 +41,7 @@ class XmlConverterTest {
   }
 
   @Test
-  void testConvertXmlToMidi() {
+  void testConvertXmlToMidi() throws IOException {
     XmlConverter xmlConverter = new XmlConverter(new SoundscribeConfiguration());
     midiFile = xmlConverter.convertXmlToMidi(xmlFile);
     assertTrue(midiFile.exists());

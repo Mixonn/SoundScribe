@@ -34,7 +34,7 @@ public class FileUploadController {
   }
 
   @GetMapping("/")
-  public String listUploadedFiles(Model model) throws IOException {
+  public String mainPage(Model model) throws IOException {
 
     model.addAttribute(
         "files",

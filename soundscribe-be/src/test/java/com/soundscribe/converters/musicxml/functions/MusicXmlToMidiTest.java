@@ -3,7 +3,7 @@ package com.soundscribe.converters.musicxml.functions;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.soundscribe.converters.XmlConverter;
-import com.soundscribe.converters.musicxml.utilities.MusicXmlNoteUtils;
+import com.soundscribe.converters.musicxml.utilities.MusicXmlUtils;
 import com.soundscribe.utilities.MusicXmlConfiguration;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
@@ -24,7 +24,7 @@ class MusicXmlToMidiTest {
   @BeforeAll
   void init() {
     ClassLoader classLoader = getClass().getClassLoader();
-    musicXmlFile = new File(classLoader.getResource("samples/example.mxl").getFile());
+    musicXmlFile = new File(classLoader.getResource("samples/example.musicxml").getFile());
   }
 
   @Test
@@ -32,7 +32,7 @@ class MusicXmlToMidiTest {
     MusicXmlToMidi musicXmlToMidi =
         new MusicXmlToMidi(
             new XmlConverter(new SoundscribeConfiguration()),
-            new MusicXmlNoteUtils(new MusicXmlConfiguration()));
+            new MusicXmlUtils(new MusicXmlConfiguration()));
     midiFile = musicXmlToMidi.convertMusicXmlToMidi(musicXmlFile);
     assertTrue(midiFile.exists());
   }

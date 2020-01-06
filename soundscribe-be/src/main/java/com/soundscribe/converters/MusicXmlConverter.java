@@ -1,7 +1,7 @@
 package com.soundscribe.converters;
 
 import com.soundscribe.converters.musicxml.functions.MusicXmlToMidi;
-import com.soundscribe.converters.musicxml.utilities.MusicXmlNoteUtils;
+import com.soundscribe.converters.musicxml.utilities.MusicXmlUtils;
 import com.soundscribe.utilities.MusicXmlConfiguration;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
@@ -20,7 +20,7 @@ public class MusicXmlConverter extends Converter {
     musicXmlToMidi =
         new MusicXmlToMidi(
             new XmlConverter(soundscribeConfiguration),
-            new MusicXmlNoteUtils(new MusicXmlConfiguration()));
+            new MusicXmlUtils(new MusicXmlConfiguration()));
   }
 
   @Override

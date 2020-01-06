@@ -5,7 +5,12 @@ import com.soundscribe.converters.xml.functions.XmlToMusicXml;
 import com.soundscribe.utilities.MusicXmlConfiguration;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
-import javax.sound.midi.*;
+import javax.sound.midi.MetaMessage;
+import javax.sound.midi.MidiEvent;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.Sequence;
+import javax.sound.midi.ShortMessage;
+import javax.sound.midi.Track;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +69,12 @@ public class XmlConverter extends Converter {
    */
   public File convertXmlToMidi(File fileXML) {
     XmlPojo xml = XmlPojo.readXMLData(fileXML);
+    if (xml.getDivisions() == null) {
+      xml.setDivisions(soundscribeConfiguration.getDefaultDivisions());
+    }
+    if (xml.getBpm() == null) {
+      xml.setBpm(soundscribeConfiguration.getDefaultBpm());
+    }
     return convertXmlPojoToMidi(xml);
   }
 
@@ -99,7 +110,7 @@ public class XmlConverter extends Converter {
 
       // write MIDI
       midiFile =
-          new File(soundscribeConfiguration.getSongDataStorage() + xml.getSongName() + ".mid");
+          new File(soundscribeConfiguration.getSongDataStorage() + xml.getSongName() + ".midi");
       // TODO: Name the new file same as the old old (with new extension)
       MidiSystem.write(sequence, 1, midiFile);
 

@@ -36,7 +36,8 @@ public class ConversionController {
     try {
       File mp3 = new File(soundscribeConfiguration.getSongDataStorage() + filename);
       File wav = converterService.convert(mp3, new ConversionFormat("mp3", "wav"));
-      File xml = jvampService.pyinNotes(wav, mp3, false);
+      File xml = jvampService.pyinNotes(wav, false);
+      jvampService.pyinSmoothedPitchTrack(wav, false);
       File musicXml = converterService.convert(xml, new ConversionFormat("xml", "musicxml"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
@@ -47,6 +48,27 @@ public class ConversionController {
           "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
     }
     return new ResponseEntity<>("Plik z danymi wyściowymi został utworzony", HttpStatus.OK);
+  }
+
+  @GetMapping("update-file")
+  /**
+   * This endpoint updates modified transcription. It supports ABC and MIDI input formats only.
+   * Updated formats: MusicXML, ABC, MIDI, MEI
+   */
+  public ResponseEntity<String> updateFile(@RequestParam String filename) {
+    try {
+      File input = new File(soundscribeConfiguration.getSongDataStorage() + filename);
+      String extension = filename.substring(filename.indexOf(".") + 1);
+      File musicXml = converterService.convert(input, new ConversionFormat(extension, "musicxml"));
+      converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
+      converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
+      converterService.convert(musicXml, new ConversionFormat("musicxml", "abc"));
+    } catch (Exception e) {
+      log.error("Update file exception", e);
+      return new ResponseEntity<>(
+          "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
+    }
+    return new ResponseEntity<>("Plik z danymi wyściowymi został zaaktualizowany", HttpStatus.OK);
   }
 
   @GetMapping("")

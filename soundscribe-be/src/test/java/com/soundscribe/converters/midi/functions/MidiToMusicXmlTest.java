@@ -16,13 +16,14 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class MidiToMusicXmlTest {
+
   private File midiFile;
   private File musicXmlFile;
 
   @BeforeAll
   void init() {
     ClassLoader classLoader = getClass().getClassLoader();
-    midiFile = new File(classLoader.getResource("samples/example.mid").getFile());
+    midiFile = new File(classLoader.getResource("samples/example.midi").getFile());
   }
 
   @Test

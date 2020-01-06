@@ -2,7 +2,7 @@ package com.soundscribe.converters.xml.functions;
 
 import com.soundscribe.converters.PyinNote;
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
-import com.soundscribe.converters.musicxml.utilities.MusicXmlNoteUtils;
+import com.soundscribe.converters.musicxml.utilities.MusicXmlUtils;
 import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.utilities.MidiNotes;
 import com.soundscribe.utilities.MusicXmlConfiguration;
@@ -176,7 +176,7 @@ public class XmlToMusicXml {
    * @param xmlPojo Object with song data.
    */
   private void addNotesToMusicXml(Element measure, Document document, XmlPojo xmlPojo) {
-    MusicXmlNoteUtils musicXmlNoteUtils = new MusicXmlNoteUtils(new MusicXmlConfiguration());
+    MusicXmlUtils musicXmlNoteUtils = new MusicXmlUtils(new MusicXmlConfiguration());
     List<MusicXmlNote> musicXmlBaseNotes =
         musicXmlNoteUtils.getMusicXmlBaseNotes(xmlPojo.getBpm(), xmlPojo.getDivisions());
     int numberOfNotesToInsert = xmlPojo.getNotes().size();

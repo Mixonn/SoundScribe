@@ -1,9 +1,13 @@
 #Path properties
 settings:
+  uploadDirectory: "dlibraUpload/"
+  downloadDirectory: "dlibraDownload/"
+  pathToDLibraScript: "/dlibra-cmdln-tools"
+
   songDataStorage: "audioFilesStorage/"
   vampPath: "/usr/lib/"
 
-#Converters properties
+  #Converters properties
   defaultDivisions: 4
   defaultBpm: 120
   defaultBeats: 4

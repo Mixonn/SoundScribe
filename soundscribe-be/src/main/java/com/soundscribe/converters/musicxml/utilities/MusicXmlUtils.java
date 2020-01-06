@@ -2,17 +2,44 @@ package com.soundscribe.converters.musicxml.utilities;
 
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import com.soundscribe.utilities.MusicXmlConfiguration;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.w3c.dom.Document;
 
 /** MusicXmlNoteUtils contains common utilities for other MusicXml functions. */
 @RequiredArgsConstructor
 @Component
-public class MusicXmlNoteUtils {
+public class MusicXmlUtils {
 
   private final MusicXmlConfiguration musicXmlConfiguration;
+
+  /**
+   * Loads name of the song from musicXml file.
+   *
+   * @param musicxml MusicXml file with song data.
+   * @return Name of song
+   * @throws IOException
+   */
+  public static String getSongNameFromMusicxmlFile(File musicxml) throws IOException {
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder builder;
+    Document document;
+    try {
+      builder = factory.newDocumentBuilder();
+      document = builder.parse(musicxml);
+    } catch (Exception e) {
+      throw new IOException("Failed to load song name from musicXml file.", e);
+    }
+    document.getDocumentElement().normalize();
+    return document.getElementsByTagName("movement-title").item(0).getTextContent();
+  }
+
   /**
    * Based on bpm and number of divisions per quarter note, function calculates necessary
    * information about notes in MusicXMl

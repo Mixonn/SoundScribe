@@ -1,4 +1,5 @@
-import colors from 'vuetify/es5/util/colors'
+import colors from 'vuetify/lib/util/colors'
+import webpack from 'webpack'
 
 export default {
   mode: 'spa',
@@ -30,6 +31,7 @@ export default {
   ** Plugins to load before mounting the App
   */
   plugins: [
+    '~/plugins/vue-waveform'
   ],
   /*
   ** Nuxt.js dev-modules
@@ -43,27 +45,40 @@ export default {
   ** Nuxt.js modules
   */
   modules: [
+    '@nuxtjs/axios',
+    '@nuxtjs/font-awesome'
   ],
   /*
   ** vuetify module configuration
   ** https://github.com/nuxt-community/vuetify-module
   */
   vuetify: {
+    treeShake: true,
     customVariables: ['~/assets/variables.scss'],
     theme: {
-      dark: true,
+      options: { customProperties: true },
+      light: true,
       themes: {
-        dark: {
-          primary: colors.blue.darken2,
-          accent: colors.grey.darken3,
+        light: {
+          primary: 'black',
+          accent: '#ff0031',
           secondary: colors.amber.darken3,
           info: colors.teal.lighten1,
           warning: colors.amber.base,
           error: colors.deepOrange.accent4,
-          success: colors.green.accent3
+          success: colors.green.accent3,
+          mainBackground: '#ffffff',
+          sideBackground: '#efefef',
+          side2Background: '#f7f7f7',
+          headerBackground: '#5b5b5a',
+          drawerBackground: '#424242'
+
         }
       }
     }
+  },
+  axios: {
+    baseURL: 'http://localhost:8080'
   },
   /*
   ** Build configuration
@@ -73,6 +88,17 @@ export default {
     ** You can extend webpack config here
     */
     extend (config, ctx) {
-    }
+      config.devtool = ctx.isClient ? 'eval-source-map' : 'inline-source-map';
+      config.node = {
+        fs: 'empty'
+      }
+    },
+    plugins: [
+      new webpack.ProvidePlugin({
+        '$': 'jquery',
+        '_': 'lodash'
+        // ...etc.
+      })
+    ]
   }
 }
