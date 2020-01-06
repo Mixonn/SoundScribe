@@ -4,5 +4,9 @@
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="soundscribe.soundscribe-ui.main" target="11" />
+      <module name="soundscribe.soundscribe-ui.test" target="11" />
+    </bytecodeTargetLevel>
   </component>
 </project>

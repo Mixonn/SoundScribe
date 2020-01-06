@@ -1,8 +1,11 @@
 package com.soundscribe.converters;
 
 import com.google.common.io.Files;
+import com.soundscribe.utilities.CommonUtil;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 
@@ -62,11 +65,17 @@ class CrossPlatformConverter {
   }
 
   File convertAbcToMusicXml() {
-    String baseFileName = Files.getNameWithoutExtension(input.getName());
-    File mxlFile = new File(directory, baseFileName + ".mxl");
+    Path tmpPath = Paths.get(directory + "/tmp");
+    String baseFileName = CommonUtil.getFileNameWithoutExtension(input);
+    File mxlFile = new File(tmpPath.toString(), baseFileName + ".xml");
     File musicXmlFile = new File(directory + "/" + baseFileName + ".musicxml");
-    boolean isSuccess = executeCommand("abc2xml", input.getName(), "-o", directory);
+    boolean isSuccess =
+        executeCommand("abc2xml", input.getAbsolutePath(), "-o", tmpPath.toString());
     isSuccess &= executeCommand("mv", mxlFile.getAbsolutePath(), musicXmlFile.getAbsolutePath());
+    try {
+      java.nio.file.Files.deleteIfExists(tmpPath);
+    } catch (IOException ignored) {
+    }
     if (isSuccess) {
       return musicXmlFile;
     } else {

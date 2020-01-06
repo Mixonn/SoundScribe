@@ -16,7 +16,7 @@ public class ConverterService {
 
   public File convert(File input, ConversionFormat conversionFormat)
       throws Converter.ConversionNotSupported {
-    Converter converter = null;
+    Converter converter;
     if ("abc".equals(conversionFormat.getFromFormat())) {
       converter = new AbcConverter(soundscribeConfiguration);
     } else if ("mei".equals(conversionFormat.getFromFormat())) {
