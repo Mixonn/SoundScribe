@@ -12,7 +12,6 @@
       <img alt="Remove" class="controlButtons" src="/buttons/minus.png">
       <img alt="Update" class="controlButtons" src="/buttons/update.png">
     </div>
-
     <div ref="containerId" class="chartContainer">
       <midi-chart
         v-if="loaded"
@@ -23,22 +22,22 @@
       />
       <div id="zoomview-container" class="zoomviewContainer" />
     </div>
+    <div id="overview-container" />
     <button class="btn" @click="zoomIn">
-      +
+      Zoom in
     </button>
     <button @click="zoomOut">
-      -
+      Zoom out
     </button>
-    <div id="overview-container" />
     <audio controls="controls">
-      <source src="https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3" type="audio/mpeg">
+      <source :src="mp3Url" type="audio/mpeg">
     </audio>
     <div id="audio-controls">
-      <input id="original-audio" v-model="checkedSoundOptions" type="checkbox" value="original">
+      <input id="original-audio" v-model="soundOptionsSelected" type="checkbox" value="original">
       <label for="original-audio">Original</label>
-      <input id="midi-audio" v-model="checkedSoundOptions" type="checkbox" value="midi">
+      <input id="midi-audio" v-model="soundOptionsSelected" type="checkbox" value="midi">
       <label for="midi-audio">Midi</label>
-      <input id="f0-audio" v-model="checkedSoundOptions" type="checkbox" value="f0">
+      <input id="f0-audio" v-model="soundOptionsSelected" type="checkbox" value="f0">
       <label for="f0-audio">F0</label>
     </div>
   </div>
@@ -57,28 +56,28 @@ export default {
   data () {
     return {
       loaded: false,
-      chartData: {
-      },
+      chartData: {},
       midiFileContent: '',
       baseFrequencyFileContent: '',
+      midiChartData: '',
+      baseFrequencyChartData: '',
       chartPosition: {
         startTime: 0,
         endTime: 10
       },
       fileNameFormatted: '',
-      midiDataFormatted: [],
-      maxTime: 0,
-      secondsOnChart: 10,
       peaksInstance: {},
       dataLoading: false,
       playerTime: 0,
       contextImageData: {},
       drawVerticalLineId: null,
       chartRendered: false,
-      checkedSoundOptions: ['original'],
-      lastMidiPlayerValue: null,
-      abcUrl: null,
-      mp3Url: null
+      soundOptionsSelected: ['original'],
+      midiAudioContext: null,
+      midiPlaying: false,
+      mp3Url: '',
+      midiUrl: '',
+      f0Url: ''
     }
   },
   computed: {
@@ -100,9 +99,7 @@ export default {
         scales: {
           yAxes: [{
             ticks: {
-              max: 600,
-              min: 200,
-              stepSize: 20
+              stepSize: 1
             }
           }],
           xAxes: [{
@@ -113,38 +110,35 @@ export default {
         },
         animation: {
           onComplete: () => {
-            this.saveContext()
+            this.saveChartContext()
           }
         }
       }
     }
   },
   mounted () {
-    this.abcUrl = this.$axios.defaults.baseURL + '/download/' + this.$route.params.song
-    this.mp3Url = this.abcUrl.substr(0, this.abcUrl.lastIndexOf('.abc')) + '.mp3'
-    this.loaded = false;
+    // prepare files urls
+    const baseUrl = this.$axios.defaults.baseURL + '/download/' + this.$route.params.song.substr(0, this.$route.params.song.lastIndexOf('.abc'));
+    this.abcUrl = this.$axios.defaults.baseURL + '/download/' + this.$route.params.song;
+    this.mp3Url = baseUrl + '.mp3';
+    this.midiUrl = baseUrl + '.xml';
+    this.f0Url = baseUrl + '.txt';
+    this.fileNameFormatted = this.$route.params.song.substr(0, this.$route.params.song.lastIndexOf('.abc'));
     this.init()
   },
   methods: {
     init () {
+      // build waveform view + logic
       this.buildWaveform();
+      // load midi + f0 files and load into chart
       this.loadFiles();
-      this.overrideDefaultPlayer()
     },
     loadFiles () {
-      // URL for local testing: https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3
-      const contentUrl = this.mp3Url
-      const root = contentUrl.split('/');
-      const fileName = root[root.length - 1];
-      this.fileNameFormatted = 'Song_' + fileName.replace('.mp3', '');
-      console.log(this.fileNameFormatted)
-      const fileTXTAddr = contentUrl.replace('.mp3', '.txt');
-      const fileXMLAddr = contentUrl.replace('.mp3', '.xml');
-      const baseFrequencyFilePromise = fetch(fileTXTAddr).then((element) => {
+      const baseFrequencyFilePromise = fetch(this.f0Url).then((element) => {
         return element.text()
       });
       const parser = new DOMParser();
-      const midiFilePromise = fetch(fileXMLAddr).then((element) => {
+      const midiFilePromise = fetch(this.midiUrl).then((element) => {
         return element.text().then((text) => {
           return parser.parseFromString(text, 'text/xml')
         })
@@ -152,24 +146,16 @@ export default {
       Promise.all([baseFrequencyFilePromise, midiFilePromise]).then((files) => {
         this.baseFrequencyFileContent = files[0];
         this.midiFileContent = files[1];
-        this.generateChartDataSet()
+        this.parseFilesData()
       })
     },
-    generateChartDataSet () {
-      if (!this.dataLoading) {
-        this.dataLoading = true;
-        const midiChartData = this.prepareMidiChartData();
-        const baseFrequencyChartData = this.prepareBaseFrequencyChartData();
-        const chartData = this.prepareCombinedChartData(midiChartData, baseFrequencyChartData);
-        this.chartData = {
-          datasets: chartData
-        };
-        this.loaded = true;
-        this.dataLoading = false
-      }
+    parseFilesData () {
+      this.midiChartData = this.prepareMidiChartData();
+      this.baseFrequencyChartData = this.prepareBaseFrequencyChartData();
+      this.prepareCombinedChartData();
     },
     prepareMidiChartData () {
-      const notes = this.midiFileContent.getElementsByTagName(this.fileNameFormatted)[0].childNodes;
+      const notes = this.midiFileContent.getElementsByTagName(this.fileNameFormatted)[0].getElementsByTagName('note');
       const chartData = [];
       for (let i = 0; i < notes.length; i++) {
         const midiWrapper = {
@@ -180,23 +166,16 @@ export default {
           midiValue: parseInt(notes[i].children[3].textContent),
           letterNote: notes[i].children[4].textContent
         };
-        if (this.chartPosition.startTime <= midiWrapper.startTime && this.chartPosition.endTime >= midiWrapper.endTime) {
-          this.midiDataFormatted.push(midiWrapper);
-          const midiEvent = [];
-          midiEvent.push({
-            x: midiWrapper.startTime,
-            y: midiWrapper.value
-          });
-          midiEvent.push({
-            x: midiWrapper.endTime,
-            y: midiWrapper.value
-          });
-          chartData.push(midiEvent)
-        }
-      }
-      if (chartData.length > 0) {
-        const maxMidiTime = parseInt(chartData[chartData.length - 1][1].x);
-        this.maxTime = maxMidiTime > this.maxTime ? maxMidiTime : this.maxTime
+        const midiEvent = [];
+        midiEvent.push({
+          x: midiWrapper.startTime,
+          y: midiWrapper.midiValue
+        });
+        midiEvent.push({
+          x: midiWrapper.endTime,
+          y: midiWrapper.midiValue
+        });
+        chartData.push(midiEvent)
       }
       return chartData
     },
@@ -208,61 +187,106 @@ export default {
         const values = data[i].trim().split(/[ ,]+/);
         const timeValue = parseFloat(values[0]);
         const frequencyValue = parseFloat(values[1]);
-        if (!isNaN(timeValue) && !isNaN(frequencyValue) && this.chartPosition.startTime < timeValue && this.chartPosition.endTime > timeValue) {
+        if (!isNaN(timeValue) && !isNaN(frequencyValue)) {
           if (tempData.length > 0 && timeValue - tempData[tempData.length - 1].x > 0.1) {
             chartData.push(tempData);
             tempData = []
           }
           tempData.push({
             x: timeValue,
-            y: frequencyValue
+            y: this.frequencyToMidi(frequencyValue)
           })
         }
       }
       if (tempData.length > 0) {
         chartData.push(tempData)
       }
-      if (chartData.length > 0) {
-        const maxFrequencyTime = parseInt(chartData[chartData.length - 1].x);
-        this.maxTime = maxFrequencyTime > this.maxTime ? maxFrequencyTime : this.maxTime
-      }
       return chartData
     },
-    prepareCombinedChartData (midiData, baseFrequencyData) {
-      const chartData = [];
-      for (let i = 0; i < midiData.length; i++) {
-        chartData.push({
-          data: midiData[i],
-          borderColor: '#ac2b2b',
-          fill: false,
-          showLine: true })
-      }
-      for (let i = 0; i < baseFrequencyData.length; i++) {
-        chartData.push({
-          data: baseFrequencyData[i],
-          radius: 1,
-          borderColor: '#3e95cd',
-          fill: false,
-          showLine: true
+    prepareCombinedChartData () {
+      if (!this.dataLoading) {
+        this.dataLoading = true;
+        const chartData = [];
+        for (let i = 0; i < this.midiChartData.length; i++) {
+          const tempData = this.midiChartData[i];
+          if (tempData[0].x >= this.chartPosition.startTime && tempData[1].x <= this.chartPosition.endTime) {
+            chartData.push({
+              data: tempData,
+              borderColor: '#ac2b2b',
+              fill: false,
+              showLine: true })
+          } else if (tempData[0].x <= this.chartPosition.startTime && tempData[1].x >= this.chartPosition.startTime) {
+            tempData[0].x = this.chartPosition.startTime;
+            chartData.push({
+              data: tempData,
+              borderColor: '#ac2b2b',
+              fill: false,
+              showLine: true })
+          } else if (tempData[0].x <= this.chartPosition.endTime && tempData[1].x >= this.chartPosition.endTime) {
+            tempData[1].x = this.chartPosition.endTime;
+            chartData.push({
+              data: tempData,
+              borderColor: '#ac2b2b',
+              fill: false,
+              showLine: true })
+          }
+        }
+        for (let i = 0; i < this.baseFrequencyChartData.length; i++) {
+          const tempData = [];
+          for (let j = 0; j < this.baseFrequencyChartData[i].length; j++) {
+            if (this.chartPosition.startTime <= this.baseFrequencyChartData[i][j].x && this.chartPosition.endTime >= this.baseFrequencyChartData[i][j].x) {
+              tempData.push(this.baseFrequencyChartData[i][j]);
+            }
+          }
+          if (tempData.length > 0) {
+            chartData.push({
+              data: tempData,
+              radius: 1,
+              borderColor: '#3e95cd',
+              fill: false,
+              showLine: true
+            })
+          }
+        }
+        // due to chartjs + peaks.js compatibility problems,
+        // we add dummy, invisible data at the start and end of chart currently showing data to provide proper handling of data range
+        const dummyDataForProperDisplaying = []
+        const dummyValue = chartData.length > 0 ? chartData[0].data[0].y : 60;
+        dummyDataForProperDisplaying.push({
+          x: this.chartPosition.startTime,
+          y: dummyValue
         })
+        dummyDataForProperDisplaying.push({
+          x: this.chartPosition.endTime,
+          y: dummyValue
+        })
+        chartData.push({
+          data: dummyDataForProperDisplaying,
+          radius: 0,
+          fill: false,
+          showLine: false
+        })
+        this.chartData = {
+          datasets: chartData
+        };
+        this.loaded = true;
+        this.dataLoading = false
       }
-      return chartData
     },
     zoomIn () {
-      if (this.secondsOnChart > 2) {
-        this.secondsOnChart -= 1
+      if (this.peaksInstance) {
+        this.peaksInstance.zoom.zoomIn();
       }
     },
     zoomOut () {
-      if (this.secondsOnChart < this.maxTime) {
-        this.secondsOnChart += 1
+      if (this.peaksInstance) {
+        this.peaksInstance.zoom.zoomOut();
       }
     },
     buildWaveform () {
       const vm = this;
       const audioContext = new AudioContext();
-      // URL for local testing: https://raw.githubusercontent.com/Fehu4/Kik/master/TP0052B_01.mp3
-      fetch(this.mp3Url)
+      fetch(vm.mp3Url)
         .then(response => response.arrayBuffer())
         .then((buffer) => {
           const options = {
@@ -270,7 +294,6 @@ export default {
             array_buffer: buffer,
             scale: 128
           };
-
           return new Promise((resolve, reject) => {
             WaveformData.createFromAudio(options, (err, waveform) => {
               if (err) {
@@ -282,6 +305,11 @@ export default {
           })
         })
         .then((waveform) => {
+          // calculate pixels per one second in zoomview
+          const audioSampleRate = audioContext.sampleRate;
+          const imageWidth = document.getElementById('zoomview-container').clientWidth;
+          const oneSecondZoom = Math.round(audioSampleRate / imageWidth);
+
           const options = {
             containers: {
               overview: document.getElementById('overview-container'),
@@ -293,62 +321,84 @@ export default {
             },
             height: 100,
             showPlayheadTime: true,
-            zoomLevels: [512, 1024, 2048, 4096],
-            emitCueEvents: true
+            zoomLevels: [2 * oneSecondZoom, 4 * oneSecondZoom, 6 * oneSecondZoom, 8 * oneSecondZoom, 10 * oneSecondZoom],
+            emitCueEvents: true,
+            logger: console.error.bind(console),
+            interactive: false
           };
           // eslint-disable-next-line handle-callback-err
           vm.peaksInstance = Peaks.init(options, function (err, peaks) {
           });
-          vm.saveContext();
+          vm.peaksInstance.zoom.setZoom(2);
+          // zoomview.displaying event is fired when zoomview range changes, so then we update chart data to match new range
           vm.peaksInstance.on('zoomview.displaying', function (startTime, endTime) {
             startTime = Math.round(startTime);
             endTime = Math.round(endTime);
             if (vm.chartPosition.startTime !== startTime || vm.chartPosition.endTime !== endTime) {
               vm.chartPosition.startTime = startTime;
               vm.chartPosition.endTime = endTime;
-              vm.generateChartDataSet()
+              // update zoomview to start at full seconds
+              const zoomview = vm.peaksInstance.views.getView('zoomview');
+              if (zoomview) {
+                const newPixels = zoomview.timeToPixels(vm.chartPosition.startTime);
+                zoomview._updateWaveform(newPixels)
+              }
+              vm.prepareCombinedChartData()
             }
           });
-          vm.peaksInstance.on('player_play', function () {
-            vm.reloadContext();
-            vm.drawTimeLine();
-            if (!vm.checkedSoundOptions.includes('original')) {
+          vm.peaksInstance.on('player_play', function (time) {
+            // draw chart vertical line
+            vm.reloadChartContext();
+            vm.drawChartPlayingLine();
+            if (!vm.soundOptionsSelected.includes('original')) {
               document.querySelector('audio').muted = true
             }
-            if (vm.checkedSoundOptions.includes('midi')) {
-              vm.playMidi()
+            if (vm.soundOptionsSelected.includes('midi')) {
+              vm.midiPlaying = true;
+              vm.playMidi(time)
             }
           });
           vm.peaksInstance.on('player_pause', function () {
             clearInterval(vm.drawVerticalLineId);
-            clearInterval(vm.playMidiId)
-          })
+            vm.midiPlaying = false;
+            if (vm.midiAudioContext) {
+              vm.midiAudioContext.close();
+            }
+          });
+          vm.peaksInstance.on('player_seek', function (time) {
+            if (vm.soundOptionsSelected.includes('midi') && vm.midiPlaying) {
+              if (vm.midiAudioContext) {
+                vm.midiAudioContext.close();
+              }
+              vm.playMidi(time);
+            }
+          });
         })
     },
-    drawTimeLine () {
+    drawChartPlayingLine () {
       const vm = this;
       if (vm.$children[0]) {
         const c = vm.$children[0].$refs.canvas;
         if (c) {
           const ctx = c.getContext('2d');
-          vm.saveContext();
+          vm.saveChartContext();
           vm.drawVerticalLineId = setInterval(function () {
             if (!vm.dataLoading) {
               vm.playerTime = vm.peaksInstance.player.getCurrentTime();
               const xposition = vm.$children[0].$data._chart.scales['x-axis-1'].getPixelForValue(vm.playerTime);
               ctx.fillStyle = '#ff0000';
-              vm.reloadContext();
+              vm.reloadChartContext();
               ctx.beginPath();
               ctx.moveTo(xposition, 0);
               ctx.strokeStyle = '#ff0000';
-              ctx.lineTo(xposition, c.height);
+              ctx.lineTo(xposition, c.height + 200);
               ctx.stroke()
             }
-          }, 10)
+          }, 30)
         }
       }
     },
-    saveContext () {
+    saveChartContext () {
       if (this.$children[0]) {
         const c = this.$children[0].$refs.canvas;
         if (c) {
@@ -357,7 +407,7 @@ export default {
         }
       }
     },
-    reloadContext () {
+    reloadChartContext () {
       if (this.$children[0]) {
         const c = this.$children[0].$refs.canvas;
         if (c) {
@@ -366,38 +416,24 @@ export default {
         }
       }
     },
-    overrideDefaultPlayer () {
-    },
-    playMidi () {
+    playMidi (playerTime) {
       const vm = this;
-      const audioContext = new AudioContext();
-      const o = audioContext.createOscillator();
-      o.type = 'square';
-      o.connect(audioContext.destination);
-      o.start();
-      o.frequency.value = 0;
-      vm.playMidiId = setInterval(function () {
-        if (!vm.lastMidiPlayerValue || (vm.lastMidiPlayerValue && (vm.playerTime < vm.lastMidiPlayerValue.startTime || vm.playerTime > vm.lastMidiPlayerValue.endTime))) {
-          if (vm.lastMidiPlayerValue) {
-          }
-          const currentWrapper = vm.midiDataFormatted.find(function (el) {
-            return el.startTime <= vm.playerTime && el.endTime >= vm.playerTime
-          });
-          if (currentWrapper) {
-            vm.lastMidiPlayerValue = currentWrapper;
-            vm.playMidiNote(o, currentWrapper)
-          }
+      vm.midiAudioContext = new AudioContext();
+      for (let i = 0; i < vm.midiChartData.length; i++) {
+        if (vm.midiChartData[i] && vm.midiChartData[i][0] && vm.midiChartData[i][0].x >= playerTime && vm.midiPlaying) {
+          const o = vm.midiAudioContext.createOscillator();
+          o.frequency.setTargetAtTime(vm.midiToFrequency(vm.midiChartData[i][0].y), vm.midiAudioContext.currentTime, 0);
+          o.connect(vm.midiAudioContext.destination);
+          o.start(vm.midiChartData[i][0].x - playerTime);
+          o.stop(vm.midiChartData[i][1].x - playerTime);
         }
-      }, 10)
+      }
     },
-    playMidiNote (o, midiWrapper) {
-      console.log(midiWrapper.value);
-      console.log(midiWrapper.duration);
-      o.frequency.value = midiWrapper.value;
-      setTimeout(
-        function () {
-          o.frequency.value = 0
-        }, midiWrapper.duration * 1000)
+    frequencyToMidi (frequency) {
+      return Math.log(frequency / 440.0) / Math.log(2) * 12 + 69;
+    },
+    midiToFrequency (midiValue) {
+      return 440.0 * 2.0 ** ((midiValue - 69) / 12);
     }
   }
 }
@@ -409,15 +445,13 @@ export default {
     overflow-x: hidden;
   }
   .zoomviewContainer {
-    width: 100%;
+    width: calc(100% - 2.5em);
     margin-left: 2.2em;
   }
-
   .controlButtons {
     width: 50px;
     height: 50px;
   }
-
   #buttons-container {
     background-color: #f7f7f7;
   }
