@@ -86,6 +86,15 @@
         natural
       </button>
     </div>
+    <p v-if=" tune.error.metre != null " class="input-error">
+      {{ tune.error.metre }}
+    </p>
+    <v-text-field
+      :value="tune.meta.metre"
+      return-masked-value
+      mask="#/#"
+      @input="handleMetreInput"
+    />
     <v-card-text>
       <v-row>
         <v-col class="pr-4">
@@ -119,7 +128,7 @@
 import 'abcjs/abcjs-midi.css';
 import abcjs from 'abcjs/midi';
 import { getNoteMetadata, MODIFY_OPERATIONS, modifyNote, replaceSubstring } from './NodeModifier';
-import { extractMetadata, setBpm } from './TuneService';
+import { extractMetadata, setBpm, setMetre } from './TuneService';
 const fs = require('fs');
 const $ = require('jquery');
 
@@ -137,7 +146,11 @@ export default {
       tune: {
         text: 'X:1\nT: Cooley\'s\nM: 4/4\nL: 1/8\nR: reel\nK: Emin\nD2DD||',
         meta: {
-          defaultNoteLength: null
+          defaultNoteLength: null,
+          metre: '4/4'
+        },
+        error: {
+          metre: null
         }
       },
       currentNode: {
@@ -358,6 +371,17 @@ export default {
       // this.abcjsEditor.pauseMidi(false);
       // this.abcjsEditor.redrawMidi();
     },
+    handleMetreInput (input) {
+      if (input.match(/^\d+\/\d+$/g) != null) {
+        this.tune.meta.metre = input;
+        this.tune.error.metre = null;
+        this.tune.text = setMetre(this.tune.text, input);
+        this.unselectNote();
+        this.redrawTune();
+      } else {
+        this.tune.error.metre = 'Nieprawidłowa wartość metrum, przykładowe poprawne: 4/4, 3/2, 15/8'
+      }
+    },
     noNoteSelected () {
       return this.currentNode.start == null || this.currentNode.start === 0;
     },
@@ -409,6 +433,10 @@ export default {
 
   .label {
     font-weight: bold;
+  }
+
+  .input-error {
+    color: red;
   }
 
   #note-length-container {
