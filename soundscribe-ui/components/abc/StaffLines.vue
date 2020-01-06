@@ -66,17 +66,26 @@
         :src="require('@/static/buttons/notes/natural.png')"
         @click="setNatural(!currentNode.natural)"
       >
-    </div>
-    <div id="note-operations">
-      <button @click="addNote('|')">
-        Add bar line
-      </button>
-      <button @click="lineBreak(true)">
-        Add Line break
-      </button>
-      <button @click="lineBreak(false)">
-        Remove Line break
-      </button>
+      <img
+        class="controlButtons"
+        :src="require('@/static/buttons/notes/barLine.png')"
+        @click="addNote('|')"
+      >
+      <img
+        class="controlButtons"
+        :src="require('@/static/buttons/notes/doubleBarLine.png')"
+        @click="addNote(':|')"
+      >
+      <img
+        class="controlButtons"
+        :src="require('@/static/buttons/notes/newline.png')"
+        @click="lineBreak(true)"
+      >
+      <img
+        class="controlButtons"
+        :src="require('@/static/buttons/notes/removeLine.png')"
+        @click="lineBreak(false)"
+      >
     </div>
 
     <div id="paper" />
@@ -456,6 +465,10 @@ export default {
   .controlButtons {
     width: 50px;
     height: 50px;
+    &:hover,
+    &:focus {
+      box-shadow: inset 0 0 0 2em rgba(0, 0, 0, .4)
+    }
   }
 
   .active {
