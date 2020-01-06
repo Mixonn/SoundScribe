@@ -72,7 +72,7 @@ public class MusicXmlToMidi {
     int divisions = Integer.parseInt(divisionsElement.getTextContent());
     xmlPojo.setDivisions(divisions);
 
-    List<MusicXmlNote> noteTimes = musicXmlUtils.getMusicXmlBaseNotes(111, divisions);
+    List<MusicXmlNote> noteTimes = musicXmlUtils.getMusicXmlBaseNotes(bpm, divisions);
 
     List<PyinNote> noteList = new ArrayList<>();
     NodeList nList = document.getElementsByTagName("note");
