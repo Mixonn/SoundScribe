@@ -3,6 +3,9 @@ package com.soundscribe.controller;
 import com.soundscribe.converters.ConversionFormat;
 import com.soundscribe.converters.Converter;
 import com.soundscribe.converters.ConverterService;
+import com.soundscribe.converters.xml.FrontXmlPojo;
+import com.soundscribe.converters.xml.XmlPojo;
+import com.soundscribe.converters.xml.functions.XmlToMusicXml;
 import com.soundscribe.jvamp.JvampService;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
@@ -12,7 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,6 +30,7 @@ public class ConversionController {
   private final JvampService jvampService;
   private final ConverterService converterService;
   private final SoundscribeConfiguration soundscribeConfiguration;
+  private final XmlToMusicXml xmlToMusicXml;
 
   @PostConstruct
   public void init() {
@@ -84,5 +90,21 @@ public class ConversionController {
       log.debug(exception.getMessage());
       return new ResponseEntity<>(responsePrefix + "nieudana!", HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  @RequestMapping(value = "/update-file-midi", method = RequestMethod.POST)
+  public ResponseEntity<String> update(@RequestBody FrontXmlPojo frontXmlPojo) {
+    XmlPojo xmlPojo = FrontXmlPojo.convertFrontXmlPojoToXmlPojo(frontXmlPojo);
+    try {
+      File musicXml = xmlToMusicXml.convertXmlToMusicXml(xmlPojo);
+      converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
+      converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
+      converterService.convert(musicXml, new ConversionFormat("musicxml", "abc"));
+    } catch (Exception e) {
+      log.error("Update file exception", e);
+      return new ResponseEntity<>(
+          "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
+    }
+    return new ResponseEntity<>("Plik z danymi wyściowymi został zaaktualizowany", HttpStatus.OK);
   }
 }
