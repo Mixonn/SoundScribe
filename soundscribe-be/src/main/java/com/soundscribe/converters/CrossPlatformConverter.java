@@ -2,20 +2,29 @@ package com.soundscribe.converters;
 
 import com.google.common.io.Files;
 import com.soundscribe.utilities.CommonUtil;
+import com.soundscribe.utilities.SoundscribeConfiguration;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class CrossPlatformConverter {
 
   private final File input;
+  private final SoundscribeConfiguration soundscribeConfiguration;
   private String directory;
 
-  CrossPlatformConverter(File input) {
+  CrossPlatformConverter(File input, SoundscribeConfiguration soundscribeConfiguration) {
+    this.soundscribeConfiguration = soundscribeConfiguration;
     this.input = input;
     try {
       this.directory = input.getParentFile().getAbsolutePath();
@@ -58,7 +67,46 @@ class CrossPlatformConverter {
         executeCommand(
             "perl", "-i", "-pe", "s/(\\S)(#)/^$1/g", abcFilename); // Fix # occurrences in abc
     if (isSuccess) {
-      return new File(abcFilename);
+      File abcFile = new File(abcFilename);
+      File tempFile = new File(abcFile.getAbsolutePath() + ".tmp");
+
+      try (BufferedReader reader = new BufferedReader(new FileReader(abcFile));
+          BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+        List<String> notes = new ArrayList<>();
+
+        String currentLine;
+        while ((currentLine = reader.readLine()) != null) {
+          if (currentLine.contains(":")) {
+            writer.write(currentLine + System.lineSeparator());
+          } else {
+            String trimmedLine = currentLine.trim();
+            notes.addAll(Arrays.asList(trimmedLine.split(" ")));
+          }
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < notes.size(); i++) {
+          stringBuilder.append(notes.get(i));
+          stringBuilder.append(" ");
+          if (i % soundscribeConfiguration.getMaxNotesInLineAbc() == 0 && i != 0) {
+            stringBuilder.append(System.lineSeparator());
+            writer.write(stringBuilder.toString());
+            stringBuilder = new StringBuilder();
+          } else {
+            if (i == notes.size() - 1) {
+              stringBuilder.append(System.lineSeparator());
+              writer.write(stringBuilder.toString());
+            }
+          }
+        }
+        boolean successful = tempFile.renameTo(abcFile);
+        if (!successful) {
+          throw new IOException("Error while creating converting to abc");
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      return abcFile;
     } else {
       return null;
     }

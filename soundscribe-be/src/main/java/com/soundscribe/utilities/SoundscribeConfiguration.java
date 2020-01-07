@@ -23,4 +23,6 @@ public class SoundscribeConfiguration {
   private int defaultBpm;
   private int defaultBeats;
   private int defaultBeatType;
+
+  private int maxNotesInLineAbc;
 }

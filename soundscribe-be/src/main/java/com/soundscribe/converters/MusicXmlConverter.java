@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class MusicXmlConverter extends Converter {
 
-  private SoundscribeConfiguration soundscribeConfiguration;
   private final MusicXmlToMidi musicXmlToMidi;
 
   MusicXmlConverter(SoundscribeConfiguration soundscribeConfiguration) {
@@ -28,9 +27,9 @@ public class MusicXmlConverter extends Converter {
     if ("midi".equals(outputFormat)) {
       return musicXmlToMidi.convertMusicXmlToMidi(input);
     } else if ("mei".equals(outputFormat)) {
-      return new CrossPlatformConverter(input).convertMusicXmlToMei();
+      return new CrossPlatformConverter(input, soundscribeConfiguration).convertMusicXmlToMei();
     } else if ("abc".equals(outputFormat)) {
-      return new CrossPlatformConverter(input).convertMusicXmlToAbc();
+      return new CrossPlatformConverter(input, soundscribeConfiguration).convertMusicXmlToAbc();
     }
 
     throw new ConversionNotSupported(getName() + " to " + outputFormat);

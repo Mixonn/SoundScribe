@@ -10,7 +10,8 @@ class MeiConverter extends Converter {
 
   @Override
   public File convert(File input, String outputFormat) throws ConversionNotSupported {
-    CrossPlatformConverter platformConverter = new CrossPlatformConverter(input);
+    CrossPlatformConverter platformConverter =
+        new CrossPlatformConverter(input, soundscribeConfiguration);
     if ("musicxml".equals(outputFormat)) {
       return platformConverter.convertMeiToMusicXml();
     }
