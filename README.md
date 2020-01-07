@@ -1,6 +1,6 @@
 # SoundScribe
 
-<img src="soundscribe-ui/static/logo2.png" width="300" >
+<img src="soundscribe-ui/static/logo2.png" width="150" >
 
 SoundScribe performs automatic music transcription, visualizes gathered data and enables user to modify the results.
 
