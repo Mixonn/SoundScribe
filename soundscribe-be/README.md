@@ -37,3 +37,10 @@ To verify the installation check if `verovio`, `abc2xml` and `xml2abc` commands 
 
 ### Additional required software
 - perl
+
+
+## Run
+~~~
+./gradlew build
+java -jar soundscribe-be/build/libs/soundscribe-1.0.jar
+~~~
