@@ -61,9 +61,11 @@ public class FileUploadController {
   @PostMapping("/")
   public String handleFileUpload(
       @RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
+
     storageService.store(file);
     String extension = CommonUtil.getFileExtension(new File(file.getOriginalFilename()));
     if (extension.equals("mp3") || extension.equals("wav")) {
+      conversionController.analyzeFile(file.getOriginalFilename());
     } else {
       throw new RuntimeException("File in unsupported format");
     }

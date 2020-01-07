@@ -8,6 +8,7 @@ import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.converters.xml.functions.XmlToMusicXml;
 import com.soundscribe.jvamp.JvampService;
 import com.soundscribe.storage.StorageService;
+import com.soundscribe.utilities.CommonUtil;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
 import javax.annotation.PostConstruct;
@@ -43,8 +44,14 @@ public class ConversionController {
   @GetMapping("analyze-file")
   public ResponseEntity<String> analyzeFile(@RequestParam String filename) {
     try {
-      File mp3 = new File(soundscribeConfiguration.getSongDataStorage() + filename);
-      File wav = converterService.convert(mp3, new ConversionFormat("mp3", "wav"));
+      String extension = CommonUtil.getFileExtension(new File(filename));
+      File wav;
+      if (extension.equals("wav")) {
+        wav = new File(soundscribeConfiguration.getSongDataStorage(), filename);
+      } else {
+        File mp3 = new File(soundscribeConfiguration.getSongDataStorage() + filename);
+        wav = converterService.convert(mp3, new ConversionFormat("mp3", "wav"));
+      }
       File xml = jvampService.pyinNotes(wav, false);
       jvampService.pyinSmoothedPitchTrack(wav, false);
       File musicXml = converterService.convert(xml, new ConversionFormat("xml", "musicxml"));
