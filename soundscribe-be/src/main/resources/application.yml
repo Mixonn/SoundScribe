@@ -12,6 +12,7 @@ settings:
   defaultBpm: 120
   defaultBeats: 4
   defaultBeatType: 4
+  maxNotesInLineAbc: 10
 
 spring:
   servlet:
