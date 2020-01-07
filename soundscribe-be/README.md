@@ -36,6 +36,7 @@ We use external software for conversions between some supported music extensions
 To verify the installation check if `verovio`, `abc2xml` and `xml2abc` commands are successfully executed from a console.
 
 ### Additional required software
+- Java JDK 11
 - perl
 
 
