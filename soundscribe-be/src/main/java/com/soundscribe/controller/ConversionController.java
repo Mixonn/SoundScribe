@@ -7,6 +7,7 @@ import com.soundscribe.converters.xml.FrontXmlPojo;
 import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.converters.xml.functions.XmlToMusicXml;
 import com.soundscribe.jvamp.JvampService;
+import com.soundscribe.storage.StorageService;
 import com.soundscribe.utilities.CommonUtil;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -31,6 +33,7 @@ public class ConversionController {
   private final JvampService jvampService;
   private final ConverterService converterService;
   private final SoundscribeConfiguration soundscribeConfiguration;
+  private final StorageService storageService;
   private final XmlToMusicXml xmlToMusicXml;
 
   @PostConstruct
@@ -41,8 +44,14 @@ public class ConversionController {
   @GetMapping("analyze-file")
   public ResponseEntity<String> analyzeFile(@RequestParam String filename) {
     try {
-      File mp3 = new File(soundscribeConfiguration.getSongDataStorage() + filename);
-      File wav = converterService.convert(mp3, new ConversionFormat("mp3", "wav"));
+      String extension = CommonUtil.getFileExtension(new File(filename));
+      File wav;
+      if (extension.equals("wav")) {
+        wav = new File(soundscribeConfiguration.getSongDataStorage(), filename);
+      } else {
+        File mp3 = new File(soundscribeConfiguration.getSongDataStorage() + filename);
+        wav = converterService.convert(mp3, new ConversionFormat("mp3", "wav"));
+      }
       File xml = jvampService.pyinNotes(wav, false);
       jvampService.pyinSmoothedPitchTrack(wav, false);
       File musicXml = converterService.convert(xml, new ConversionFormat("xml", "musicxml"));
@@ -55,27 +64,6 @@ public class ConversionController {
           "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
     }
     return new ResponseEntity<>("Plik z danymi wyściowymi został utworzony", HttpStatus.OK);
-  }
-
-  @GetMapping("update-file")
-  /**
-   * This endpoint updates modified transcription. It supports ABC and MIDI input formats only.
-   * Updated formats: MusicXML, ABC, MIDI, MEI
-   */
-  public ResponseEntity<String> updateFile(@RequestParam String filename) {
-    try {
-      File input = new File(soundscribeConfiguration.getSongDataStorage() + filename);
-      String extension = CommonUtil.getFileExtension(input);
-      File musicXml = converterService.convert(input, new ConversionFormat(extension, "musicxml"));
-      converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
-      converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
-      converterService.convert(musicXml, new ConversionFormat("musicxml", "abc"));
-    } catch (Exception e) {
-      log.error("Update file exception", e);
-      return new ResponseEntity<>(
-          "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
-    }
-    return new ResponseEntity<>("Plik z danymi wyściowymi został zaaktualizowany", HttpStatus.OK);
   }
 
   @GetMapping("")
@@ -96,8 +84,29 @@ public class ConversionController {
     }
   }
 
+  /**
+   * Updates modified transcription. It supports ABC input formats only. Updated formats: MusicXML,
+   * ABC, MIDI, MEI
+   */
+  @RequestMapping(value = "/update-file-abc", method = RequestMethod.POST)
+  public ResponseEntity<String> updateAbc(@RequestParam("file") MultipartFile file) {
+    storageService.store(file);
+    try {
+      File input =
+          new File(soundscribeConfiguration.getSongDataStorage(), file.getOriginalFilename());
+      File musicXml = converterService.convert(input, new ConversionFormat("abc", "musicxml"));
+      converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
+      converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
+    } catch (Exception e) {
+      log.error("Update file exception", e);
+      return new ResponseEntity<>(
+          "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
+    }
+    return new ResponseEntity<>("Plik z danymi wyściowymi został zaaktualizowany", HttpStatus.OK);
+  }
+
   @RequestMapping(value = "/update-file-midi", method = RequestMethod.POST)
-  public ResponseEntity<String> update(@RequestBody FrontXmlPojo frontXmlPojo) {
+  public ResponseEntity<String> updateMidi(@RequestBody FrontXmlPojo frontXmlPojo) {
     XmlPojo xmlPojo = FrontXmlPojo.convertFrontXmlPojoToXmlPojo(frontXmlPojo);
     try {
       File musicXml = xmlToMusicXml.convertXmlToMusicXml(xmlPojo);
