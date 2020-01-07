@@ -4,7 +4,10 @@ export const MODIFY_OPERATIONS = {
   DOWN: 'down',
   REMOVE: 'remove',
   CHANGE_LENGTH: 'change_length',
-  DOT: 'dot'
+  DOT: 'dot',
+  SHARP: 'sharp',
+  FLAT: 'flat',
+  NATURAL: 'natural'
 };
 
 const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'c', 'd', 'e', 'f', 'g', 'a', 'b'];
@@ -23,10 +26,25 @@ export function modifyNote (operation, note, opts) {
       }
       throw new Error('Cannot change note length without passing opts.defaultNoteLength or opts.targetLength');
     case MODIFY_OPERATIONS.DOT:
-      if (opts.dotCount === undefined || opts.dotCount === null) {
+      if (opts.dotCount === undefined || opts.dotCount === null || opts.dotCount > 2) {
         return note;
       }
       return setDotCount(note, opts.dotCount);
+    case MODIFY_OPERATIONS.SHARP:
+      if (opts.sharpCount === undefined || opts.sharpCount === null || opts.sharpCount > 2) {
+        return note;
+      }
+      return setSharpCount(note, opts.sharpCount);
+    case MODIFY_OPERATIONS.FLAT:
+      if (opts.flatCount === undefined || opts.flatCount === null || opts.flatCount > 2) {
+        return note;
+      }
+      return setFlatCount(note, opts.flatCount);
+    case MODIFY_OPERATIONS.NATURAL:
+      if (opts.isNatural === undefined || opts.isNatural === null || opts.isNatural >= 2) {
+        return note;
+      }
+      return setNatural(note, opts.isNatural);
     default:
       return note;
   }
@@ -39,7 +57,10 @@ export function replaceSubstring (original, start, end, replacement) {
 export function getNoteMetadata (note, opts) {
   const noteObj = new Note(note);
   return {
-    dotsCount: noteObj.getDotsCount()
+    dotsCount: noteObj.getDotsCount(),
+    sharpCount: noteObj.getSharpCount(),
+    flatCount: noteObj.getFlatCount(),
+    natural: noteObj.isNatural()
   }
 }
 
@@ -49,6 +70,7 @@ class Note {
     const tonePart = slittedNote[0];
     this.nodeLength = (slittedNote[1] === undefined) ? '1' : slittedNote[1];
     this.toneName = this.getToneName(tonePart);
+    this.tonePrefix = this.getTonePrefix(tonePart);
     this.toneMove = this.getToneMove(tonePart);
     this.isPause = !!note.includes('z');
   }
@@ -133,8 +155,20 @@ class Note {
     this.nodeLength = `${noteFractions.left}/${noteFractions.right}`;
   }
 
+  setSharps (sharpCount) {
+    this.tonePrefix = '^'.repeat(sharpCount);
+  }
+
+  setFlats (flatCount) {
+    this.tonePrefix = '_'.repeat(flatCount);
+  }
+
+  setNeutral (isNatural) {
+    this.tonePrefix = '='.repeat(isNatural);
+  }
+
   toString () {
-    return this.toneName + this.toneMove + this.nodeLength;
+    return this.tonePrefix + this.toneName + this.toneMove + this.nodeLength;
   }
 
   /**
@@ -158,8 +192,16 @@ class Note {
     return '';
   }
 
+  getTonePrefix (tone) {
+    const toneName = tone.match(/^([^a-zA-Z ]*)+/g);
+    if (toneName !== null) {
+      return toneName[0];
+    }
+    return '';
+  }
+
   getToneMove (tone) {
-    const toneMove = tone.match(/[^a-zA-Z ]+/g);
+    const toneMove = tone.match(/[^a-zA-Z _^=]+/g);
     if (toneMove !== null) {
       return toneMove[0];
     }
@@ -208,6 +250,18 @@ class Note {
       return 2;
     }
   }
+
+  getFlatCount () {
+    return (this.tonePrefix.match(/_/g) || []).length;
+  }
+
+  getSharpCount () {
+    return (this.tonePrefix.match(/\^/g) || []).length;
+  }
+
+  isNatural () {
+    return this.tonePrefix.includes('=');
+  }
 }
 
 function moveDown (note) {
@@ -237,6 +291,24 @@ function changeLength (note, defaultNoteLength, targetLength) {
 function setDotCount (note, dotCount) {
   const noteObj = new Note(note);
   noteObj.setDots(dotCount);
+  return noteObj.toString();
+}
+
+function setSharpCount (note, sharpCount) {
+  const noteObj = new Note(note);
+  noteObj.setSharps(sharpCount);
+  return noteObj.toString();
+}
+
+function setFlatCount (note, flatCount) {
+  const noteObj = new Note(note);
+  noteObj.setFlats(flatCount);
+  return noteObj.toString();
+}
+
+function setNatural (note, isNatural) {
+  const noteObj = new Note(note);
+  noteObj.setNeutral(isNatural);
   return noteObj.toString();
 }
 

@@ -1,22 +1,11 @@
 <template>
   <div class="app">
-    <div id="note-modifiers-container">
-      <button :class="{ active: currentNode.dotCount === 1 }" @click="setDots(1)">
-        &#9210;
-      </button>
-      <button :class="{ active: currentNode.dotCount === 2 }" @click="setDots(2)">
-        &#9210;&#9210;
-      </button>
-    </div>
-
     <div id="buttons-container">
       <img alt="Select" class="controlButtons" src="/buttons/select.png">
       <img alt="Undo" class="controlButtons" src="/buttons/undo.png">
       <img alt="Redo" class="controlButtons" src="/buttons/redo.png">
       <img alt="Elevate" class="controlButtons" src="/buttons/elevate.png" @click="noteUp">
       <img alt="Lower" class="controlButtons" src="/buttons/lower.png" @click="noteDown">
-      <img alt="Lengthen" class="controlButtons" src="/buttons/lengthen.png">
-      <img alt="Shorten" class="controlButtons" src="/buttons/shorten.png">
       <img alt="Add" class="controlButtons" src="/buttons/plus.png" @click="addNote('A')">
       <img alt="Remove" class="controlButtons" src="/buttons/minus.png" @click="removeNote">
       <img alt="Update" class="controlButtons" src="/buttons/update.png">
@@ -29,74 +18,130 @@
       <img class="controlButtons" :src="require('@/static/buttons/notes/8.png')" @click="changeNoteLength(8)">
       <img class="controlButtons" :src="require('@/static/buttons/notes/16.png')" @click="changeNoteLength(16)">
       <img class="controlButtons" :src="require('@/static/buttons/notes/32.png')" @click="changeNoteLength(32)">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/b1.png')">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/b2.png')">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/b3.png')">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/b4.png')">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/b5.png')">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/b6.png')">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/b7.png')">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/b8.png')">
+      <img
+        class="controlButtons"
+        :class="{ active: currentNode.dotCount === 1 }"
+        :src="require('@/static/buttons/notes/oneDot.png')"
+        @click="setDots(1)"
+      >
+      <img
+        class="controlButtons"
+        :class="{ active: currentNode.dotCount === 2 }"
+        :src="require('@/static/buttons/notes/twoDot.png')"
+        @click="setDots(2)"
+      >
+      <img
+        class="controlButtons"
+        :src="require('@/static/buttons/notes/pause.png')"
+        @click="addNote('z')"
+      >
+      <img
+        class="controlButtons"
+        :class="{ active: currentNode.flatCount === 1 }"
+        :src="require('@/static/buttons/notes/flat.png')"
+        @click="setFlats(1)"
+      >
+      <img
+        class="controlButtons"
+        :class="{ active: currentNode.flatCount === 2 }"
+        :src="require('@/static/buttons/notes/doubleFlat.png')"
+        @click="setFlats(2)"
+      >
+      <img
+        class="controlButtons"
+        :class="{ active: currentNode.sharpCount === 1 }"
+        :src="require('@/static/buttons/notes/sharp.png')"
+        @click="setSharps(1)"
+      >
+      <img
+        class="controlButtons"
+        :class="{ active: currentNode.sharpCount === 2 }"
+        :src="require('@/static/buttons/notes/doubleSharp.png')"
+        @click="setSharps(2)"
+      >
+      <img
+        class="controlButtons"
+        :class="{ active: currentNode.natural === true }"
+        :src="require('@/static/buttons/notes/natural.png')"
+        @click="setNatural(!currentNode.natural)"
+      >
+      <img
+        class="controlButtons"
+        :src="require('@/static/buttons/notes/barLine.png')"
+        @click="addNote('|')"
+      >
+      <img
+        class="controlButtons"
+        :src="require('@/static/buttons/notes/doubleBarLine.png')"
+        @click="addNote(':|')"
+      >
+      <img
+        class="controlButtons"
+        :src="require('@/static/buttons/notes/newline.png')"
+        @click="lineBreak(true)"
+      >
+      <img
+        class="controlButtons"
+        :src="require('@/static/buttons/notes/removeLine.png')"
+        @click="lineBreak(false)"
+      >
     </div>
-
-    <div id="note-operations">
-      <button @click="addNote('z')">
-        Add pause
-      </button>
-      <button @click="addNote('|')">
-        Add bar line
-      </button>
-      <button @click="lineBreak(true)">
-        Add Line break
-      </button>
-      <button @click="lineBreak(false)">
-        Remove Line break
-      </button>
-    </div>
-
-    <div id="paper" />
-
-    <textarea id="abc-source" ref="tuneInput" v-model="tune.text" />
-    <div class="listener-output">
-      <div class="label">
-        Currently Playing: <span class="abc-string">{{ currentAbcFragment }}</span>
+    <div id="metadata-container">
+      <div id="metrum-container">
+        <p v-if=" tune.error.metre != null " class="input-error">
+          {{ tune.error.metre }}
+        </p>
+        <v-text-field
+          :value="tune.meta.metre"
+          label="Metrum"
+          @input="handleMetreInput"
+        />
       </div>
-
-      <div class="label">
-        Parameters sent to listener callback:
+      <div id="bpm">
+        <v-slider
+          v-model="tune.meta.bpm"
+          class="align-center bpm-slider"
+          label="BPM"
+          :max="360"
+          :min="20"
+          hide-details
+          @change="updateBpm(tune.meta.bpm)"
+        >
+          <template v-slot:append>
+            <v-text-field
+              v-model="tune.meta.bpm"
+              class="mt-0 pt-0"
+              hide-details
+              single-line
+              type="number"
+              style="width: 60px"
+            />
+          </template>
+        </v-slider>
       </div>
-      <div>Progress: {{ progress.progress }}</div>
-      <div>Current Time: {{ progress.currentTime }}</div>
-      <div>Total Duration: {{ progress.duration }}</div>
-      <div>New Beat? {{ progress.newBeat }}</div>
     </div>
+    <v-container
+      id="scroll-target"
+      style="max-height: 400px"
+      class="overflow-y-auto"
+    >
+      <div id="paper" />
+    </v-container>
+    <textarea id="abc-source" ref="tuneInput" v-model="tune.text" style="display: none" />
+<!--    <div class="listener-output">-->
+<!--      <div class="label">-->
+<!--        Currently Playing: <span class="abc-string">{{ currentAbcFragment }}</span>-->
+<!--      </div>-->
+
+<!--      <div class="label">-->
+<!--        Parameters sent to listener callback:-->
+<!--      </div>-->
+<!--      <div>Progress: {{ progress.progress }}</div>-->
+<!--      <div>Current Time: {{ progress.currentTime }}</div>-->
+<!--      <div>Total Duration: {{ progress.duration }}</div>-->
+<!--      <div>New Beat? {{ progress.newBeat }}</div>-->
+<!--    </div>-->
     <div id="midi" />
-
-    <v-card-text>
-      <v-row>
-        <v-col class="pr-4">
-          <v-slider
-            v-model="tune.meta.bpm"
-            class="align-center bpm-slider"
-            :max="360"
-            :min="20"
-            hide-details
-            @change="updateBpm(tune.meta.bpm)"
-          >
-            <template v-slot:append>
-              <v-text-field
-                v-model="tune.meta.bpm"
-                class="mt-0 pt-0"
-                hide-details
-                single-line
-                type="number"
-                style="width: 60px"
-              />
-            </template>
-          </v-slider>
-        </v-col>
-      </v-row>
-    </v-card-text>
   </div>
 </template>
 
@@ -104,7 +149,7 @@
 import 'abcjs/abcjs-midi.css';
 import abcjs from 'abcjs/midi';
 import { getNoteMetadata, MODIFY_OPERATIONS, modifyNote, replaceSubstring } from './NodeModifier';
-import { extractMetadata, setBpm } from './TuneService';
+import { extractMetadata, setBpm, setMetre } from './TuneService';
 const fs = require('fs');
 const $ = require('jquery');
 
@@ -122,7 +167,11 @@ export default {
       tune: {
         text: 'X:1\nT: Cooley\'s\nM: 4/4\nL: 1/8\nR: reel\nK: Emin\nD2DD||',
         meta: {
-          defaultNoteLength: null
+          defaultNoteLength: null,
+          metre: '4/4'
+        },
+        error: {
+          metre: null
         }
       },
       currentNode: {
@@ -130,7 +179,10 @@ export default {
         start: null,
         end: null,
         text: null,
-        dotCount: null
+        dotCount: null,
+        sharpCount: null,
+        flatCount: null,
+        natural: null
       }
     }
   },
@@ -242,6 +294,36 @@ export default {
         this.modifyNoteOperation(MODIFY_OPERATIONS.DOT, { dotCount: dotsCount });
       }
     },
+    setSharps (sharpCount) {
+      if (this.noNoteSelected()) {
+        return;
+      }
+      if (this.currentNode.sharpCount === sharpCount) {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.SHARP, { sharpCount: 0 });
+      } else {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.SHARP, { sharpCount });
+      }
+    },
+    setFlats (flatCount) {
+      if (this.noNoteSelected()) {
+        return;
+      }
+      if (this.currentNode.flatCount === flatCount) {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.FLAT, { flatCount: 0 });
+      } else {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.FLAT, { flatCount });
+      }
+    },
+    setNatural (isNatural) {
+      if (this.noNoteSelected()) {
+        return;
+      }
+      if (this.currentNode.natural === false) {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.NATURAL, { isNatural });
+      } else {
+        this.modifyNoteOperation(MODIFY_OPERATIONS.NATURAL, { isNatural: false });
+      }
+    },
     modifyNoteOperation (operation, opts) {
       if (this.noNoteSelected()) {
         return;
@@ -286,6 +368,9 @@ export default {
       this.currentNode.end = null;
       this.currentNode.text = null;
       this.currentNode.dotCount = null;
+      this.currentNode.sharpCount = null;
+      this.currentNode.flatCount = null;
+      this.currentNode.natural = null;
     },
     reloadNote () {
       this.currentNode.text = this.tune.text.substr(
@@ -294,7 +379,11 @@ export default {
       if (this.currentNode.text === '' || this.currentNode.text === ' ') {
         return;
       }
-      this.currentNode.dotCount = getNoteMetadata(this.currentNode.text).dotsCount;
+      const noteMetadata = getNoteMetadata(this.currentNode.text);
+      this.currentNode.dotCount = noteMetadata.dotsCount;
+      this.currentNode.sharpCount = noteMetadata.sharpCount;
+      this.currentNode.flatCount = noteMetadata.flatCount;
+      this.currentNode.natural = noteMetadata.natural;
     },
     updateBpm (bpm) {
       this.tune.text = setBpm(this.tune.text, bpm);
@@ -302,6 +391,17 @@ export default {
       this.redrawTune();
       // this.abcjsEditor.pauseMidi(false);
       // this.abcjsEditor.redrawMidi();
+    },
+    handleMetreInput (input) {
+      if (input.match(/^\d+\/\d+$/g) != null) {
+        this.tune.meta.metre = input;
+        this.tune.error.metre = null;
+        this.tune.text = setMetre(this.tune.text, input);
+        this.unselectNote();
+        this.redrawTune();
+      } else {
+        this.tune.error.metre = 'Nieprawidłowa wartość metrum, przykładowe poprawne: 4/4, 3/2, 15/8'
+      }
     },
     noNoteSelected () {
       return this.currentNode.start == null || this.currentNode.start === 0;
@@ -352,6 +452,14 @@ export default {
     border-radius: 4px;
     width: 460px;
   }
+  #metadata-container {
+    display: flex;
+    align-items: center;
+    #metrum-container {
+      width: 100px;
+      padding: 20px;
+    }
+  }
 
   #midi {
     width: 756px;
@@ -361,9 +469,27 @@ export default {
     font-weight: bold;
   }
 
+  .input-error {
+    color: red;
+  }
+
   .controlButtons {
     width: 50px;
     height: 50px;
+    &:hover,
+    &:focus {
+      box-shadow: inset 0 0 0 2em rgba(0, 0, 0, .4);
+      transition: box-shadow .1s;
+      -webkit-transition: box-shadow .1s;
+    }
+  }
+
+  .active {
+    background-color: #ff9901;
+    opacity: .8;
+    border-radius: 20px;
+    transition: background-color .5s;
+    -webkit-transition: background-color .5s;
   }
 
   #buttons-container {

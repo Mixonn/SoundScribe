@@ -78,7 +78,7 @@ export default {
     }
   },
   axios: {
-    baseURL: 'http://localhost:8080'
+    baseURL: 'http://35.246.135.44:8080/'
   },
   /*
   ** Build configuration
