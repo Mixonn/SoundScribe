@@ -4,7 +4,6 @@ import com.soundscribe.converters.ConversionFormat;
 import com.soundscribe.converters.Converter;
 import com.soundscribe.converters.ConverterService;
 import com.soundscribe.jvamp.JvampService;
-import com.soundscribe.utilities.CommonUtil;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
 import javax.annotation.PostConstruct;
@@ -51,19 +50,16 @@ public class ConversionController {
     return new ResponseEntity<>("Plik z danymi wyściowymi został utworzony", HttpStatus.OK);
   }
 
-  @GetMapping("update-file")
   /**
-   * This endpoint updates modified transcription. It supports ABC and MIDI input formats only.
-   * Updated formats: MusicXML, ABC, MIDI, MEI
+   * Updates modified transcription. It supports ABC input formats only. Updated formats: MusicXML,
+   * ABC, MIDI, MEI
    */
-  public ResponseEntity<String> updateFile(@RequestParam String filename) {
+  public ResponseEntity<String> updateAbc(@RequestParam String filename) {
     try {
       File input = new File(soundscribeConfiguration.getSongDataStorage() + filename);
-      String extension = CommonUtil.getFileExtension(input);
-      File musicXml = converterService.convert(input, new ConversionFormat(extension, "musicxml"));
+      File musicXml = converterService.convert(input, new ConversionFormat("abc", "musicxml"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
-      converterService.convert(musicXml, new ConversionFormat("musicxml", "abc"));
     } catch (Exception e) {
       log.error("Update file exception", e);
       return new ResponseEntity<>(

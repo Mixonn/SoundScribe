@@ -115,7 +115,7 @@ class CrossPlatformConverter {
   File convertAbcToMusicXml() {
     Path tmpPath = Paths.get(directory + "/tmp");
     String baseFileName = CommonUtil.getFileNameWithoutExtension(input);
-    File mxlFile = new File(tmpPath.toString(), baseFileName + ".xml");
+    File mxlFile = new File(tmpPath.toString(), baseFileName + ".mxl");
     File musicXmlFile = new File(directory + "/" + baseFileName + ".musicxml");
     boolean isSuccess =
         executeCommand("abc2xml", input.getAbsolutePath(), "-o", tmpPath.toString());
@@ -127,7 +127,7 @@ class CrossPlatformConverter {
     if (isSuccess) {
       return musicXmlFile;
     } else {
-      return null;
+      throw new RuntimeException("Abc to MusicXML conversion unsuccessful");
     }
   }
 

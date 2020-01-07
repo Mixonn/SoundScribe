@@ -1,11 +1,12 @@
 package com.soundscribe.controller;
 
-import com.soundscribe.OnlyForShow;
 import com.soundscribe.storage.StorageFileNotFoundException;
 import com.soundscribe.storage.StorageService;
+import com.soundscribe.utilities.CommonUtil;
+import java.io.File;
 import java.io.IOException;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -22,16 +23,11 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
+@RequiredArgsConstructor
 public class FileUploadController {
 
   private final StorageService storageService;
-  private final OnlyForShow onlyForShow;
-
-  @Autowired
-  public FileUploadController(StorageService storageService, OnlyForShow onlyForShow) {
-    this.storageService = storageService;
-    this.onlyForShow = onlyForShow;
-  }
+  private final ConversionController conversionController;
 
   @GetMapping("/")
   public String mainPage(Model model) throws IOException {
@@ -67,7 +63,14 @@ public class FileUploadController {
       @RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
 
     storageService.store(file);
-    onlyForShow.analyzeFile(file.getOriginalFilename()); // todo Delete this line
+    String extension = CommonUtil.getFileExtension(new File(file.getOriginalFilename()));
+    if (extension.equals("mp3") || extension.equals("wav")) {
+      conversionController.analyzeFile(file.getOriginalFilename());
+    } else if (extension.equals("abc")) {
+      conversionController.updateAbc(file.getOriginalFilename());
+    } else {
+      throw new RuntimeException("File in unsupported format");
+    }
 
     redirectAttributes.addFlashAttribute(
         "message", "You successfully uploaded " + file.getOriginalFilename() + "!");
