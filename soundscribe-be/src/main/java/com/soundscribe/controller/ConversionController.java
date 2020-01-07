@@ -4,6 +4,7 @@ import com.soundscribe.converters.ConversionFormat;
 import com.soundscribe.converters.Converter;
 import com.soundscribe.converters.ConverterService;
 import com.soundscribe.jvamp.JvampService;
+import com.soundscribe.utilities.CommonUtil;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
 import javax.annotation.PostConstruct;
@@ -58,7 +59,7 @@ public class ConversionController {
   public ResponseEntity<String> updateFile(@RequestParam String filename) {
     try {
       File input = new File(soundscribeConfiguration.getSongDataStorage() + filename);
-      String extension = filename.substring(filename.indexOf(".") + 1);
+      String extension = CommonUtil.getFileExtension(input);
       File musicXml = converterService.convert(input, new ConversionFormat(extension, "musicxml"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));

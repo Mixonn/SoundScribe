@@ -5,6 +5,7 @@ import com.soundscribe.converters.XmlConverter;
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import com.soundscribe.converters.musicxml.utilities.MusicXmlUtils;
 import com.soundscribe.converters.xml.XmlPojo;
+import com.soundscribe.utilities.CommonUtil;
 import com.soundscribe.utilities.MidiNotes;
 import java.io.File;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import org.w3c.dom.NodeList;
 public class MusicXmlToMidi {
 
   private final XmlConverter xmlConverter;
+  private final MusicXmlUtils musicXmlUtils;
 
   public File convertMusicXmlToMidi(File musicXml) {
     XmlPojo xmlPojo = musicXmlToXmlPojo(musicXml);
@@ -42,7 +44,6 @@ public class MusicXmlToMidi {
    * @return XmlPojo object
    */
   private XmlPojo musicXmlToXmlPojo(File musicXml) {
-    MusicXmlUtils musicXmlUtils = new MusicXmlUtils();
     XmlPojo xmlPojo = new XmlPojo();
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     DocumentBuilder builder;
@@ -56,15 +57,15 @@ public class MusicXmlToMidi {
     }
     document.getDocumentElement().normalize();
 
-    try {
+    if (document.getElementsByTagName("movement-title").getLength() > 0) {
       String title = document.getElementsByTagName("movement-title").item(0).getTextContent();
       xmlPojo.setSongName(title);
-    } catch (NullPointerException e) {
-      xmlPojo.setSongName(musicXml.getName());
+    } else {
+      xmlPojo.setSongName(CommonUtil.getFileNameWithoutExtension(musicXml));
     }
 
-    Element soundElement = (Element) document.getElementsByTagName("sound").item(0);
-    int bpm = (int) Double.parseDouble(soundElement.getAttribute("tempo"));
+    Element perMinuteElement = (Element) document.getElementsByTagName("per-minute").item(0);
+    int bpm = Integer.parseInt(perMinuteElement.getTextContent());
     xmlPojo.setBpm(bpm);
 
     Element divisionsElement = (Element) document.getElementsByTagName("divisions").item(0);

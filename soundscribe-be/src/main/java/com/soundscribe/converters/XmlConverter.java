@@ -2,9 +2,15 @@ package com.soundscribe.converters;
 
 import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.converters.xml.functions.XmlToMusicXml;
+import com.soundscribe.utilities.MusicXmlConfiguration;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
-import javax.sound.midi.*;
+import javax.sound.midi.MetaMessage;
+import javax.sound.midi.MidiEvent;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.Sequence;
+import javax.sound.midi.ShortMessage;
+import javax.sound.midi.Track;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import lombok.extern.slf4j.Slf4j;
@@ -16,9 +22,9 @@ import org.springframework.stereotype.Component;
 public class XmlConverter extends Converter {
   private final XmlToMusicXml xmlToMusicXml;
 
-  XmlConverter(SoundscribeConfiguration soundscribeConfiguration) {
+  public XmlConverter(SoundscribeConfiguration soundscribeConfiguration) {
     super(soundscribeConfiguration);
-    xmlToMusicXml = new XmlToMusicXml(soundscribeConfiguration);
+    xmlToMusicXml = new XmlToMusicXml(soundscribeConfiguration, new MusicXmlConfiguration());
   }
 
   @Override
@@ -63,8 +69,12 @@ public class XmlConverter extends Converter {
    */
   public File convertXmlToMidi(File fileXML) {
     XmlPojo xml = XmlPojo.readXMLData(fileXML);
-    xml.setDivisions(soundscribeConfiguration.getDefaultDivisions());
-    xml.setBpm(soundscribeConfiguration.getDefaultBpm());
+    if (xml.getDivisions() == null) {
+      xml.setDivisions(soundscribeConfiguration.getDefaultDivisions());
+    }
+    if (xml.getBpm() == null) {
+      xml.setBpm(soundscribeConfiguration.getDefaultBpm());
+    }
     return convertXmlPojoToMidi(xml);
   }
 

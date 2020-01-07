@@ -4,6 +4,8 @@ import com.soundscribe.converters.PyinNote;
 import com.soundscribe.converters.musicxml.entity.MusicXmlNote;
 import com.soundscribe.converters.musicxml.utilities.MusicXmlUtils;
 import com.soundscribe.converters.xml.XmlPojo;
+import com.soundscribe.utilities.MidiNotes;
+import com.soundscribe.utilities.MusicXmlConfiguration;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
 import java.util.List;
@@ -27,6 +29,7 @@ import org.w3c.dom.Element;
 public class XmlToMusicXml {
 
   private final SoundscribeConfiguration soundscribeConfiguration;
+  private final MusicXmlConfiguration musicXmlConfiguration;
 
   /**
    * Converts raw pYIN data to MusicXml file.
@@ -89,7 +92,7 @@ public class XmlToMusicXml {
     part.setAttribute("number", "1");
     part.appendChild(measure);
 
-    measure.appendChild(createAttributes(document, xmlPojo.getDivisions()));
+    measure.appendChild(createAttributes(document, xmlPojo));
     measure.appendChild(createTempo(document, xmlPojo.getBpm()));
     addNotesToMusicXml(measure, document, xmlPojo);
 
@@ -106,14 +109,14 @@ public class XmlToMusicXml {
    * Create main attributes for MusicXml file. Divisions per quarter note, type of beat and clef.
    *
    * @param document
-   * @param divisionsValue
+   * @param xmlPojo
    * @return
    */
-  private Element createAttributes(Document document, int divisionsValue) {
+  private Element createAttributes(Document document, XmlPojo xmlPojo) {
     Element attributes = document.createElement("attributes");
 
     Element divisions = document.createElement("divisions");
-    divisions.appendChild(document.createTextNode(String.valueOf(divisionsValue)));
+    divisions.appendChild(document.createTextNode(String.valueOf(xmlPojo.getDivisions())));
     attributes.appendChild(divisions);
 
     Element time = document.createElement("time");
@@ -129,15 +132,37 @@ public class XmlToMusicXml {
         document.createTextNode(String.valueOf(soundscribeConfiguration.getDefaultBeatType())));
     time.appendChild(beatType);
 
+    String signSymbol = "G";
+    String lineNumber = "2";
+
+    if (musicXmlConfiguration.isUseBassKey()) {
+      int numberOfNotesUnderMiddleC = 0;
+      int numberOfNotesOverMiddleC = 0;
+      int middleC = MidiNotes.getMidiValueByNoteSymbol("C4");
+
+      for (PyinNote pyinNote : xmlPojo.getNotes()) {
+        if (pyinNote.getMidiValue() < middleC) {
+          numberOfNotesUnderMiddleC++;
+        } else if (pyinNote.getMidiValue() > middleC) {
+          numberOfNotesOverMiddleC++;
+        }
+      }
+
+      if (numberOfNotesUnderMiddleC > numberOfNotesOverMiddleC) {
+        signSymbol = "F";
+        lineNumber = "4";
+      }
+    }
+
     Element clef = document.createElement("clef");
     attributes.appendChild(clef);
 
     Element sign = document.createElement("sign");
-    sign.appendChild(document.createTextNode("G"));
+    sign.appendChild(document.createTextNode(signSymbol));
     clef.appendChild(sign);
 
     Element line = document.createElement("line");
-    line.appendChild(document.createTextNode("2"));
+    line.appendChild(document.createTextNode(lineNumber));
     clef.appendChild(line);
 
     return attributes;
@@ -151,17 +176,17 @@ public class XmlToMusicXml {
    * @param xmlPojo Object with song data.
    */
   private void addNotesToMusicXml(Element measure, Document document, XmlPojo xmlPojo) {
-    MusicXmlUtils musicXmlUtils = new MusicXmlUtils();
+    MusicXmlUtils musicXmlNoteUtils = new MusicXmlUtils(new MusicXmlConfiguration());
     List<MusicXmlNote> musicXmlBaseNotes =
-        musicXmlUtils.getMusicXmlBaseNotes(xmlPojo.getBpm(), xmlPojo.getDivisions());
-    int numberOfNotes = xmlPojo.getNotes().size();
-    for (int i = 0; i < numberOfNotes; i++) {
+        musicXmlNoteUtils.getMusicXmlBaseNotes(xmlPojo.getBpm(), xmlPojo.getDivisions());
+    int numberOfNotesToInsert = xmlPojo.getNotes().size();
+    for (int i = 0; i < numberOfNotesToInsert; i++) {
       PyinNote note = xmlPojo.getNotes().get(i);
       String stepValue = getStep(note.getLetterNote());
       String octaveValue = getOctave(note.getLetterNote());
       MusicXmlNote musicXmlNote =
-          musicXmlUtils.chooseBestNoteByDurationInSeconds(
-              note.getDurationInSeconds(), musicXmlBaseNotes, true, false);
+          musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(
+              note.getDurationInSeconds(), musicXmlBaseNotes, false);
 
       if (musicXmlNote != null) {
         Element noteElement =
@@ -176,24 +201,26 @@ public class XmlToMusicXml {
         measure.appendChild(noteElement);
       }
 
-      if (i < numberOfNotes - 1) {
-        PyinNote nextNote = xmlPojo.getNotes().get(i + 1);
-        double secondsForRest =
-            nextNote.getTimestamp() - note.getTimestamp() - note.getDurationInSeconds();
-        musicXmlNote =
-            musicXmlUtils.chooseBestNoteByDurationInSeconds(
-                secondsForRest, musicXmlBaseNotes, true, false);
-        if (musicXmlNote != null) {
-          Element noteElement =
-              createNote(
-                  document,
-                  stepValue,
-                  octaveValue,
-                  musicXmlNote.getDuration(),
-                  musicXmlNote.getName(),
-                  true,
-                  musicXmlNote.isWithDot());
-          measure.appendChild(noteElement);
+      if (musicXmlConfiguration.isUseRest()) {
+        if (i < numberOfNotesToInsert - 1) {
+          PyinNote nextNote = xmlPojo.getNotes().get(i + 1);
+          double secondsForRest =
+              nextNote.getTimestamp() - note.getTimestamp() - note.getDurationInSeconds();
+          musicXmlNote =
+              musicXmlNoteUtils.chooseBestNoteByDurationInSeconds(
+                  secondsForRest, musicXmlBaseNotes, true);
+          if (musicXmlNote != null) {
+            Element noteElement =
+                createNote(
+                    document,
+                    stepValue,
+                    octaveValue,
+                    musicXmlNote.getDuration(),
+                    musicXmlNote.getName(),
+                    true,
+                    musicXmlNote.isWithDot());
+            measure.appendChild(noteElement);
+          }
         }
       }
     }

@@ -2,6 +2,7 @@ package com.soundscribe.converters;
 
 import com.soundscribe.converters.midi.functions.MidiToMusicXml;
 import com.soundscribe.converters.xml.functions.XmlToMusicXml;
+import com.soundscribe.utilities.MusicXmlConfiguration;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,9 @@ public class MidiConverter extends Converter {
 
   public MidiConverter(SoundscribeConfiguration soundscribeConfiguration) {
     super(soundscribeConfiguration);
-    midiToMusicXml = new MidiToMusicXml(new XmlToMusicXml(soundscribeConfiguration));
+    midiToMusicXml =
+        new MidiToMusicXml(
+            new XmlToMusicXml(soundscribeConfiguration, new MusicXmlConfiguration()));
   }
 
   @Override
