@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  authorization-keycloak:
+    image: jboss/keycloak:latest
+    container_name: authorization
+    environment:
+      DB_VENDOR: h2
+#      DB_ADDR: postgres
+#      DB_DATABASE: keycloak
+#      DB_USER: keycloak
+#      DB_SCHEMA: public
+#      DB_PASSWORD: password
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: Pa55w0rd
+      KEYCLOAK_IMPORT: '/tmp/example-realm.json'
+      # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
+      #JDBC_PARAMS: "ssl=true"
+    volumes:
+      - ./authorizationServer/realm-export.json:/tmp/example-realm.json:ro
+    ports:
+      - "8444:8080"
+      - "9990:9990"
