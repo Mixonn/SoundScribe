@@ -9,6 +9,7 @@ cd vamp-plugin-sdk-2.9.0
 ./configure
 make
 make install
+cp libvamp-hostsdk.so /usr/lib/libvamp-hostsdk.so
 cd ..
 curl https://code.soundsoftware.ac.uk/attachments/download/1574/jvamp-1.3.tar.gz --output jvamp.tar.gz
 tar -zxvf jvamp.tar.gz && rm jvamp.tar.gz

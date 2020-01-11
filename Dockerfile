@@ -1,22 +1,21 @@
-ARG SOUNDSCRIBE_VERSION=1.0
-ARG JAVA_VERSION=8
-
-FROM openjdk:${JAVA_VERSION} AS BUILD
-ENV APP_BUILD_HOME=/usr/app/
-WORKDIR $APP_BUILD_HOME
+FROM openjdk:8 AS JVAMP_BUILD
+ENV APP_JVAMP_BUILD_HOME=/usr/app/
+WORKDIR $APP_JVAMP_BUILD_HOME
 # Should be replaced to git clone when repo become public
 COPY soundscribe-be/docker/build-docker.sh tmp/build-docker.sh
-COPY . .
 RUN cd tmp && ./build-docker.sh
-RUN ./gradlew build
 
-#
-FROM openjdk:${JAVA_VERSION} AS RUN_APP
+FROM openjdk:11 AS APP_BUILD
 ENV APP_HOME=/usr/app/
 WORKDIR $APP_HOME
-COPY --from=BUILD /$APP_BUILD_HOME/soundscribe-be/build/libs/soundscribe-$SOUNDSCRIBE_VERSION.jar .
-COPY --from=BUILD /$APP_BUILD_HOME/tmp ./tmp
-COPY soundscribe-be/docker/build-docker.sh tmp/build-docker.sh
-RUN cd tmp && ./build-docker.sh
-CMD ["java", "-jar", "soundscribe-be/build/libs/soundscribe-$SOUNDSCRIBE_VERSION.jar"]
+COPY . .
+RUN ./gradlew build
+
+
+FROM openjdk:11 AS APP_RUN
+ENV APP_HOME=/usr/app/
+WORKDIR $APP_HOME
+COPY --from=JVAMP_BUILD /usr/app/tmp/jvamp-1.3/libvamp-jni.so /usr/lib/libvamp-hostsdk.so /usr/lib/
+COPY --from=APP_BUILD /usr/app/soundscribe-be/build/libs/soundscribe-1.0.jar .
+CMD ["java", "-jar", "/usr/app/soundscribe-1.0.jar"]
 EXPOSE 8080
