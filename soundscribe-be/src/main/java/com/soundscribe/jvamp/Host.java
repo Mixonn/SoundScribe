@@ -153,7 +153,14 @@ public class Host {
             actualFeatures = features;
           }
 
-          p.process(buffers, timestamp);
+          switch (function) {
+            case NOTES:
+              printNotes(fileName, timestamp, outputNumber, features, xmlFile);
+              break;
+            case SMOOTHED_PITCH_TRACK:
+              printSmoothedPitch(timestamp, outputNumber, features, smoothedFile);
+              break;
+          }
         }
 
         ++block;
