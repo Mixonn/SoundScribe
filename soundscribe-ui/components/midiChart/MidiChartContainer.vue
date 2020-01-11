@@ -118,6 +118,7 @@ export default {
           this.setCurrentSelection(element)
         },
         onDrag: (e, datasetIndex, index, value) => {
+          value.x = value.x.toFixed(2);
           value.y = Math.round(value.y)
           this._data.chartData.datasets[datasetIndex].data[1 - index].y = value.y;
         },
