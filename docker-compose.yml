@@ -24,11 +24,16 @@ services:
   soundscribe-be:
     container_name: soundscribe-be
     build: .
+    depends_on:
+      - "authorization-keycloak"
     ports:
       - "8080:8080"
   soundscribe-ui:
     container_name: soundscribe-ui
     build: soundscribe-ui/
+    depends_on:
+      - "authorization-keycloak"
+      - "soundscribe-be"
     ports:
       - "80:80"
       - "443:433"
