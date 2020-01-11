@@ -17,7 +17,7 @@
         v-if="loaded"
         ref="chart"
         :chart-data="chartData"
-        :options="options"
+        :options="chartOptions"
         :style="chartStyles"
       />
       <div id="zoomview-container" class="zoomviewContainer" />
@@ -47,6 +47,7 @@
 import WaveformData from 'waveform-data'
 import Peaks from 'peaks.js'
 import MidiChart from './midiChart'
+import 'chartjs-plugin-dragdata'
 
 export default {
   name: 'MidiChartContainer',
@@ -77,19 +78,14 @@ export default {
       midiPlaying: false,
       mp3Url: '',
       midiUrl: '',
-      f0Url: ''
-    }
-  },
-  computed: {
-    chartStyles () {
-      return {
-        height: '10%',
-        width: '100%',
-        position: 'relative'
-      }
-    },
-    options () {
-      return {
+      f0Url: '',
+      currentlySelectedData: {
+        index: -1,
+        startTime: -1,
+        endTime: -1,
+        value: -1
+      },
+      chartOptions: {
         maintainAspectRatio: false,
         showLines: true,
         responsive: true,
@@ -112,7 +108,31 @@ export default {
           onComplete: () => {
             this.saveChartContext()
           }
+        },
+        dragData: true,
+        dragX: true,
+        onClick: (e, element) => {
+          this.setCurrentSelection(element)
+        },
+        onDragStart: (e, element) => {
+          this.setCurrentSelection(element)
+        },
+        onDrag: (e, datasetIndex, index, value) => {
+          value.y = Math.round(value.y)
+          this._data.chartData.datasets[datasetIndex].data[1 - index].y = value.y;
+        },
+        onDragEnd: (e, datasetIndex, index, value) => {
+          this.updateCurrentMidiChartData()
         }
+      }
+    }
+  },
+  computed: {
+    chartStyles () {
+      return {
+        height: '10%',
+        width: '100%',
+        position: 'relative'
       }
     }
   },
@@ -208,27 +228,35 @@ export default {
         this.dataLoading = true;
         const chartData = [];
         for (let i = 0; i < this.midiChartData.length; i++) {
-          const tempData = this.midiChartData[i];
+          const tempData = []
+          tempData[0] = { ...this.midiChartData[i][0] };
+          tempData[1] = { ...this.midiChartData[i][1] };
           if (tempData[0].x >= this.chartPosition.startTime && tempData[1].x <= this.chartPosition.endTime) {
             chartData.push({
               data: tempData,
               borderColor: '#ac2b2b',
               fill: false,
-              showLine: true })
+              radius: 5,
+              showLine: true,
+              isDummyData: false })
           } else if (tempData[0].x <= this.chartPosition.startTime && tempData[1].x >= this.chartPosition.startTime) {
             tempData[0].x = this.chartPosition.startTime;
             chartData.push({
               data: tempData,
               borderColor: '#ac2b2b',
               fill: false,
-              showLine: true })
+              radius: 5,
+              showLine: true,
+              isDummyData: false })
           } else if (tempData[0].x <= this.chartPosition.endTime && tempData[1].x >= this.chartPosition.endTime) {
             tempData[1].x = this.chartPosition.endTime;
             chartData.push({
               data: tempData,
               borderColor: '#ac2b2b',
               fill: false,
-              showLine: true })
+              radius: 5,
+              showLine: true,
+              isDummyData: false })
           }
         }
         for (let i = 0; i < this.baseFrequencyChartData.length; i++) {
@@ -244,7 +272,9 @@ export default {
               radius: 1,
               borderColor: '#3e95cd',
               fill: false,
-              showLine: true
+              showLine: true,
+              dragData: false,
+              isDummyData: false
             })
           }
         }
@@ -264,7 +294,9 @@ export default {
           data: dummyDataForProperDisplaying,
           radius: 0,
           fill: false,
-          showLine: false
+          showLine: false,
+          dragData: false,
+          isDummyData: true
         })
         this.chartData = {
           datasets: chartData
@@ -344,6 +376,7 @@ export default {
                 zoomview._updateWaveform(newPixels)
               }
               vm.prepareCombinedChartData()
+              vm.currentlySelectedData.index = -1
             }
           });
           vm.peaksInstance.on('player_play', function (time) {
@@ -394,7 +427,7 @@ export default {
               ctx.lineTo(xposition, c.height + 200);
               ctx.stroke()
             }
-          }, 30)
+          }, 10)
         }
       }
     },
@@ -434,6 +467,25 @@ export default {
     },
     midiToFrequency (midiValue) {
       return 440.0 * 2.0 ** ((midiValue - 69) / 12);
+    },
+    setCurrentSelection (element) {
+      const dataSetIndex = element.length > 1 ? element[0]._datasetIndex : element._datasetIndex;
+      if (dataSetIndex !== undefined && this._data.chartData.datasets[dataSetIndex].data.length === 2) {
+        if (this._data.currentlySelectedData.index !== dataSetIndex) {
+          // deselect last value
+          if (this._data.currentlySelectedData.index !== -1) {
+            this._data.chartData.datasets[this._data.currentlySelectedData.index].borderColor = '#ac2b2b';
+          }
+          this._data.chartData.datasets[dataSetIndex].borderColor = '#0afc2a';
+          this.$refs.chart._data._chart.update(0);
+        }
+        this._data.currentlySelectedData.index = dataSetIndex;
+        this._data.currentlySelectedData.startTime = this._data.chartData.datasets[dataSetIndex].data[0].x
+        this._data.currentlySelectedData.endTime = this._data.chartData.datasets[dataSetIndex].data[1].x
+        this._data.currentlySelectedData.value = this._data.chartData.datasets[dataSetIndex].data[0].y
+      }
+    },
+    updateCurrentMidiChartData () {
     }
   }
 }
@@ -446,7 +498,7 @@ export default {
   }
   .zoomviewContainer {
     width: calc(100% - 2.5em);
-    margin-left: 2.2em;
+    margin-left: 1.5em;
   }
   .controlButtons {
     width: 50px;
