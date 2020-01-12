@@ -1,6 +1,7 @@
 package com.soundscribe.converters.xml;
 
 import com.soundscribe.converters.PyinNote;
+import com.soundscribe.utilities.MidiNotes;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,6 +9,11 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -87,5 +93,69 @@ public class XmlPojo {
     }
     xmlPojo.setNotes(noteList);
     return xmlPojo;
+  }
+
+  public static File saveXMLData(XmlPojo xmlPojo, String fileLocation) {
+    File xmlFile = new File(fileLocation + xmlPojo.getSongName() + ".xml");
+    try {
+      DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
+      Document document = documentBuilder.newDocument();
+
+      Element root = document.createElement(xmlPojo.getSongName());
+      document.appendChild(root);
+
+      Element bpm = document.createElement("bpm");
+      bpm.appendChild(document.createTextNode(String.valueOf(xmlPojo.getBpm())));
+      root.appendChild(bpm);
+
+      Element divisions = document.createElement("divisions");
+      divisions.appendChild(document.createTextNode(String.valueOf(xmlPojo.getDivisions())));
+      root.appendChild(divisions);
+
+      for (PyinNote pyinNote : xmlPojo.getNotes()) {
+        Element note = document.createElement("note");
+
+        Element timestamp = document.createElement("timestamp");
+        timestamp.appendChild(document.createTextNode(String.valueOf(pyinNote.getTimestamp())));
+        note.appendChild(timestamp);
+
+        Element duration = document.createElement("duration");
+        duration.appendChild(
+            document.createTextNode(String.valueOf((pyinNote.getDurationInSeconds()))));
+        note.appendChild(duration);
+
+        double value = midiToFrequency(pyinNote.getMidiValue());
+
+        Element val = document.createElement("value");
+        val.appendChild(document.createTextNode(String.valueOf(value)));
+        note.appendChild(val);
+
+        Element midi = document.createElement("midiValue");
+        midi.appendChild(document.createTextNode(String.valueOf(pyinNote.getMidiValue())));
+        note.appendChild(midi);
+
+        Element letterNote = document.createElement("letterNote");
+        letterNote.appendChild(
+            document.createTextNode(MidiNotes.getNoteSymbolByMidiValue(pyinNote.getMidiValue())));
+        note.appendChild(letterNote);
+
+        root.appendChild(note);
+
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        DOMSource domSource = new DOMSource(document);
+        StreamResult streamResult = new StreamResult(xmlFile);
+
+        transformer.transform(domSource, streamResult);
+      }
+    } catch (ParserConfigurationException | TransformerException e) {
+      log.error("Could not update file", e);
+    }
+    return xmlFile;
+  }
+
+  private static double midiToFrequency(double midiValue) {
+    return Math.pow(2, (midiValue - 69) / 12) * 440;
   }
 }
