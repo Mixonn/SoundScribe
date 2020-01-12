@@ -10,18 +10,14 @@ import com.soundscribe.jvamp.JvampService;
 import com.soundscribe.storage.StorageService;
 import com.soundscribe.utilities.CommonUtil;
 import com.soundscribe.utilities.SoundscribeConfiguration;
-import java.io.File;
+import java.io.*;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
@@ -94,6 +90,41 @@ public class ConversionController {
     try {
       File input =
           new File(soundscribeConfiguration.getSongDataStorage(), file.getOriginalFilename());
+      File musicXml = converterService.convert(input, new ConversionFormat("abc", "musicxml"));
+      converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
+      converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
+    } catch (Exception e) {
+      log.error("Update file exception", e);
+      return new ResponseEntity<>(
+          "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
+    }
+    return new ResponseEntity<>("Plik z danymi wyściowymi został zaaktualizowany", HttpStatus.OK);
+  }
+
+  // todo Delete update-file-abc or update-file-abc-raw
+
+  /**
+   * Updates modified transcription. It supports ABC input formats only. Updated formats: MusicXML,
+   * ABC, MIDI, MEI
+   */
+  @RequestMapping(value = "/update-file-abc-raw", method = RequestMethod.PUT)
+  public ResponseEntity<String> updateAbcRaw(
+      @RequestParam String fileName, HttpEntity<String> httpEntity) {
+    String abcString = httpEntity.getBody();
+    if (abcString == null) {
+      return new ResponseEntity<>(
+          "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
+    }
+
+    File input = new File(soundscribeConfiguration.getSongDataStorage(), fileName);
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(input))) {
+      writer.write(abcString);
+    } catch (IOException e) {
+      return new ResponseEntity<>(
+          "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
+    }
+
+    try {
       File musicXml = converterService.convert(input, new ConversionFormat("abc", "musicxml"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
