@@ -5,9 +5,9 @@
       <img alt="Redo" class="controlButtons" src="/buttons/redo.png" @click="redoMove">
       <img alt="Add" class="controlButtons" src="/buttons/plus.png" @click="addMidi">
       <img alt="Remove" class="controlButtons" src="/buttons/minus.png" @click="removeMidi">
-      <img alt="mergeWP" class="controlButtons" src="/buttons/mergeWP.png">
-      <img alt="mergeWP" class="controlButtons" src="/buttons/mergeWN.png">
-      <img alt="mergeWP" class="controlButtons" src="/buttons/split.png">
+      <img alt="MergeWP" class="controlButtons" src="/buttons/mergeWP.png" @click="mergeWP">
+      <img alt="MergeWN" class="controlButtons" src="/buttons/mergeWN.png" @click="mergeWN">
+      <img alt="Split" class="controlButtons" src="/buttons/split.png" @click="split">
       <img alt="Update" class="controlButtons" src="/buttons/update.png">
     </div>
     <div ref="containerId" class="chartContainer">
@@ -505,6 +505,7 @@ export default {
             selectedEvent[1].x = tmp;
           }
           this.addMoveToUndoList(this.currentlySelectedData, selectedEvent);
+          console.log('updated')
           this.currentlySelectedData.startTime = selectedEvent[0].x;
           this.currentlySelectedData.endTime = selectedEvent[1].x;
           this.currentlySelectedData.value = selectedEvent[0].y;
@@ -695,7 +696,15 @@ export default {
         x: data.endTime,
         y: data.value
       });
-      this.midiChartData.push({ ...midiEvent });
+      this.midiChartData.push([{
+        x: data.startTime,
+        y: data.value
+      },
+      {
+        x: data.endTime,
+        y: data.value
+      }
+      ]);
       this.chartData.datasets.push({
         data: midiEvent,
         borderColor: '#0afc2a',
@@ -706,9 +715,6 @@ export default {
       if (data.index > -1) {
         this.chartData.datasets[data.index].borderColor = '#ac2b2b';
         this.$refs.chart._data._chart.update(0);
-        this.currentlySelectedData.value = data.value;
-        this.currentlySelectedData.startTime = data.startTime;
-        this.currentlySelectedData.endTime = data.endTime;
         this.currentlySelectedData.index = this.chartData.datasets.length - 1;
       }
     },
@@ -742,6 +748,153 @@ export default {
       });
       this.midiChartData.splice(selectedMidiIndex, 1);
       this.$refs.chart._data._chart.update(0);
+    },
+    mergeWP () {
+      if (this.currentlySelectedData.index > 0) {
+        this.movesToUndo.push({
+          fromStartTime: this.currentlySelectedData.startTime,
+          fromEndTime: this.currentlySelectedData.endTime,
+          fromValue: this.currentlySelectedData.value,
+          toStartTime: null,
+          toEndTime: null,
+          toValue: null
+        });
+        this.removeMidiFromData({
+          startTime: this.currentlySelectedData.startTime,
+          endTime: this.currentlySelectedData.endTime,
+          value: this.currentlySelectedData.value,
+          index: this.currentlySelectedData.index
+        })
+        let min = 100;
+        let idx = 0;
+        for (let i = 0; i < this.chartData.datasets.length; i++) {
+          if (this.chartData.datasets[i].data.length === 2) {
+            const value = this.currentlySelectedData.startTime - this.chartData.datasets[i].data[1].x;
+            if (value > 0 && value < min) {
+              min = value;
+              idx = i;
+            }
+          }
+        }
+        this.movesToUndo.push({
+          fromStartTime: this.chartData.datasets[idx].data[0].x,
+          fromEndTime: this.chartData.datasets[idx].data[1].x,
+          fromValue: this.chartData.datasets[idx].data[0].y,
+          toStartTime: this.chartData.datasets[idx].data[0].x,
+          toEndTime: this.currentlySelectedData.endTime,
+          toValue: this.chartData.datasets[idx].data[0].y
+        });
+        const dataToChange = this.midiChartData.find((midiEvent) => {
+          return midiEvent[0].x === this.chartData.datasets[idx].data[0].x &&
+            midiEvent[1].x === this.chartData.datasets[idx].data[1].x &&
+            midiEvent[0].y === this.chartData.datasets[idx].data[0].y
+        });
+        if (dataToChange) {
+          this.chartData.datasets[idx].data[1].x = this.currentlySelectedData.endTime;
+          dataToChange[1].x = this.currentlySelectedData.endTime;
+          this.currentlySelectedData.startTime = dataToChange[0].x;
+          this.currentlySelectedData.endTime = dataToChange[1].x;
+          this.currentlySelectedData.value = dataToChange[0].y;
+          this.currentlySelectedData.index = idx
+          this.chartData.datasets[idx].borderColor = '#0afc2a';
+          this.$refs.chart._data._chart.update(0);
+        }
+      }
+    },
+    mergeWN () {
+      if (this.currentlySelectedData.index !== -1 && this.currentlySelectedData.index < this.chartData.datasets.length - 1) {
+        this.movesToUndo.push({
+          fromStartTime: this.currentlySelectedData.startTime,
+          fromEndTime: this.currentlySelectedData.endTime,
+          fromValue: this.currentlySelectedData.value,
+          toStartTime: null,
+          toEndTime: null,
+          toValue: null
+        });
+        this.removeMidiFromData({
+          startTime: this.currentlySelectedData.startTime,
+          endTime: this.currentlySelectedData.endTime,
+          value: this.currentlySelectedData.value,
+          index: this.currentlySelectedData.index
+        })
+        // due to deletion of previous element
+        let min = 100;
+        let idx = 0;
+        for (let i = 0; i < this.chartData.datasets.length; i++) {
+          if (this.chartData.datasets[i].data.length === 2) {
+            const value = this.chartData.datasets[i].data[0].x - this.currentlySelectedData.endTime;
+            if (value > 0 && value < min) {
+              min = value;
+              idx = i;
+            }
+          }
+        }
+        this.movesToUndo.push({
+          fromStartTime: this.chartData.datasets[idx].data[0].x,
+          fromEndTime: this.chartData.datasets[idx].data[1].x,
+          fromValue: this.chartData.datasets[idx].data[0].y,
+          toStartTime: this.currentlySelectedData.startTime,
+          toEndTime: this.chartData.datasets[idx].data[1].x,
+          toValue: this.chartData.datasets[idx].data[0].y
+        });
+        const dataToChange = this.midiChartData.find((midiEvent) => {
+          return midiEvent[0].x === this.chartData.datasets[idx].data[0].x &&
+            midiEvent[1].x === this.chartData.datasets[idx].data[1].x &&
+            midiEvent[0].y === this.chartData.datasets[idx].data[0].y
+        });
+        if (dataToChange) {
+          this.chartData.datasets[idx].data[0].x = this.currentlySelectedData.startTime;
+          dataToChange[1].x = this.currentlySelectedData.endTime;
+          this.currentlySelectedData.startTime = dataToChange[0].x;
+          this.currentlySelectedData.endTime = dataToChange[1].x;
+          this.currentlySelectedData.value = dataToChange[0].y;
+          this.currentlySelectedData.index = idx
+          this.chartData.datasets[idx].borderColor = '#0afc2a';
+          this.$refs.chart._data._chart.update(0);
+        }
+      }
+    },
+    split () {
+      if (this.currentlySelectedData.index !== -1) {
+        const oldEndTime = this.currentlySelectedData.endTime;
+        const newMidTime = this.currentlySelectedData.startTime - 0.05 + (this.currentlySelectedData.endTime - this.currentlySelectedData.startTime) / 2;
+        this.movesToUndo.push({
+          fromStartTime: this.currentlySelectedData.startTime,
+          fromEndTime: this.currentlySelectedData.startTime,
+          fromValue: this.currentlySelectedData.value,
+          toStartTime: this.currentlySelectedData.startTime,
+          toEndTime: newMidTime,
+          toValue: this.currentlySelectedData.value
+        });
+        const dataToChange = this.midiChartData.find((midiEvent) => {
+          return midiEvent[0].x === this.chartData.datasets[this.currentlySelectedData.index].data[0].x &&
+            midiEvent[1].x === this.chartData.datasets[this.currentlySelectedData.index].data[1].x &&
+            midiEvent[0].y === this.chartData.datasets[this.currentlySelectedData.index].data[0].y
+        });
+        if (dataToChange) {
+          this.chartData.datasets[this.currentlySelectedData.index].data[1].x = newMidTime;
+          dataToChange[1].x = newMidTime;
+          this.currentlySelectedData.startTime = dataToChange[0].x;
+          this.currentlySelectedData.endTime = dataToChange[1].x;
+          this.currentlySelectedData.value = dataToChange[0].y;
+          this.chartData.datasets[this.currentlySelectedData.index].borderColor = '#0afc2a';
+          this.movesToUndo.push({
+            fromStartTime: null,
+            fromEndTime: null,
+            fromValue: null,
+            toStartTime: newMidTime + 0.1,
+            toEndTime: oldEndTime,
+            toValue: this.currentlySelectedData.value
+          });
+          this.addMidiFromData({
+            startTime: newMidTime + 0.1,
+            endTime: oldEndTime,
+            value: this.currentlySelectedData.value,
+            index: -1
+          })
+          this.$refs.chart._data._chart.update(0);
+        }
+      }
     }
   }
 }
