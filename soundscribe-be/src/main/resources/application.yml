@@ -1,5 +1,6 @@
 server:
   port: 8081
+
 #Path properties
 settings:
   uploadDirectory: "dlibraUpload/"
@@ -21,6 +22,19 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://authorization-keycloak:8080/auth/realms/soundscribe/protocol/openid-connect/certs
+
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
 
 musicxml:
   useBassKey: false
@@ -29,7 +43,3 @@ musicxml:
 
   delete16thRest: false
   delete16thPitch: false
-
-#logging:
-#  level:
-#    org.springframework.web: DEBUG
