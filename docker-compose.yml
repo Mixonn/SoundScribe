@@ -4,6 +4,8 @@ services:
   authorization-keycloak:
     image: jboss/keycloak:latest
     container_name: authorization-keycloak
+    networks:
+      - app_network
     environment:
       DB_VENDOR: h2
 #      DB_ADDR: postgres
@@ -16,20 +18,27 @@ services:
       KEYCLOAK_IMPORT: '/tmp/example-realm.json'
       # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
       #JDBC_PARAMS: "ssl=true"
+    command: ["-Dkeycloak.profile.feature.docker=enabled",
+              "-b",
+              "0.0.0.0"]
     volumes:
       - ./authorizationServer/realm-export.json:/tmp/example-realm.json:ro
     ports:
-      - "8444:8080"
-      - "9990:9990"
+      - "8080:8080"
+      - "5005:5005"
   soundscribe-be:
     container_name: soundscribe-be
+    networks:
+      - app_network
     build: .
-    depends_on:
-      - "authorization-keycloak"
+#    depends_on:
+#      - "authorization-keycloak"
     ports:
-      - "8080:8080"
+      - "8081:8081"
   soundscribe-ui:
     container_name: soundscribe-ui
+    networks:
+      - app_network
     build: soundscribe-ui/
     depends_on:
       - "authorization-keycloak"
@@ -37,3 +46,7 @@ services:
     ports:
       - "80:80"
       - "443:433"
+
+networks:
+  app_network:
+    driver: bridge

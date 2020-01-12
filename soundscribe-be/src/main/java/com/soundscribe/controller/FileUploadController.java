@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,6 +31,7 @@ public class FileUploadController {
   private final ConversionController conversionController;
 
   @GetMapping("/")
+  @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
   public String mainPage(Model model) throws IOException {
 
     model.addAttribute(
@@ -49,6 +51,7 @@ public class FileUploadController {
 
   @GetMapping("/files/{filename:.+}")
   @ResponseBody
+  @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
   public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
 
     Resource file = storageService.loadAsResource(filename);
@@ -59,6 +62,7 @@ public class FileUploadController {
   }
 
   @PostMapping("/")
+  @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
   public String handleFileUpload(
       @RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
 
