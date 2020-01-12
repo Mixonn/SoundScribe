@@ -133,7 +133,7 @@ public class ConversionController {
     try {
       File musicXml = converterService.convert(input, new ConversionFormat("abc", "musicxml"));
       XmlPojo xmlPojo = musicXmlToMidi.musicXmlToXmlPojo(musicXml);
-      XmlPojo.saveXMLData(xmlPojo,soundscribeConfiguration.getSongDataStorage());
+      XmlPojo.saveXMLData(xmlPojo, soundscribeConfiguration.getSongDataStorage());
       converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
     } catch (Exception e) {
