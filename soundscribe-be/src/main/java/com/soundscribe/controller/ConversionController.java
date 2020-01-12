@@ -10,7 +10,10 @@ import com.soundscribe.jvamp.JvampService;
 import com.soundscribe.storage.StorageService;
 import com.soundscribe.utilities.CommonUtil;
 import com.soundscribe.utilities.SoundscribeConfiguration;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -140,6 +143,7 @@ public class ConversionController {
   public ResponseEntity<String> updateMidi(@RequestBody FrontXmlPojo frontXmlPojo) {
     XmlPojo xmlPojo = FrontXmlPojo.convertFrontXmlPojoToXmlPojo(frontXmlPojo);
     try {
+      XmlPojo.saveXMLData(xmlPojo, soundscribeConfiguration.getSongDataStorage());
       File musicXml = xmlToMusicXml.convertXmlToMusicXml(xmlPojo);
       converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
