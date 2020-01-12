@@ -41,7 +41,7 @@ public class FileDownloadController {
       @PathVariable("filename") String filename) {
     Path file = Paths.get(soundscribeConfiguration.getSongDataStorage(), filename);
     if (Files.exists(file)) {
-      response.setContentType("application/pdf");
+      response.setContentType("audio/mpeg");
       response.addHeader("Content-Disposition", "attachment; filename=" + filename);
       try {
         Files.copy(file, response.getOutputStream());
