@@ -25,16 +25,16 @@ services:
       - ./authorizationServer/realm-export.json:/tmp/example-realm.json:ro
     ports:
       - "8080:8080"
-      - "5005:5005"
   soundscribe-be:
     container_name: soundscribe-be
     networks:
       - app_network
     build: .
-#    depends_on:
-#      - "authorization-keycloak"
+    depends_on:
+      - "authorization-keycloak"
     ports:
       - "8081:8081"
+      - "5005:5005"
   soundscribe-ui:
     container_name: soundscribe-ui
     networks:
