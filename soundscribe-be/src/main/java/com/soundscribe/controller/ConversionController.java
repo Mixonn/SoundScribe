@@ -107,7 +107,7 @@ public class ConversionController {
    * Updates modified transcription. It supports ABC input formats only. Updated formats: MusicXML,
    * ABC, MIDI, MEI
    */
-  @RequestMapping(value = "/update-file-abc-raw", method = RequestMethod.PUT)
+  @RequestMapping(value = "/update-file-abc-raw", method = RequestMethod.POST)
   public ResponseEntity<String> updateAbcRaw(
       @RequestParam String fileName, HttpEntity<String> httpEntity) {
     String abcString = httpEntity.getBody();
