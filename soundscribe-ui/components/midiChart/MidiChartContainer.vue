@@ -1,5 +1,19 @@
 <template>
   <div class="app">
+    <v-snackbar
+      v-model="snackbar.display"
+      :bottom="true"
+      :color="snackbar.success === true ? 'success' : 'error'"
+      :timeout="snackbar.timeout"
+    >
+      {{ snackbar.text }}
+      <v-btn
+        dark
+        text
+        @click="snackbar.display = false"
+      >
+      </v-btn>
+    </v-snackbar>
     <div id="buttons-container">
       <img alt="Undo" class="controlButtons" src="/buttons/undo.png" @click="undoMove">
       <img alt="Redo" class="controlButtons" src="/buttons/redo.png" @click="redoMove">
@@ -8,7 +22,7 @@
       <img alt="MergeWP" class="controlButtons" src="/buttons/mergeWP.png" @click="mergeWP">
       <img alt="MergeWN" class="controlButtons" src="/buttons/mergeWN.png" @click="mergeWN">
       <img alt="Split" class="controlButtons" src="/buttons/split.png" @click="split">
-      <img alt="Update" class="controlButtons" src="/buttons/update.png">
+      <img alt="Update" class="controlButtons" src="/buttons/update.png" @click="updateMidiOnServer">
     </div>
     <div ref="containerId" class="chartContainer">
       <midi-chart
@@ -77,6 +91,12 @@ export default {
       mp3Url: '',
       midiUrl: '',
       f0Url: '',
+      snackbar: {
+        text: '',
+        display: false,
+        timeout: 5000,
+        success: true
+      },
       currentlySelectedData: {
         index: -1,
         startTime: -1,
@@ -505,7 +525,6 @@ export default {
             selectedEvent[1].x = tmp;
           }
           this.addMoveToUndoList(this.currentlySelectedData, selectedEvent);
-          console.log('updated')
           this.currentlySelectedData.startTime = selectedEvent[0].x;
           this.currentlySelectedData.endTime = selectedEvent[1].x;
           this.currentlySelectedData.value = selectedEvent[0].y;
@@ -895,6 +914,37 @@ export default {
           this.$refs.chart._data._chart.update(0);
         }
       }
+    },
+    async updateMidiOnServer () {
+      const chartData = [];
+      const requestBody = {};
+      requestBody.song_name = this.fileNameFormatted;
+      requestBody.bpm = this.midiFileContent.getElementsByTagName(this.fileNameFormatted)[0].getElementsByTagName('bpm')[0].textContent;
+      requestBody.divisions = this.midiFileContent.getElementsByTagName(this.fileNameFormatted)[0].getElementsByTagName('divisions')[0].textContent;
+      for (let i = 0; i < this.midiChartData.length; i++) {
+        const midiEvent = {}
+        midiEvent.begin = {
+          timestamp: this.midiChartData[i][0].x,
+          midiValue: this.midiChartData[i][0].y
+        }
+        midiEvent.end = {
+          timestamp: this.midiChartData[i][1].x,
+          midiValue: this.midiChartData[i][1].y
+        }
+        chartData.push(midiEvent)
+      }
+      requestBody.midi_elements = chartData;
+      await this.$axios.post(`convert/update-file-midi`,
+        requestBody)
+        .then((r) => {
+          this.snackbar.text = 'Plik został zaaktualizowany';
+          this.snackbar.success = true;
+          this.snackbar.display = true;
+        }).catch((r) => {
+          this.snackbar.text = 'Nie udało się zaaktualizować pliku';
+          this.snackbar.success = false;
+          this.snackbar.display = true;
+        });
     }
   }
 }
