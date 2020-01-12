@@ -13,7 +13,7 @@
       <profile name="Gradle Imported" enabled="true">
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-configuration-processor/2.1.4.RELEASE/631c55639500c180490a28093f24b008b95e1d2a/spring-boot-configuration-processor-2.1.4.RELEASE.jar" />
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-configuration-processor/2.2.2.RELEASE/7287179587c8cb2e469ae5529338e958af9dff75/spring-boot-configuration-processor-2.2.2.RELEASE.jar" />
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.4/lombok-1.18.4.jar" />
         </processorPath>
         <module name="soundscribe.soundscribe-be.main" />
