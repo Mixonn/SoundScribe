@@ -43,7 +43,7 @@ public class MusicXmlToMidi {
    * @param musicXml MusicXml file
    * @return XmlPojo object
    */
-  private XmlPojo musicXmlToXmlPojo(File musicXml) {
+  public XmlPojo musicXmlToXmlPojo(File musicXml) {
     XmlPojo xmlPojo = new XmlPojo();
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     DocumentBuilder builder;

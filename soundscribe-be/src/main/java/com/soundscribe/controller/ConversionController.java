@@ -3,6 +3,7 @@ package com.soundscribe.controller;
 import com.soundscribe.converters.ConversionFormat;
 import com.soundscribe.converters.Converter;
 import com.soundscribe.converters.ConverterService;
+import com.soundscribe.converters.musicxml.functions.MusicXmlToMidi;
 import com.soundscribe.converters.xml.FrontXmlPojo;
 import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.converters.xml.functions.XmlToMusicXml;
@@ -33,7 +34,9 @@ public class ConversionController {
   private final ConverterService converterService;
   private final SoundscribeConfiguration soundscribeConfiguration;
   private final StorageService storageService;
+
   private final XmlToMusicXml xmlToMusicXml;
+  private final MusicXmlToMidi musicXmlToMidi;
 
   @PostConstruct
   public void init() {
@@ -129,6 +132,8 @@ public class ConversionController {
 
     try {
       File musicXml = converterService.convert(input, new ConversionFormat("abc", "musicxml"));
+      XmlPojo xmlPojo = musicXmlToMidi.musicXmlToXmlPojo(musicXml);
+      XmlPojo.saveXMLData(xmlPojo,soundscribeConfiguration.getSongDataStorage());
       converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
     } catch (Exception e) {
