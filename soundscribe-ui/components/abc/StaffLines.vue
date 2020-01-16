@@ -256,7 +256,7 @@ export default {
       if (this.tune.text == null || this.tune.text === '') {
         return;
       }
-      await this.$axios.$put(`convert/update-file-abc-raw?fileName=${this.$route.params.song})`,
+      await this.$axios.$post(`convert/update-file-abc-raw?fileName=${this.$route.params.song}`,
         this.tune.text,
         { headers: { 'Content-Type': 'text/plain' } })
         .then((r) => {
