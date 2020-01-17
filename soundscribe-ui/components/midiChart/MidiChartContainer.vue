@@ -22,6 +22,8 @@
       <img alt="MergeWP" class="controlButtons" src="/buttons/mergeWP.png" @click="mergeWP">
       <img alt="MergeWN" class="controlButtons" src="/buttons/mergeWN.png" @click="mergeWN">
       <img alt="Split" class="controlButtons" src="/buttons/split.png" @click="split">
+      <img alt="Zoom in" class="controlButtons" src="/buttons/zoomIn.png" @click="zoomIn">
+      <img alt="Zoom out" class="controlButtons" src="/buttons/zoomOut.png" @click="zoomOut">
       <img alt="Update" class="controlButtons" src="/buttons/update.png" @click="updateMidiOnServer">
     </div>
     <div ref="containerId" class="chartContainer">
@@ -33,24 +35,18 @@
         :style="chartStyles"
       />
       <div id="zoomview-container" class="zoomviewContainer" />
+      <div id="overview-container" class="overviewContainer" />
     </div>
-    <div id="overview-container" />
-    <button class="btn" @click="zoomIn">
-      Zoom in
-    </button>
-    <button @click="zoomOut">
-      Zoom out
-    </button>
-    <audio controls="controls">
-      <source :src="mp3Url" type="audio/mpeg">
-    </audio>
-    <div id="audio-controls">
-      <input id="original-audio" v-model="soundOptionsSelected" type="checkbox" value="original">
-      <label for="original-audio">Original</label>
-      <input id="midi-audio" v-model="soundOptionsSelected" type="checkbox" value="midi">
-      <label for="midi-audio">Midi</label>
-      <input id="f0-audio" v-model="soundOptionsSelected" type="checkbox" value="f0">
-      <label for="f0-audio">F0</label>
+    <div id="audio-controls-container" class="audioControlsContainer">
+      <audio controls="controls" style="width: 50%;">
+        <source :src="mp3Url" type="audio/mpeg">
+      </audio>
+      <div id="audio-controls">
+        <input id="original-audio" v-model="soundOptionsSelected" type="checkbox" value="original">
+        <label for="original-audio">Original</label>
+        <input id="midi-audio" v-model="soundOptionsSelected" type="checkbox" value="midi">
+        <label for="midi-audio">Midi</label>
+      </div>
     </div>
   </div>
 </template>
@@ -364,7 +360,7 @@ export default {
           // calculate pixels per one second in zoomview
           const audioSampleRate = audioContext.sampleRate;
           const imageWidth = document.getElementById('zoomview-container').clientWidth;
-          const oneSecondZoom = Math.round(audioSampleRate / imageWidth);
+          const oneSecondZoom = audioSampleRate / imageWidth;
 
           const options = {
             containers: {
@@ -377,7 +373,12 @@ export default {
             },
             height: 100,
             showPlayheadTime: true,
-            zoomLevels: [2 * oneSecondZoom, 4 * oneSecondZoom, 6 * oneSecondZoom, 8 * oneSecondZoom, 10 * oneSecondZoom],
+            zoomLevels: [Math.round(2 * oneSecondZoom), Math.round(4 * oneSecondZoom), Math.round(6 * oneSecondZoom),
+              Math.round(8 * oneSecondZoom), Math.round(10 * oneSecondZoom), Math.round(15 * oneSecondZoom),
+              Math.round(20 * oneSecondZoom), Math.round(30 * oneSecondZoom), Math.round(45 * oneSecondZoom),
+              Math.round(60 * oneSecondZoom), (90 * oneSecondZoom), (120 * oneSecondZoom),
+              Math.round(180 * oneSecondZoom), Math.round(240 * oneSecondZoom), (300 * oneSecondZoom),
+              Math.round(1200 * oneSecondZoom)],
             emitCueEvents: true,
             logger: console.error.bind(console),
             interactive: false
@@ -434,15 +435,15 @@ export default {
     },
     drawChartPlayingLine () {
       const vm = this;
-      if (vm.$children[0]) {
-        const c = vm.$children[0].$refs.canvas;
+      if (vm.$children[1]) {
+        const c = vm.$children[1].$refs.canvas;
         if (c) {
           const ctx = c.getContext('2d');
           vm.saveChartContext();
           vm.drawVerticalLineId = setInterval(function () {
             if (!vm.dataLoading) {
               vm.playerTime = vm.peaksInstance.player.getCurrentTime();
-              const xposition = vm.$children[0].$data._chart.scales['x-axis-1'].getPixelForValue(vm.playerTime);
+              const xposition = vm.$children[1].$data._chart.scales['x-axis-1'].getPixelForValue(vm.playerTime);
               ctx.fillStyle = '#ff0000';
               vm.reloadChartContext();
               ctx.beginPath();
@@ -456,8 +457,8 @@ export default {
       }
     },
     saveChartContext () {
-      if (this.$children[0]) {
-        const c = this.$children[0].$refs.canvas;
+      if (this.$children[1]) {
+        const c = this.$children[1].$refs.canvas;
         if (c) {
           const ctx = c.getContext('2d');
           this.contextImageData = ctx.getImageData(0, 0, c.width, c.height)
@@ -465,8 +466,8 @@ export default {
       }
     },
     reloadChartContext () {
-      if (this.$children[0]) {
-        const c = this.$children[0].$refs.canvas;
+      if (this.$children[1]) {
+        const c = this.$children[1].$refs.canvas;
         if (c) {
           const ctx = c.getContext('2d');
           ctx.putImageData(this.contextImageData, 0, 0)
@@ -956,12 +957,18 @@ export default {
     overflow-x: hidden;
   }
   .zoomviewContainer {
-    width: calc(100% - 2.5em);
-    margin-left: 1.5em;
+    margin-left: 1.8em;
+  }
+  .overviewContainer {
+    margin-left: 1.8em;
   }
   .controlButtons {
     width: 50px;
     height: 50px;
+  }
+  .audioControlsContainer {
+    width: 100%;
+    overflow-x: hidden;
   }
   #buttons-container {
     background-color: #f7f7f7;
