@@ -1,6 +1,9 @@
 package com.soundscribe.converters
 
-
+import com.soundscribe.converters.ConversionFormat
+import com.soundscribe.converters.Converter
+import com.soundscribe.converters.ConverterService
+import com.soundscribe.converters.MidiConverter
 import com.soundscribe.utilities.SoundscribeConfiguration
 import org.mockito.Mock
 import spock.lang.Shared
