@@ -122,6 +122,7 @@ export default {
           }]
         },
         animation: {
+          duration: 0,
           onComplete: () => {
             this.saveChartContext()
           }
@@ -323,6 +324,7 @@ export default {
         };
         this.loaded = true;
         this.dataLoading = false
+        this.saveChartContext()
       }
     },
     zoomIn () {
