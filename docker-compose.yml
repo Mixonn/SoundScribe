@@ -4,8 +4,9 @@ services:
   authorization-keycloak:
     image: jboss/keycloak:latest
     container_name: authorization-keycloak
-    networks:
-      - app_network
+    hostname: authorization-keycloak
+    expose:
+      - 8080
     environment:
       DB_VENDOR: h2
 #      DB_ADDR: postgres
@@ -23,30 +24,35 @@ services:
               "0.0.0.0"]
     volumes:
       - ./authorizationServer/realm-export.json:/tmp/example-realm.json:ro
-    ports:
-      - "8080:8080"
   soundscribe-be:
     container_name: soundscribe-be
-    networks:
-      - app_network
+    hostname: soundscribe-be
     build: .
     depends_on:
       - "authorization-keycloak"
-    ports:
-      - "8081:8081"
-      - "5005:5005"
+    expose:
+      - 8081
   soundscribe-ui:
     container_name: soundscribe-ui
-    networks:
-      - app_network
+    hostname: soundscribe-ui
     build: soundscribe-ui/
     depends_on:
       - "authorization-keycloak"
       - "soundscribe-be"
+    expose:
+      - 80
+  nginx-proxy:
+    image: nginx
+    container_name: nginx-proxy
+    depends_on:
+      - authorization-keycloak
+      - soundscribe-ui
+      - soundscribe-be
     ports:
       - "80:80"
-      - "443:433"
-
-networks:
-  app_network:
-    driver: bridge
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./nginx-proxy/proxy.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx-proxy/nginx/error.log:/etc/nginx/error_log.log
+      - ./nginx-proxy/nginx/cache/:/etc/nginx/cache

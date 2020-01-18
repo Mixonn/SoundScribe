@@ -8,7 +8,7 @@
       <img alt="Lower" class="controlButtons" src="/buttons/lower.png" @click="noteDown">
       <img alt="Add" class="controlButtons" src="/buttons/plus.png" @click="addNote('A')">
       <img alt="Remove" class="controlButtons" src="/buttons/minus.png" @click="removeNote">
-      <img alt="Update" class="controlButtons" src="/buttons/update.png">
+      <img alt="Update" class="controlButtons" src="/buttons/update.png" @click="uploadAbc">
     </div>
 
     <div id="note-length-container">
@@ -128,20 +128,35 @@
       <div id="paper" />
     </v-container>
     <textarea id="abc-source" ref="tuneInput" v-model="tune.text" style="display: none" />
-<!--    <div class="listener-output">-->
-<!--      <div class="label">-->
-<!--        Currently Playing: <span class="abc-string">{{ currentAbcFragment }}</span>-->
-<!--      </div>-->
+    <!--    <div class="listener-output">-->
+    <!--      <div class="label">-->
+    <!--        Currently Playing: <span class="abc-string">{{ currentAbcFragment }}</span>-->
+    <!--      </div>-->
 
-<!--      <div class="label">-->
-<!--        Parameters sent to listener callback:-->
-<!--      </div>-->
-<!--      <div>Progress: {{ progress.progress }}</div>-->
-<!--      <div>Current Time: {{ progress.currentTime }}</div>-->
-<!--      <div>Total Duration: {{ progress.duration }}</div>-->
-<!--      <div>New Beat? {{ progress.newBeat }}</div>-->
-<!--    </div>-->
+    <!--      <div class="label">-->
+    <!--        Parameters sent to listener callback:-->
+    <!--      </div>-->
+    <!--      <div>Progress: {{ progress.progress }}</div>-->
+    <!--      <div>Current Time: {{ progress.currentTime }}</div>-->
+    <!--      <div>Total Duration: {{ progress.duration }}</div>-->
+    <!--      <div>New Beat? {{ progress.newBeat }}</div>-->
+    <!--    </div>-->
     <div id="midi" />
+    <v-snackbar
+      v-model="snackbar.display"
+      :bottom="true"
+      :color="snackbar.success === true ? 'success' : 'error'"
+      :timeout="snackbar.timeout"
+    >
+      {{ snackbar.text }}
+      <v-btn
+        dark
+        text
+        @click="snackbar.display = false"
+      >
+        Close
+      </v-btn>
+    </v-snackbar>
   </div>
 </template>
 
@@ -164,6 +179,12 @@ export default {
       abcjsEditor: null,
       progress: { },
       currentAbcFragment: '(none)',
+      snackbar: {
+        text: '',
+        display: false,
+        timeout: 5000,
+        success: true
+      },
       tune: {
         text: 'X:1\nT: Cooley\'s\nM: 4/4\nL: 1/8\nR: reel\nK: Emin\nD2DD||',
         meta: {
@@ -226,10 +247,27 @@ export default {
       }
     },
     async loadData () {
-      const abcUrl = 'download/' + this.$route.params.song
+      const abcUrl = 'download/' + this.$route.params.song;
       const data = await this.$axios.$get(abcUrl);
       this.tune.text = data.trim();
       this.tune.meta = extractMetadata(this.tune.text);
+    },
+    async uploadAbc () {
+      if (this.tune.text == null || this.tune.text === '') {
+        return;
+      }
+      await this.$axios.$post(`convert/update-file-abc-raw?fileName=${this.$route.params.song}`,
+        this.tune.text,
+        { headers: { 'Content-Type': 'text/plain' } })
+        .then((r) => {
+          this.snackbar.text = 'Plik został zaaktualizowany';
+          this.snackbar.success = true;
+          this.snackbar.display = true;
+        }).catch((r) => {
+          this.snackbar.text = 'Nie udało się zaaktualizować pliku';
+          this.snackbar.success = false;
+          this.snackbar.display = true;
+        });
     },
     onNodeClick (abcElem, tuneNumber, classes) {
       console.log(abcElem);
