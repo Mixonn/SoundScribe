@@ -355,6 +355,22 @@ export default {
       generate_midi: true,
       midi_id: 'midi',
       abcjsParams: {
+        staffwidth: window.innerWidth - 600,
+        midiListener: this.listener,
+        animate: {
+          listener: this.animate
+        },
+        clickListener: this.onNodeClick
+      }
+    });
+  },
+  onResize () {
+    this.abcjsEditor = new abcjs.Editor('abc-source', {
+      canvas_id: 'paper',
+      generate_midi: true,
+      midi_id: 'midi',
+      abcjsParams: {
+        staffwidth: window.innerWidth - 600,
         midiListener: this.listener,
         animate: {
           listener: this.animate
