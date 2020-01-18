@@ -78,7 +78,7 @@ export default {
     }
   },
   axios: {
-    baseURL: 'http://soundscribe-be:8081/'
+    baseURL: 'http://localhost:80/be'
   },
   /*
   ** Build configuration

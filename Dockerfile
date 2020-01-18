@@ -21,4 +21,3 @@ WORKDIR $APP_HOME
 COPY --from=JVAMP_BUILD /usr/app/tmp/jvamp-1.3/libvamp-jni.so /usr/lib/libvamp-hostsdk.so /usr/lib/
 COPY --from=APP_BUILD /usr/app/soundscribe-be/build/libs/soundscribe-1.0.jar .
 CMD ["java", "-jar", "/usr/app/soundscribe-1.0.jar"]
-EXPOSE 8080

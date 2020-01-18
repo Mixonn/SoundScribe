@@ -1,3 +1,5 @@
+server:
+  port: 8081
 #Path properties
 settings:
   uploadDirectory: "dlibraUpload/"
@@ -27,3 +29,7 @@ musicxml:
 
   delete16thRest: false
   delete16thPitch: false
+
+#logging:
+#  level:
+#    org.springframework.web: DEBUG
