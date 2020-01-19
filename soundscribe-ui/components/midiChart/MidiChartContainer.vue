@@ -15,16 +15,16 @@
       </v-btn>
     </v-snackbar>
     <div id="buttons-container">
-      <img alt="Undo" class="controlButtons" src="/buttons/undo.png" @click="undoMove">
-      <img alt="Redo" class="controlButtons" src="/buttons/redo.png" @click="redoMove">
-      <img alt="Add" class="controlButtons" src="/buttons/plus.png" @click="addMidi">
-      <img alt="Remove" class="controlButtons" src="/buttons/minus.png" @click="removeMidi">
-      <img alt="MergeWP" class="controlButtons" src="/buttons/mergeWP.png" @click="mergeWP">
-      <img alt="MergeWN" class="controlButtons" src="/buttons/mergeWN.png" @click="mergeWN">
-      <img alt="Split" class="controlButtons" src="/buttons/split.png" @click="split">
-      <img alt="Zoom in" class="controlButtons" src="/buttons/zoomIn.png" @click="zoomIn">
-      <img alt="Zoom out" class="controlButtons" src="/buttons/zoomOut.png" @click="zoomOut">
-      <img alt="Update" class="controlButtons" src="/buttons/update.png" @click="updateMidiOnServer">
+      <ImgTooltip src="/buttons/undo.png" tooltip="Undo last move" @clicked="undoMove" />
+      <ImgTooltip src="/buttons/redo.png" tooltip="Redo last move" @clicked="redoMove" />
+      <ImgTooltip src="/buttons/plus.png" tooltip="Add new midi" @clicked="addMidi" />
+      <ImgTooltip src="/buttons/minus.png" tooltip="Remove seleted Midi" @clicked="removeMidi" />
+      <ImgTooltip src="/buttons/mergeWP.png" tooltip="Merge current Midi with previous" @clicked="mergeWP" />
+      <ImgTooltip src="/buttons/mergeWN.png" tooltip="Merge current Midi with next" @clicked="mergeWN" />
+      <ImgTooltip src="/buttons/split.png" tooltip="Split midi into two" @clicked="split" />
+      <ImgTooltip src="/buttons/zoomIn.png" tooltip="Zoom in" @clicked="zoomIn" />
+      <ImgTooltip src="/buttons/zoomOut.png" tooltip="Zoom out" @clicked="zoomOut" />
+      <ImgTooltip src="/buttons/update.png" tooltip="Update file one server" @clicked="updateMidiOnServer" />
     </div>
     <div ref="containerId" class="chartContainer">
       <midi-chart
@@ -54,13 +54,15 @@
 <script>
 import WaveformData from 'waveform-data'
 import Peaks from 'peaks.js'
+import ImgTooltip from '../ImgTooltip';
 import MidiChart from './midiChart'
 import 'chartjs-plugin-dragdata'
 
 export default {
   name: 'MidiChartContainer',
   components: {
-    MidiChart
+    MidiChart,
+    ImgTooltip
   },
   data () {
     return {

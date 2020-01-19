@@ -4,12 +4,12 @@
   <v-tooltip bottom>
     <template v-slot:activator="{ on }">
       <img
-        :alt="tooltip != null ? tooltip : 'button'"
+        :alt="tooltip != null ? tooltip : src.substr(src.lastIndexOf('/'), src.lastIndexOf('.'))"
         class="controlButton"
         :class="{ active: highlight === true }"
         :src="src"
         v-on="on"
-        @click="$emit(clickMethod.name, clickParams)"
+        @click="$emit('clicked')"
       >
     </template>
     <span v-if="tooltip != null">{{ tooltip }}</span>
@@ -48,6 +48,10 @@ export default {
     }
   }
   .active {
-    color: #0942ff;
+    background-color: #ff9901;
+    opacity: .8;
+    border-radius: 20px;
+    transition: background-color .5s;
+    -webkit-transition: background-color .5s;
   }
 </style>
