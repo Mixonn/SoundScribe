@@ -55,6 +55,7 @@
 import WaveformData from 'waveform-data'
 import Peaks from 'peaks.js'
 import ImgTooltip from '../ImgTooltip';
+import { getNoteFromMidi } from './midiNotes.js'
 import MidiChart from './midiChart'
 import 'chartjs-plugin-dragdata'
 
@@ -114,7 +115,10 @@ export default {
         scales: {
           yAxes: [{
             ticks: {
-              stepSize: 1
+              stepSize: 1,
+              callback: (value) => {
+                return this.getNoteSymbolByMidiValue(value) + ' - ' + value;
+              }
             }
           }],
           xAxes: [{
@@ -496,6 +500,15 @@ export default {
     },
     midiToFrequency (midiValue) {
       return 440.0 * 2.0 ** ((midiValue - 69) / 12);
+    },
+    getNoteSymbolByMidiValue (value) {
+      if (value < 21) {
+        return '';
+      } else if (value > 127) {
+        return '';
+      } else {
+        return getNoteFromMidi(value);
+      }
     },
     setCurrentSelection (element) {
       const dataSetIndex = element.length > 1 ? element[0]._datasetIndex : element._datasetIndex;
@@ -961,10 +974,10 @@ export default {
     overflow-x: hidden;
   }
   .zoomviewContainer {
-    margin-left: 1.8em;
+    margin-left: 3.9em;
   }
   .overviewContainer {
-    margin-left: 1.8em;
+    margin-left: 3.9em;
   }
   .controlButtons {
     width: 50px;
