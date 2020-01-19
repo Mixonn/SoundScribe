@@ -15,14 +15,16 @@
       </v-btn>
     </v-snackbar>
     <div id="buttons-container">
-      <img alt="Undo" class="controlButtons" src="/buttons/undo.png" @click="undoMove">
-      <img alt="Redo" class="controlButtons" src="/buttons/redo.png" @click="redoMove">
-      <img alt="Add" class="controlButtons" src="/buttons/plus.png" @click="addMidi">
-      <img alt="Remove" class="controlButtons" src="/buttons/minus.png" @click="removeMidi">
-      <img alt="MergeWP" class="controlButtons" src="/buttons/mergeWP.png" @click="mergeWP">
-      <img alt="MergeWN" class="controlButtons" src="/buttons/mergeWN.png" @click="mergeWN">
-      <img alt="Split" class="controlButtons" src="/buttons/split.png" @click="split">
-      <img alt="Update" class="controlButtons" src="/buttons/update.png" @click="updateMidiOnServer">
+      <ImgTooltip src="/buttons/undo.png" tooltip="Undo last move" @clicked="undoMove" />
+      <ImgTooltip src="/buttons/redo.png" tooltip="Redo last move" @clicked="redoMove" />
+      <ImgTooltip src="/buttons/plus.png" tooltip="Add new midi" @clicked="addMidi" />
+      <ImgTooltip src="/buttons/minus.png" tooltip="Remove seleted Midi" @clicked="removeMidi" />
+      <ImgTooltip src="/buttons/mergeWP.png" tooltip="Merge current Midi with previous" @clicked="mergeWP" />
+      <ImgTooltip src="/buttons/mergeWN.png" tooltip="Merge current Midi with next" @clicked="mergeWN" />
+      <ImgTooltip src="/buttons/split.png" tooltip="Split midi into two" @clicked="split" />
+      <ImgTooltip src="/buttons/zoomIn.png" tooltip="Zoom in" @clicked="zoomIn" />
+      <ImgTooltip src="/buttons/zoomOut.png" tooltip="Zoom out" @clicked="zoomOut" />
+      <ImgTooltip src="/buttons/update.png" tooltip="Update file one server" @clicked="updateMidiOnServer" />
     </div>
     <div ref="containerId" class="chartContainer">
       <midi-chart
@@ -33,24 +35,18 @@
         :style="chartStyles"
       />
       <div id="zoomview-container" class="zoomviewContainer" />
+      <div id="overview-container" class="overviewContainer" />
     </div>
-    <div id="overview-container" />
-    <button class="btn" @click="zoomIn">
-      Zoom in
-    </button>
-    <button @click="zoomOut">
-      Zoom out
-    </button>
-    <audio controls="controls">
-      <source :src="mp3Url" type="audio/mpeg">
-    </audio>
-    <div id="audio-controls">
-      <input id="original-audio" v-model="soundOptionsSelected" type="checkbox" value="original">
-      <label for="original-audio">Original</label>
-      <input id="midi-audio" v-model="soundOptionsSelected" type="checkbox" value="midi">
-      <label for="midi-audio">Midi</label>
-      <input id="f0-audio" v-model="soundOptionsSelected" type="checkbox" value="f0">
-      <label for="f0-audio">F0</label>
+    <div id="audio-controls-container" class="audioControlsContainer">
+      <audio controls="controls" style="width: 50%;">
+        <source :src="mp3Url" type="audio/mpeg">
+      </audio>
+      <div id="audio-controls">
+        <input id="original-audio" v-model="soundOptionsSelected" type="checkbox" value="original">
+        <label for="original-audio">Original</label>
+        <input id="midi-audio" v-model="soundOptionsSelected" type="checkbox" value="midi">
+        <label for="midi-audio">Midi</label>
+      </div>
     </div>
   </div>
 </template>
@@ -58,13 +54,16 @@
 <script>
 import WaveformData from 'waveform-data'
 import Peaks from 'peaks.js'
+import ImgTooltip from '../ImgTooltip';
+import { getNoteFromMidi } from './midiNotes.js'
 import MidiChart from './midiChart'
 import 'chartjs-plugin-dragdata'
 
 export default {
   name: 'MidiChartContainer',
   components: {
-    MidiChart
+    MidiChart,
+    ImgTooltip
   },
   data () {
     return {
@@ -116,7 +115,10 @@ export default {
         scales: {
           yAxes: [{
             ticks: {
-              stepSize: 1
+              stepSize: 1,
+              callback: (value) => {
+                return this.getNoteSymbolByMidiValue(value) + ' - ' + value;
+              }
             }
           }],
           xAxes: [{
@@ -126,6 +128,7 @@ export default {
           }]
         },
         animation: {
+          duration: 0,
           onComplete: () => {
             this.saveChartContext()
           }
@@ -327,6 +330,7 @@ export default {
         };
         this.loaded = true;
         this.dataLoading = false
+        this.saveChartContext()
       }
     },
     zoomIn () {
@@ -364,7 +368,7 @@ export default {
           // calculate pixels per one second in zoomview
           const audioSampleRate = audioContext.sampleRate;
           const imageWidth = document.getElementById('zoomview-container').clientWidth;
-          const oneSecondZoom = Math.round(audioSampleRate / imageWidth);
+          const oneSecondZoom = audioSampleRate / imageWidth;
 
           const options = {
             containers: {
@@ -377,7 +381,12 @@ export default {
             },
             height: 100,
             showPlayheadTime: true,
-            zoomLevels: [2 * oneSecondZoom, 4 * oneSecondZoom, 6 * oneSecondZoom, 8 * oneSecondZoom, 10 * oneSecondZoom],
+            zoomLevels: [Math.round(2 * oneSecondZoom), Math.round(4 * oneSecondZoom), Math.round(6 * oneSecondZoom),
+              Math.round(8 * oneSecondZoom), Math.round(10 * oneSecondZoom), Math.round(15 * oneSecondZoom),
+              Math.round(20 * oneSecondZoom), Math.round(30 * oneSecondZoom), Math.round(45 * oneSecondZoom),
+              Math.round(60 * oneSecondZoom), (90 * oneSecondZoom), (120 * oneSecondZoom),
+              Math.round(180 * oneSecondZoom), Math.round(240 * oneSecondZoom), (300 * oneSecondZoom),
+              Math.round(1200 * oneSecondZoom)],
             emitCueEvents: true,
             logger: console.error.bind(console),
             interactive: false
@@ -434,15 +443,15 @@ export default {
     },
     drawChartPlayingLine () {
       const vm = this;
-      if (vm.$children[0]) {
-        const c = vm.$children[0].$refs.canvas;
+      if (vm.$children[1]) {
+        const c = vm.$children[1].$refs.canvas;
         if (c) {
           const ctx = c.getContext('2d');
           vm.saveChartContext();
           vm.drawVerticalLineId = setInterval(function () {
             if (!vm.dataLoading) {
               vm.playerTime = vm.peaksInstance.player.getCurrentTime();
-              const xposition = vm.$children[0].$data._chart.scales['x-axis-1'].getPixelForValue(vm.playerTime);
+              const xposition = vm.$children[1].$data._chart.scales['x-axis-1'].getPixelForValue(vm.playerTime);
               ctx.fillStyle = '#ff0000';
               vm.reloadChartContext();
               ctx.beginPath();
@@ -456,8 +465,8 @@ export default {
       }
     },
     saveChartContext () {
-      if (this.$children[0]) {
-        const c = this.$children[0].$refs.canvas;
+      if (this.$children[1]) {
+        const c = this.$children[1].$refs.canvas;
         if (c) {
           const ctx = c.getContext('2d');
           this.contextImageData = ctx.getImageData(0, 0, c.width, c.height)
@@ -465,8 +474,8 @@ export default {
       }
     },
     reloadChartContext () {
-      if (this.$children[0]) {
-        const c = this.$children[0].$refs.canvas;
+      if (this.$children[1]) {
+        const c = this.$children[1].$refs.canvas;
         if (c) {
           const ctx = c.getContext('2d');
           ctx.putImageData(this.contextImageData, 0, 0)
@@ -491,6 +500,15 @@ export default {
     },
     midiToFrequency (midiValue) {
       return 440.0 * 2.0 ** ((midiValue - 69) / 12);
+    },
+    getNoteSymbolByMidiValue (value) {
+      if (value < 21) {
+        return '';
+      } else if (value > 127) {
+        return '';
+      } else {
+        return getNoteFromMidi(value);
+      }
     },
     setCurrentSelection (element) {
       const dataSetIndex = element.length > 1 ? element[0]._datasetIndex : element._datasetIndex;
@@ -956,12 +974,18 @@ export default {
     overflow-x: hidden;
   }
   .zoomviewContainer {
-    width: calc(100% - 2.5em);
-    margin-left: 1.5em;
+    margin-left: 3.9em;
+  }
+  .overviewContainer {
+    margin-left: 3.9em;
   }
   .controlButtons {
     width: 50px;
     height: 50px;
+  }
+  .audioControlsContainer {
+    width: 100%;
+    overflow-x: hidden;
   }
   #buttons-container {
     background-color: #f7f7f7;
