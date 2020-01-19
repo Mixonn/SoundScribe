@@ -1,90 +1,229 @@
 <template>
   <div class="app">
     <div id="buttons-container">
-      <img alt="Select" class="controlButtons" src="/buttons/select.png">
-      <img alt="Undo" class="controlButtons" src="/buttons/undo.png">
-      <img alt="Redo" class="controlButtons" src="/buttons/redo.png">
-      <img alt="Elevate" class="controlButtons" src="/buttons/elevate.png" @click="noteUp">
-      <img alt="Lower" class="controlButtons" src="/buttons/lower.png" @click="noteDown">
-      <img alt="Add" class="controlButtons" src="/buttons/plus.png" @click="addNote('A')">
-      <img alt="Remove" class="controlButtons" src="/buttons/minus.png" @click="removeNote">
-      <img alt="Update" class="controlButtons" src="/buttons/update.png" @click="uploadAbc">
+      <img-tooltip src="/buttons/select.png" tooltip="Select" />
+      <img-tooltip src="/buttons/undo.png" tooltip="Undo" v-on="on" />
+      <img-tooltip src="/buttons/redo.png" tooltip="Redo" v-on="on" />
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img alt="Elevate" class="controlButtons" src="/buttons/elevate.png" v-on="on" @click="noteUp">
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img alt="Lower" class="controlButtons" src="/buttons/lower.png" v-on="on" @click="noteDown">
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img alt="Add" class="controlButtons" src="/buttons/plus.png" v-on="on" @click="addNote('A')">
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img alt="Remove" class="controlButtons" src="/buttons/minus.png" v-on="on" @click="removeNote">
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img alt="Update" class="controlButtons" src="/buttons/update.png" v-on="on" @click="uploadAbc">
+        </template>
+        <span>Button</span>
+      </v-tooltip>
     </div>
 
     <div id="note-length-container">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/1.png')" @click="changeNoteLength(1)">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/2.png')" @click="changeNoteLength(2)">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/4.png')" @click="changeNoteLength(4)">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/8.png')" @click="changeNoteLength(8)">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/16.png')" @click="changeNoteLength(16)">
-      <img class="controlButtons" :src="require('@/static/buttons/notes/32.png')" @click="changeNoteLength(32)">
-      <img
-        class="controlButtons"
-        :class="{ active: currentNode.dotCount === 1 }"
-        :src="require('@/static/buttons/notes/oneDot.png')"
-        @click="setDots(1)"
-      >
-      <img
-        class="controlButtons"
-        :class="{ active: currentNode.dotCount === 2 }"
-        :src="require('@/static/buttons/notes/twoDot.png')"
-        @click="setDots(2)"
-      >
-      <img
-        class="controlButtons"
-        :src="require('@/static/buttons/notes/pause.png')"
-        @click="addNote('z')"
-      >
-      <img
-        class="controlButtons"
-        :class="{ active: currentNode.flatCount === 1 }"
-        :src="require('@/static/buttons/notes/flat.png')"
-        @click="setFlats(1)"
-      >
-      <img
-        class="controlButtons"
-        :class="{ active: currentNode.flatCount === 2 }"
-        :src="require('@/static/buttons/notes/doubleFlat.png')"
-        @click="setFlats(2)"
-      >
-      <img
-        class="controlButtons"
-        :class="{ active: currentNode.sharpCount === 1 }"
-        :src="require('@/static/buttons/notes/sharp.png')"
-        @click="setSharps(1)"
-      >
-      <img
-        class="controlButtons"
-        :class="{ active: currentNode.sharpCount === 2 }"
-        :src="require('@/static/buttons/notes/doubleSharp.png')"
-        @click="setSharps(2)"
-      >
-      <img
-        class="controlButtons"
-        :class="{ active: currentNode.natural === true }"
-        :src="require('@/static/buttons/notes/natural.png')"
-        @click="setNatural(!currentNode.natural)"
-      >
-      <img
-        class="controlButtons"
-        :src="require('@/static/buttons/notes/barLine.png')"
-        @click="addNote('|')"
-      >
-      <img
-        class="controlButtons"
-        :src="require('@/static/buttons/notes/doubleBarLine.png')"
-        @click="addNote(':|')"
-      >
-      <img
-        class="controlButtons"
-        :src="require('@/static/buttons/notes/newline.png')"
-        @click="lineBreak(true)"
-      >
-      <img
-        class="controlButtons"
-        :src="require('@/static/buttons/notes/removeLine.png')"
-        @click="lineBreak(false)"
-      >
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img alt="button" class="controlButtons" :src="require('@/static/buttons/notes/1.png')" v-on="on" @click="changeNoteLength(1)">
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img alt="button" class="controlButtons" :src="require('@/static/buttons/notes/2.png')" v-on="on" @click="changeNoteLength(2)">
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img alt="button" class="controlButtons" :src="require('@/static/buttons/notes/4.png')" v-on="on" @click="changeNoteLength(4)">
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img alt="button" class="controlButtons" :src="require('@/static/buttons/notes/8.png')" v-on="on" @click="changeNoteLength(8)">
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img alt="button" class="controlButtons" :src="require('@/static/buttons/notes/16.png')" v-on="on" @click="changeNoteLength(16)">
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img alt="button" class="controlButtons" :src="require('@/static/buttons/notes/32.png')" v-on="on" @click="changeNoteLength(32)">
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img
+            alt="button"
+            class="controlButtons"
+            :class="{ active: currentNode.dotCount === 1 }"
+            v-on="on"
+            :src="require('@/static/buttons/notes/oneDot.png')"
+            @click="setDots(1)"
+          >
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img
+            alt="button"
+            class="controlButtons"
+            :class="{ active: currentNode.dotCount === 2 }"
+            v-on="on"
+            :src="require('@/static/buttons/notes/twoDot.png')"
+            @click="setDots(2)"
+          >
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img
+            alt="button"
+            class="controlButtons"
+            v-on="on"
+            :src="require('@/static/buttons/notes/pause.png')"
+            @click="addNote('z')"
+          >
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img
+            alt="button"
+            class="controlButtons"
+            :class="{ active: currentNode.flatCount === 1 }"
+            v-on="on"
+            :src="require('@/static/buttons/notes/flat.png')"
+            @click="setFlats(1)"
+          >
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img
+            alt="button"
+            class="controlButtons"
+            :class="{ active: currentNode.flatCount === 2 }"
+            v-on="on"
+            :src="require('@/static/buttons/notes/doubleFlat.png')"
+            @click="setFlats(2)"
+          >
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img
+            alt="button"
+            class="controlButtons"
+            :class="{ active: currentNode.sharpCount === 1 }"
+            v-on="on"
+            :src="require('@/static/buttons/notes/sharp.png')"
+            @click="setSharps(1)"
+          >
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img
+            alt="button"
+            class="controlButtons"
+            :class="{ active: currentNode.sharpCount === 2 }"
+            v-on="on"
+            :src="require('@/static/buttons/notes/doubleSharp.png')"
+            @click="setSharps(2)"
+          >
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img
+            alt="button"
+            class="controlButtons"
+            :class="{ active: currentNode.natural === true }"
+            v-on="on"
+            :src="require('@/static/buttons/notes/natural.png')"
+            @click="setNatural(!currentNode.natural)"
+          >
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img
+            alt="button"
+            class="controlButtons"
+            v-on="on"
+            :src="require('@/static/buttons/notes/barLine.png')"
+            @click="addNote('|')"
+          >
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img
+            alt="button"
+            class="controlButtons"
+            v-on="on"
+            :src="require('@/static/buttons/notes/doubleBarLine.png')"
+            @click="addNote(':|')"
+          >
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img
+            alt="button"
+            class="controlButtons"
+            v-on="on"
+            :src="require('@/static/buttons/notes/newline.png')"
+            @click="lineBreak(true)"
+          >
+        </template>
+        <span>Button</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <img
+            alt="button"
+            class="controlButtons"
+            v-on="on"
+            :src="require('@/static/buttons/notes/removeLine.png')"
+            @click="lineBreak(false)"
+          >
+        </template>
+        <span>Button</span>
+      </v-tooltip>
     </div>
     <div id="metadata-container">
       <div id="metrum-container">
@@ -163,6 +302,7 @@
 <script>
 import 'abcjs/abcjs-midi.css';
 import abcjs from 'abcjs/midi';
+import ImgTooltip from '../ImgTooltip';
 import { getNoteMetadata, MODIFY_OPERATIONS, modifyNote, replaceSubstring } from './NodeModifier';
 import { extractMetadata, setBpm, setMetre } from './TuneService';
 const fs = require('fs');
@@ -170,6 +310,7 @@ const $ = require('jquery');
 
 export default {
   name: 'StaffLines',
+  components: { ImgTooltip },
   head () {
     return {
     }
@@ -214,6 +355,22 @@ export default {
       generate_midi: true,
       midi_id: 'midi',
       abcjsParams: {
+        staffwidth: window.innerWidth - 600,
+        midiListener: this.listener,
+        animate: {
+          listener: this.animate
+        },
+        clickListener: this.onNodeClick
+      }
+    });
+  },
+  onResize () {
+    this.abcjsEditor = new abcjs.Editor('abc-source', {
+      canvas_id: 'paper',
+      generate_midi: true,
+      midi_id: 'midi',
+      abcjsParams: {
+        staffwidth: window.innerWidth - 600,
         midiListener: this.listener,
         animate: {
           listener: this.animate
