@@ -3,6 +3,7 @@ package com.soundscribe.controller;
 import com.soundscribe.converters.ConversionFormat;
 import com.soundscribe.converters.Converter;
 import com.soundscribe.converters.ConverterService;
+import com.soundscribe.converters.musicxml.functions.MusicXmlToMidi;
 import com.soundscribe.converters.xml.FrontXmlPojo;
 import com.soundscribe.converters.xml.XmlPojo;
 import com.soundscribe.converters.xml.functions.XmlToMusicXml;
@@ -10,19 +11,18 @@ import com.soundscribe.jvamp.JvampService;
 import com.soundscribe.storage.StorageService;
 import com.soundscribe.utilities.CommonUtil;
 import com.soundscribe.utilities.SoundscribeConfiguration;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
@@ -35,7 +35,9 @@ public class ConversionController {
   private final ConverterService converterService;
   private final SoundscribeConfiguration soundscribeConfiguration;
   private final StorageService storageService;
+
   private final XmlToMusicXml xmlToMusicXml;
+  private final MusicXmlToMidi musicXmlToMidi;
 
   @PostConstruct
   public void init() {
@@ -109,11 +111,50 @@ public class ConversionController {
     return new ResponseEntity<>("Plik z danymi wyściowymi został zaaktualizowany", HttpStatus.OK);
   }
 
+  // todo Delete update-file-abc or update-file-abc-raw
+
+  /**
+   * Updates modified transcription. It supports ABC input formats only. Updated formats: MusicXML,
+   * ABC, MIDI, MEI
+   */
+  @RequestMapping(value = "/update-file-abc-raw", method = RequestMethod.POST)
+  @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
+  public ResponseEntity<String> updateAbcRaw(
+      @RequestParam String fileName, HttpEntity<String> httpEntity) {
+    String abcString = httpEntity.getBody();
+    if (abcString == null) {
+      return new ResponseEntity<>(
+          "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
+    }
+
+    File input = new File(soundscribeConfiguration.getSongDataStorage(), fileName);
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(input))) {
+      writer.write(abcString);
+    } catch (IOException e) {
+      return new ResponseEntity<>(
+          "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
+    }
+
+    try {
+      File musicXml = converterService.convert(input, new ConversionFormat("abc", "musicxml"));
+      XmlPojo xmlPojo = musicXmlToMidi.musicXmlToXmlPojo(musicXml);
+      XmlPojo.saveXMLData(xmlPojo, soundscribeConfiguration.getSongDataStorage());
+      converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
+      converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
+    } catch (Exception e) {
+      log.error("Update file exception", e);
+      return new ResponseEntity<>(
+          "Wystąpił błąd podczas przetwarzania utworu", HttpStatus.EXPECTATION_FAILED);
+    }
+    return new ResponseEntity<>("Plik z danymi wyściowymi został zaaktualizowany", HttpStatus.OK);
+  }
+
   @RequestMapping(value = "/update-file-midi", method = RequestMethod.POST)
   @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
   public ResponseEntity<String> updateMidi(@RequestBody FrontXmlPojo frontXmlPojo) {
     XmlPojo xmlPojo = FrontXmlPojo.convertFrontXmlPojoToXmlPojo(frontXmlPojo);
     try {
+      XmlPojo.saveXMLData(xmlPojo, soundscribeConfiguration.getSongDataStorage());
       File musicXml = xmlToMusicXml.convertXmlToMusicXml(xmlPojo);
       converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
