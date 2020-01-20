@@ -4,11 +4,12 @@
       <img-tooltip src="/buttons/select.png" tooltip="Select" />
       <img-tooltip src="/buttons/undo.png" tooltip="Undo" />
       <img-tooltip src="/buttons/redo.png" tooltip="Redo" />
-      <img-tooltip src="/buttons/elevate.png" tooltip="Elevate" @clicked="noteUp"/>
-      <img-tooltip src="/buttons/lower.png" tooltip="Lower" @clicked="noteDown"/>
-      <img-tooltip src="/buttons/plus.png" tooltip="Plus" @clicked="addNote('A')"/>
-      <img-tooltip src="/buttons/minus.png" tooltip="Minus" @clicked="removeNote"/>
-      <img-tooltip src="/buttons/update.png" tooltip="Update" @clicked="uploadAbc"/>
+      <img-tooltip src="/buttons/elevate.png" tooltip="Elevate" @clicked="noteUp" />
+      <img-tooltip src="/buttons/lower.png" tooltip="Lower" @clicked="noteDown" />
+      <img-tooltip src="/buttons/plus.png" tooltip="Plus" @clicked="addNote('A')" />
+      <img-tooltip src="/buttons/minus.png" tooltip="Minus" @clicked="removeNote" />
+      <img-tooltip src="/buttons/update.png" tooltip="Update" @clicked="uploadAbc" />
+      <img-tooltip src="/buttons/pdf.png" tooltip="To Pdf" @clicked="printPdf" />
     </div>
 
     <div id="note-length-container">
@@ -18,14 +19,14 @@
       <img-tooltip src="/buttons/notes/8.png" tooltip="Change length to 8" @clicked="changeNoteLength(8)" />
       <img-tooltip src="/buttons/notes/16.png" tooltip="Change length to 16" @clicked="changeNoteLength(16)" />
       <img-tooltip src="/buttons/notes/32.png" tooltip="Change length to 32" @clicked="changeNoteLength(32)" />
-      <img-tooltip src="/buttons/notes/oneDot.png" tooltip="Set dots to 1" v-bind:highlight="buttonsHightlight.dotCountOne" @clicked="setDots(1)" />
-      <img-tooltip src="/buttons/notes/twoDot.png" tooltip="Set dots to 2" v-bind:highlight="buttonsHightlight.dotCountTwo" @clicked="setDots(2)" />
+      <img-tooltip src="/buttons/notes/oneDot.png" tooltip="Set dots to 1" :highlight="buttonsHightlight.dotCountOne" @clicked="setDots(1)" />
+      <img-tooltip src="/buttons/notes/twoDot.png" tooltip="Set dots to 2" :highlight="buttonsHightlight.dotCountTwo" @clicked="setDots(2)" />
       <img-tooltip src="/buttons/notes/pause.png" tooltip="Add pause" @clicked="addNote('z')" />
-      <img-tooltip src="/buttons/notes/flat.png" tooltip="Set flats to 1" v-bind:highlight="buttonsHightlight.flatCountOne" @clicked="setFlats(1)" />
-      <img-tooltip src="/buttons/notes/doubleFlat.png" tooltip="Set flats to 2" v-bind:highlight="buttonsHightlight.flatCountTwo" @clicked="setFlats(2)" />
-      <img-tooltip src="/buttons/notes/sharp.png" tooltip="Set sharps to 1" v-bind:highlight="buttonsHightlight.sharpCountOne" @clicked="setSharps(1)" />
-      <img-tooltip src="/buttons/notes/doubleSharp.png" tooltip="Set sharps to 2" v-bind:highlight="buttonsHightlight.sharpCountTwo" @clicked="setSharps(2)" />
-      <img-tooltip src="/buttons/notes/natural.png" tooltip="Set natural" v-bind:highlight="buttonsHightlight.isNatural" @clicked="setNatural(!currentNode.natural)" />
+      <img-tooltip src="/buttons/notes/flat.png" tooltip="Set flats to 1" :highlight="buttonsHightlight.flatCountOne" @clicked="setFlats(1)" />
+      <img-tooltip src="/buttons/notes/doubleFlat.png" tooltip="Set flats to 2" :highlight="buttonsHightlight.flatCountTwo" @clicked="setFlats(2)" />
+      <img-tooltip src="/buttons/notes/sharp.png" tooltip="Set sharps to 1" :highlight="buttonsHightlight.sharpCountOne" @clicked="setSharps(1)" />
+      <img-tooltip src="/buttons/notes/doubleSharp.png" tooltip="Set sharps to 2" :highlight="buttonsHightlight.sharpCountTwo" @clicked="setSharps(2)" />
+      <img-tooltip src="/buttons/notes/natural.png" tooltip="Set natural" :highlight="buttonsHightlight.isNatural" @clicked="setNatural(!currentNode.natural)" />
       <img-tooltip src="/buttons/notes/barLine.png" tooltip="Add bar line" @clicked="addNote('|')" />
       <img-tooltip src="/buttons/notes/doubleBarLine.png" tooltip="Add double bar line" @clicked="addNote(':|')" />
       <img-tooltip src="/buttons/notes/newline.png" tooltip="Add new line" @clicked="lineBreak(true)" />
@@ -244,6 +245,25 @@ export default {
           this.snackbar.success = false;
           this.snackbar.display = true;
         });
+    },
+    printPdf () {
+      const mywindow = window.open('', 'PRINT', 'height=900,width=1200');
+      mywindow.document.write(
+        '<html><head>' +
+          '<title>Title</title>' +
+          '<style>' +
+            '@page { size: auto;  margin: 0mm; }' +
+          '</style>' +
+        '</head>' +
+        '<body >' +
+        // '<h1>' + document.title + '</h1>' +
+              document.getElementById('paper').innerHTML +
+        '</body></html>');
+      mywindow.document.close(); // necessary for IE >= 10
+      mywindow.focus(); // necessary for IE >= 10*/
+      mywindow.print();
+      mywindow.close();
+      return true;
     },
     onNodeClick (abcElem, tuneNumber, classes) {
       console.log(abcElem);
