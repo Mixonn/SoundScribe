@@ -9,7 +9,7 @@
       <img-tooltip src="/buttons/plus.png" tooltip="Plus" @clicked="addNote('A')" />
       <img-tooltip src="/buttons/minus.png" tooltip="Minus" @clicked="removeNote" />
       <img-tooltip src="/buttons/update.png" tooltip="Update" @clicked="uploadAbc" />
-      <img-tooltip src="/buttons/pdf.png" tooltip="To Pdf" @clicked="printPdf" />
+      <img-tooltip src="/buttons/pdf.png" grayscale="true" tooltip="To Pdf" @clicked="printPdf" />
     </div>
 
     <div id="note-length-container">
