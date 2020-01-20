@@ -46,7 +46,19 @@ export default {
   */
   modules: [
     '@nuxtjs/axios',
-    '@nuxtjs/font-awesome'
+    [
+      'nuxt-fontawesome', {
+        imports: [
+          {
+            set: '@fortawesome/free-solid-svg-icons',
+            icons: []
+          },
+          {
+            set: '@fortawesome/free-brands-svg-icons',
+            icons: ['faGithub']
+          }
+        ]
+      }]
   ],
   /*
   ** vuetify module configuration

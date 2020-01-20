@@ -6,7 +6,8 @@
       <img
         :alt="tooltip != null ? tooltip : src.substr(src.lastIndexOf('/'), src.lastIndexOf('.'))"
         class="controlButton"
-        :class="{ active: highlight === true }"
+        :class="{ active: highlight === true,
+         gray: grayscale }"
         :src="src"
         v-on="on"
         @click="$emit('clicked')"
@@ -31,6 +32,10 @@ export default {
     highlight: {
       type: Boolean,
       default: false
+    },
+    grayscale: {
+      type: Boolean,
+      default: false
     }
   }
 }
@@ -53,5 +58,9 @@ export default {
     border-radius: 20px;
     transition: background-color .5s;
     -webkit-transition: background-color .5s;
+  }
+  .gray {
+    -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+    filter: grayscale(100%);
   }
 </style>
