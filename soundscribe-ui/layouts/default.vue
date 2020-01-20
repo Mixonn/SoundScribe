@@ -62,12 +62,15 @@
       <span style="color: white">
         Inżynierowie Dźwięku &copy; 2020
       </span>
+      <icon-tooltip i="github" tooltip="Go to github repository" link="https://github.com/Mixonn/SoundScribe" />
     </v-footer>
   </v-app>
 </template>
 
 <script>
+import IconTooltip from '../components/IconTooltip';
 export default {
+  components: { IconTooltip },
   data () {
     return {
       clipped: false,
@@ -114,5 +117,9 @@ export default {
 <style lang="scss">
   .application {
     color: white;
+  }
+
+  .icon-tooltip {
+    padding: 5px;
   }
 </style>

@@ -252,7 +252,7 @@ export default {
         '<html><head>' +
           '<title>Title</title>' +
           '<style>' +
-            '@page { size: auto;  margin: 0mm; }' +
+            '@page { size: auto;  margin: 0; }' +
           '</style>' +
         '</head>' +
         '<body >' +
