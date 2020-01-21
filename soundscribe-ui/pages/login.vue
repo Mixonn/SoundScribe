@@ -4,13 +4,9 @@
       Login
     </v-card-title>
     <v-card-text class="sider">
-      <ul>
-        <li v-for="file in files" :key="file" class="item">
-          <nuxt-link :to="'/logic/staff/' + file">
-            {{ file }}
-          </nuxt-link>
-        </li>
-      </ul>
+      Click
+      <button v-on:click="doLogin">here</button>
+      to login...
     </v-card-text>
   </div>
 </template>
@@ -18,12 +14,10 @@
 <script>
 
 export default {
-  async mounted () {
-    const oauth = require('axios-oauth-client');
-    try {
-      await this.$auth.loginWith('keycloak')
-    } catch (e) {
-      console.log('login failed')
+  auth: false,
+  methods: {
+    doLogin () {
+      this.$auth.loginWith('keycloak')
     }
   }
 }

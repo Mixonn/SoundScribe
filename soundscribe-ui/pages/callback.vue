@@ -15,7 +15,7 @@ export default {
         'url': 'http://localhost:80/auth/realms/soundscribe/protocol/openid-connect/token',
         'grant_type': 'authorization_code',
         'client_id': 'vue-edit',
-        'client_secret': '6e14846a-8711-4396-abea-9d2cfa7dd867',
+        'client_secret': 'a0432aea-49ec-4313-8080-a4db15df8bc7',
         'scope': 'soundscribe-edit,soundscribe-read',
         'code': this.$route.query.code,
         'redirect_uri': 'http://localhost:80/callback'
@@ -25,9 +25,10 @@ export default {
 
     if (token) {
       this.$axios.defaults.headers.common.Authorization = 'Bearer ' + token.access_token
-    }
+      this.$store.commit('auth_success', token)
 
-    this.$auth.loggedIn = true
+      console.log(token)
+    }
   }
 }
 </script>

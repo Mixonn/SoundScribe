@@ -11,6 +11,35 @@
     >
       <v-list>
         <v-list-item
+          v-if="!isLoggedIn"
+          to="/login"
+          exact
+        >
+          <v-list-item-action>
+            <v-icon>mdi-login</v-icon>
+          </v-list-item-action>
+          Login
+        </v-list-item>
+        <v-list-item
+          v-if="isLoggedIn"
+          exact
+        >
+          <v-list-item-action>
+            <v-icon>mdi-account</v-icon>
+          </v-list-item-action>
+          Logged in!
+        </v-list-item>
+        <v-list-item
+          v-if="isLoggedIn"
+          exact
+          @click="logout()"
+        >
+          <v-list-item-action>
+            <v-icon>mdi-logout</v-icon>
+          </v-list-item-action>
+          Logout!
+        </v-list-item>
+        <v-list-item
           v-for="(item, i) in items"
           :key="i"
           :to="item.to"
@@ -109,6 +138,18 @@ export default {
       right: true,
       rightDrawer: false,
       title: 'SoundScribe'
+    }
+  },
+  computed: {
+    isLoggedIn () {
+      return this.$store.getters.isLoggedIn
+    }
+  },
+  methods: {
+    logout () {
+      this.$store.commit('logout')
+      delete this.$axios.defaults.headers.common.Authorization
+      this.$router.push('/')
     }
   }
 }
