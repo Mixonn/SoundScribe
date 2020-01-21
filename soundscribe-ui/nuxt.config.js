@@ -4,6 +4,10 @@ import webpack from 'webpack'
 export default {
   mode: 'spa',
   /*
+  ** Possible values: "write", "read"
+   */
+  soundscribeMode: 'write',
+  /*
   ** Headers of the page
   */
   head: {
@@ -104,7 +108,7 @@ export default {
         response_type: 'code',
         token_type: 'Bearer',
         token_key: 'access_token',
-        client_secret: 'a0432aea-49ec-4313-8080-a4db15df8bc7', // for vue-read: 75ba96f0-9836-43dc-a18a-d81b4ef20b65
+        client_secret: 'e63e4b6f-4a50-49aa-bcdd-64bc2a8bf2d0', // for vue-read: ece59075-7394-45c6-849d-235fb6b9ae94
         client_id: 'vue-edit',
         redirect_uri: 'http://localhost:80/callback',
         grant_type: 'authorization_code',
