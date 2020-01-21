@@ -20,14 +20,16 @@ settings:
 spring:
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: 1GB
+      max-request-size: 1GB
   security:
     oauth2:
       resourceserver:
         jwt:
           jwk-set-uri: http://authorization-keycloak:8080/auth/realms/soundscribe/protocol/openid-connect/certs
-
+  mvc:
+    async:
+      request-timeout: 6h
 
 logging:
   level:

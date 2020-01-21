@@ -79,7 +79,7 @@ export default {
           ...formData.headers
         }
       }
-      return this.$axios.post('/', formData, config)
+      return this.$axios.post('http://localhost:80/be/', formData, config)
         .then(x => x.data)
     },
     reset () {
@@ -117,7 +117,7 @@ export default {
       Array
         .from(Array(fileList.length).keys())
         .map((x) => {
-          formData.append('file', fileList[x], fileList[x].name);
+          formData.append('uploadingFiles', fileList[x], fileList[x].name);
         });
 
       // save it
