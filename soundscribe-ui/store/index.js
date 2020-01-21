@@ -4,7 +4,7 @@ export const state = ({
   accessToken: localStorage.getItem('accessToken'),
   refreshToken: localStorage.getItem('refreshToken'),
   clientId: 'vue-edit',
-  clientSecret: 'a0432aea-49ec-4313-8080-a4db15df8bc7'
+  clientSecret: 'e63e4b6f-4a50-49aa-bcdd-64bc2a8bf2d0'
 })
 
 export const mutations = ({
@@ -23,7 +23,7 @@ export const mutations = ({
   logout (state) {
     const requestBody = {
       client_id: 'vue-edit',
-      client_secret: 'a0432aea-49ec-4313-8080-a4db15df8bc7',
+      client_secret: 'e63e4b6f-4a50-49aa-bcdd-64bc2a8bf2d0',
       refresh_token: state.refreshToken
     }
 
