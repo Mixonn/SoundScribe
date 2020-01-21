@@ -1,3 +1,91 @@
-group 'com.soundscribe'
-version '1.0-SNAPSHOT'
+import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 
+buildscript {
+    ext {
+        lombokVersion = '1.18.4'
+        springBootVersion = '2.1.4.RELEASE'
+    }
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        jcenter()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:3.21.1"
+    }
+}
+
+plugins {
+    id "com.diffplug.gradle.spotless" version "3.21.1"
+}
+
+println "Building $project.name with gradle $gradle.gradleVersion on JVM ${org.gradle.internal.jvm.Jvm.current()}"
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'groovy'
+    apply plugin: 'idea'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    bootJar {
+        baseName = 'soundscribe'
+        version =  '1.0'
+    }
+
+    sourceCompatibility = 11
+    targetCompatibility = 11
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+
+    jar {
+        manifest {
+            attributes 'Implementation-Title': 'SoundScribe',
+            'Main-Class': 'com.soundscribe.SoundscribeBeCoreApplication.java'
+        }
+    }
+
+    apply plugin: "com.diffplug.gradle.spotless"
+    spotless {
+        java {
+            encoding 'UTF-8'
+            target project.fileTree(project.rootDir) {
+                include '**/*.java'
+                exclude '**/jvamp-1.3/**'
+            }
+            googleJavaFormat()
+        }
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.boot:spring-boot-dependencies:$springBootVersion"
+        }
+        dependencies {
+            //to do change to $project.version when new spring version will be in develop
+            dependency group: 'io.springfox', name: 'springfox-swagger2', version: '2.6.1'
+            dependency group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.6.1'
+            dependency group: 'org.javassist', name: 'javassist', version: '3.25.0-GA'
+        }
+    }
+
+    idea {
+        module {
+            inheritOutputDirs = false
+            outputDir = file('../out/production')
+            testOutputDir = file('../out/test')
+            languageLevel = new IdeaLanguageLevel('11')
+            jdkName = '11'
+            downloadJavadoc = true
+            downloadSources = true
+        }
+    }
+}

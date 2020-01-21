@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  authorization-keycloak:
+    image: jboss/keycloak:latest
+    container_name: authorization-keycloak
+    hostname: authorization-keycloak
+    expose:
+      - 8080
+    environment:
+      DB_VENDOR: h2
+#      DB_ADDR: postgres
+#      DB_DATABASE: keycloak
+#      DB_USER: keycloak
+#      DB_SCHEMA: public
+#      DB_PASSWORD: password
+#      KEYCLOAK_FRONTEND_URL: 'auth'
+      PROXY_ADDRESS_FORWARDING: 'true'
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: Pa55w0rd
+      KEYCLOAK_IMPORT: '/tmp/example-realm.json'
+      # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
+      #JDBC_PARAMS: "ssl=true"
+    command: ["-Dkeycloak.profile.feature.docker=enabled"]
+#              "-b",
+#              "0.0.0.0"]
+    volumes:
+      - ./authorizationServer/realm-export.json:/tmp/example-realm.json:ro
+  soundscribe-be:
+    container_name: soundscribe-be
+    hostname: soundscribe-be
+    build: .
+    expose:
+      - 8081
+  soundscribe-ui:
+    container_name: soundscribe-ui
+    hostname: soundscribe-ui
+    build: soundscribe-ui/
+    expose:
+      - 80
+  nginx-proxy:
+    image: nginx
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./nginx-proxy/proxy.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx-proxy/nginx/error.log:/etc/nginx/error_log.log
+      - ./nginx-proxy/nginx/cache/:/etc/nginx/cache

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<TP0300A_04>
+  <bpm>109</bpm>
+  <divisions>4</divisions>
+  <note>
+    <timestamp>0.96</timestamp>
+    <duration>0.10</duration>
+    <value>244.49258</value>
+    <midiValue>59</midiValue>
+    <letterNote>B3</letterNote>
+  </note>
+  <note>
+    <timestamp>1.21</timestamp>
+    <duration>0.17</duration>
+    <value>303.53705</value>
+    <midiValue>63</midiValue>
+    <letterNote>D#4</letterNote>
+  </note>
+  <note>
+    <timestamp>1.51</timestamp>
+    <duration>0.15</duration>
+    <value>271.0245</value>
+    <midiValue>61</midiValue>
+    <letterNote>C#4</letterNote>
+  </note>
+</TP0300A_04>

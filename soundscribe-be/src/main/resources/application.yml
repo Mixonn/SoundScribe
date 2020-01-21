@@ -1,0 +1,47 @@
+server:
+  port: 8081
+
+#Path properties
+settings:
+  uploadDirectory: "dlibraUpload/"
+  downloadDirectory: "dlibraDownload/"
+  pathToDLibraScript: "/dlibra-cmdln-tools"
+
+  songDataStorage: "audioFilesStorage/"
+  vampPath: "/usr/lib/"
+
+  #Converters properties
+  defaultDivisions: 4
+  defaultBpm: 120
+  defaultBeats: 4
+  defaultBeatType: 4
+  maxNotesInLineAbc: 20
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 1GB
+      max-request-size: 1GB
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://authorization-keycloak:8080/auth/realms/soundscribe/protocol/openid-connect/certs
+  mvc:
+    async:
+      request-timeout: 6h
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+
+musicxml:
+  useBassKey: false
+  useDots: false
+  useRest: true
+
+  delete16thRest: false
+  delete16thPitch: false

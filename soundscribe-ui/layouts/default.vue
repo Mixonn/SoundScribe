@@ -1,74 +1,171 @@
 <template>
-  <div>
-    <nav
-      class="navbar header has-shadow is-primary"
-      role="navigation"
-      aria-label="main navigation"
+  <v-app>
+    <v-navigation-drawer
+      v-model="drawer"
+      :mini-variant.sync="miniVariant"
+      permanent
+      fixed
+      app
+      dark
+      color="drawerBackground"
     >
-      <div class="navbar-brand">
-        <a
-          class="navbar-item"
-          href="/"
+      <v-list>
+        <v-list-item
+          v-if="!isLoggedIn"
+          to="/login"
+          exact
         >
-          <img
-            src="~assets/buefy.png"
-            alt="Buefy"
-            height="28"
-          >
-        </a>
-
-        <div class="navbar-burger">
-          <span />
-          <span />
-          <span />
-        </div>
-      </div>
-    </nav>
-
-    <section class="main-content columns">
-      <aside class="column is-2 section">
-        <p class="menu-label is-hidden-touch">
-          General
-        </p>
-        <ul class="menu-list">
-          <li
-            v-for="(item, key) of items"
-            :key="key"
-          >
-            <nuxt-link
-              :to="item.to"
-              exact-active-class="is-active"
+          <v-list-item-action>
+            <v-icon>mdi-login</v-icon>
+          </v-list-item-action>
+          Login
+        </v-list-item>
+        <v-list-item
+          class="logged-item"
+          v-if="isLoggedIn"
+          exact
+        >
+          <v-list-item-action>
+            <v-icon>mdi-account</v-icon>
+          </v-list-item-action>
+          Logged in!
+        </v-list-item>
+        <v-list-item
+          v-for="(item, i) in items"
+          :key="i"
+          :to="item.to"
+          router
+          exact
+        >
+          <v-list-item-action>
+            <v-icon>{{ item.icon }}</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title v-text="item.title" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item
+          v-if="isLoggedIn"
+          exact
+          @click="logout()"
+        >
+          <v-list-item-action>
+            <v-icon>mdi-logout</v-icon>
+          </v-list-item-action>
+          Logout!
+        </v-list-item>
+        <v-spacer />
+      </v-list>
+    </v-navigation-drawer>
+    <v-app-bar
+      :clipped-left="clipped"
+      fixed
+      app
+      color="headerBackground"
+    >
+      <v-img :src="require('@/static/logo.png')" height="50px" contain />
+    </v-app-bar>
+    <v-content>
+      <v-container class="mainContainer ma-0 pa-0" fluid fill-height>
+        <v-layout
+          column
+          wrap
+        >
+          <v-app style="color: black;">
+            <v-card
+              height="100%"
+              elevation="0"
+              style="color: black; border-radius: 0;"
+              class="sideBackground"
             >
-              <b-icon :icon="item.icon" /> {{ item.title }}
-            </nuxt-link>
-          </li>
-        </ul>
-      </aside>
-
-      <div class="container column is-10">
-        <nuxt />
-      </div>
-    </section>
-  </div>
+              <nuxt />
+            </v-card>
+          </v-app>
+        </v-layout>
+      </v-container>
+    </v-content>
+    <v-footer
+      :fixed="fixed"
+      app
+      color="headerBackground"
+    >
+      <span style="color: white">
+        Inżynierowie Dźwięku &copy; 2020
+      </span>
+      <icon-tooltip i="github" tooltip="Go to github repository" link="https://github.com/Mixonn/SoundScribe" />
+    </v-footer>
+  </v-app>
 </template>
 
 <script>
+import IconTooltip from '../components/IconTooltip';
 export default {
+  components: { IconTooltip },
   data () {
     return {
+      clipped: false,
+      drawer: false,
+      fixed: false,
       items: [
         {
-          title: 'Home',
-          icon: 'home',
-          to: { name: 'index' }
+          icon: 'mdi-folder-home',
+          title: 'Overview',
+          to: '/',
+          color: 'primary'
         },
         {
-          title: 'Inspire',
-          icon: 'lightbulb',
-          to: { name: 'inspire' }
+          icon: 'mdi-folder-open',
+          title: 'Open',
+          to: '/open',
+          color: 'primary'
+        },
+        {
+          icon: 'mdi-file-upload',
+          title: 'Upload',
+          to: '/upload'
+        },
+        {
+          icon: 'mdi-file-import',
+          title: 'Import',
+          to: '/import'
+        },
+        {
+          icon: 'mdi-application-export',
+          title: 'Export',
+          to: '/export'
         }
-      ]
+      ],
+      miniVariant: false,
+      right: true,
+      rightDrawer: false,
+      title: 'SoundScribe'
+    }
+  },
+  computed: {
+    isLoggedIn () {
+      return this.$store.getters.isLoggedIn
+    }
+  },
+  methods: {
+    logout () {
+      this.$store.commit('logout')
+      delete this.$axios.defaults.headers.common.Authorization
+      this.$router.push('/')
     }
   }
 }
 </script>
+
+<style lang="scss">
+  .application {
+    color: white;
+  }
+
+  .logged-item {
+    background: green;
+  }
+
+  .icon-tooltip {
+    padding: 5px;
+  }
+</style>

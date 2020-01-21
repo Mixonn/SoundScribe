@@ -1,25 +1,49 @@
 {
   "name": "soundscribe-ui",
   "version": "1.0.0",
-  "description": "My scrumtrulescent Nuxt.js project",
+  "description": "Soundscibe",
   "author": "Bartosz Osipiuk",
   "private": true,
   "scripts": {
-    "dev": "nuxt",
+    "dev": "DEBUG=nuxt:*,app:* nuxt",
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "lint": "eslint --ext .js,.vue --ignore-path .gitignore ."
+    "lint": "eslint --ext .js,.vue"
   },
   "dependencies": {
-    "nuxt": "^2.10.1",
-    "nuxt-buefy": "^0.3.2"
+    "@fortawesome/free-brands-svg-icons": "^5.12.0",
+    "@nuxtjs/auth": "^4.8.5",
+    "@nuxtjs/axios": "^5.8.0",
+    "@nuxtjs/font-awesome": "^1.0.4",
+    "axios": "^0.19.0",
+    "axios-oauth-client": "^1.2.1",
+    "chart.js": "^2.9.2",
+    "chartjs-plugin-dragdata": "^1.1.1",
+    "child_process": "^1.0.2",
+    "filereader": "^0.10.3",
+    "jptv-midi-js": "^0.3.0",
+    "jquery": "^3.4.1",
+    "keycloak-js": "^8.0.1",
+    "midi-player-js": "^2.0.5",
+    "module": "^1.2.5",
+    "nuxt": "^2.0.0",
+    "nuxt-fontawesome": "^0.4.0",
+    "peaks.js": "^0.14.5",
+    "serialize-javascript": "^2.1.2",
+    "soundfont-player": "^0.11.0",
+    "verovio": "^2.3.0",
+    "vue-audio-visual": "^1.4.1",
+    "vue-chartjs": "^3.5.0",
+    "waveform-data": "^3.1.0"
   },
   "devDependencies": {
+    "abcjs": "5.0.0",
     "@nuxtjs/eslint-config": "^1.0.1",
     "@nuxtjs/eslint-module": "^1.0.0",
+    "@nuxtjs/vuetify": "^1.0.0",
     "babel-eslint": "^10.0.1",
-    "eslint": "^6.1.0",
-    "eslint-plugin-nuxt": ">=0.4.2"
+    "eslint": "^6.6.0",
+    "eslint-plugin-nuxt": "^0.4.3"
   }
 }
