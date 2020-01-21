@@ -20,5 +20,6 @@
 
 <script>
 export default {
+  customauth: false
 }
 </script>

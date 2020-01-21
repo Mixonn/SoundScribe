@@ -33,3 +33,6 @@ nbdist/
 
 hs_err*.log
 npm-debug.log
+
+# logs
+*.log

@@ -18,6 +18,7 @@
 <script>
 
 export default {
+  middleware: 'customauth',
   async asyncData ({ $axios }) {
     const res = await $axios.get('/download/list-files?extension=abc')
     return { files: res.data }
