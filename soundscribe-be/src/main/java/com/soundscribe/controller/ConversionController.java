@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,6 +45,7 @@ public class ConversionController {
   }
 
   @GetMapping("analyze-file")
+  @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
   public ResponseEntity<String> analyzeFile(@RequestParam String filename) {
     try {
       String extension = CommonUtil.getFileExtension(new File(filename));
@@ -69,6 +71,7 @@ public class ConversionController {
   }
 
   @GetMapping("")
+  @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
   public ResponseEntity<String> convert(
       @RequestParam String from, @RequestParam String to, @RequestParam String filename) {
     File input = new File(soundscribeConfiguration.getSongDataStorage() + filename);
@@ -91,6 +94,7 @@ public class ConversionController {
    * ABC, MIDI, MEI
    */
   @RequestMapping(value = "/update-file-abc", method = RequestMethod.POST)
+  @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
   public ResponseEntity<String> updateAbc(@RequestParam("file") MultipartFile file) {
     storageService.store(file);
     try {
@@ -114,6 +118,7 @@ public class ConversionController {
    * ABC, MIDI, MEI
    */
   @RequestMapping(value = "/update-file-abc-raw", method = RequestMethod.POST)
+  @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
   public ResponseEntity<String> updateAbcRaw(
       @RequestParam String fileName, HttpEntity<String> httpEntity) {
     String abcString = httpEntity.getBody();
@@ -145,6 +150,7 @@ public class ConversionController {
   }
 
   @RequestMapping(value = "/update-file-midi", method = RequestMethod.POST)
+  @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
   public ResponseEntity<String> updateMidi(@RequestBody FrontXmlPojo frontXmlPojo) {
     XmlPojo xmlPojo = FrontXmlPojo.convertFrontXmlPojoToXmlPojo(frontXmlPojo);
     try {

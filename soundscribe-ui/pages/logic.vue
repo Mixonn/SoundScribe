@@ -37,3 +37,10 @@
     <v-footer color="sideBackground" />
   </v-app>
 </template>
+
+<script>
+export default {
+  middleware: ['customauth']
+}
+
+</script>

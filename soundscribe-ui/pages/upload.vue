@@ -14,6 +14,7 @@
 import Upload from '../components/Upload'
 
 export default {
+  middleware: 'customauth',
   components: {
     Upload
   }
