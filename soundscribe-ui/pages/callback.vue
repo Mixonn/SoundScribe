@@ -14,8 +14,8 @@ export default {
       {
         'url': 'http://localhost:80/auth/realms/soundscribe/protocol/openid-connect/token',
         'grant_type': 'authorization_code',
-        'client_id': 'vue-edit',
-        'client_secret': 'e63e4b6f-4a50-49aa-bcdd-64bc2a8bf2d0',
+        'client_id': this.$store.getters.getClientId,
+        'client_secret': this.$store.getters.getClientSecret,
         'scope': 'soundscribe-edit,soundscribe-read',
         'code': this.$route.query.code,
         'redirect_uri': 'http://localhost:80/callback'

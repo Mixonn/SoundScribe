@@ -21,6 +21,7 @@
           Login
         </v-list-item>
         <v-list-item
+          class="logged-item"
           v-if="isLoggedIn"
           exact
         >
@@ -28,16 +29,6 @@
             <v-icon>mdi-account</v-icon>
           </v-list-item-action>
           Logged in!
-        </v-list-item>
-        <v-list-item
-          v-if="isLoggedIn"
-          exact
-          @click="logout()"
-        >
-          <v-list-item-action>
-            <v-icon>mdi-logout</v-icon>
-          </v-list-item-action>
-          Logout!
         </v-list-item>
         <v-list-item
           v-for="(item, i) in items"
@@ -52,6 +43,16 @@
           <v-list-item-content>
             <v-list-item-title v-text="item.title" />
           </v-list-item-content>
+        </v-list-item>
+        <v-list-item
+          v-if="isLoggedIn"
+          exact
+          @click="logout()"
+        >
+          <v-list-item-action>
+            <v-icon>mdi-logout</v-icon>
+          </v-list-item-action>
+          Logout!
         </v-list-item>
         <v-spacer />
       </v-list>
@@ -158,6 +159,10 @@ export default {
 <style lang="scss">
   .application {
     color: white;
+  }
+
+  .logged-item {
+    background: green;
   }
 
   .icon-tooltip {
