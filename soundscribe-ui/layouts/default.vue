@@ -11,25 +11,6 @@
     >
       <v-list>
         <v-list-item
-          v-if="!$auth.loggedIn"
-          to="/login"
-          exact
-        >
-          Login
-        </v-list-item>
-        <v-list-item
-          v-if="$auth.loggedIn"
-          to="/login"
-        >
-          User: {{ loggedIn ? this.$auth.user.username : "not logged" }}
-        </v-list-item>
-        <v-list-item
-          v-if="$auth.loggedIn"
-          @click="logout()"
-        >
-          Log out
-        </v-list-item>
-        <v-list-item
           v-for="(item, i) in items"
           :key="i"
           :to="item.to"
@@ -81,19 +62,15 @@
       <span style="color: white">
         Inżynierowie Dźwięku &copy; 2020
       </span>
+      <icon-tooltip i="github" tooltip="Go to github repository" link="https://github.com/Mixonn/SoundScribe" />
     </v-footer>
   </v-app>
 </template>
 
 <script>
-import { mapState } from 'vuex'
-
+import IconTooltip from '../components/IconTooltip';
 export default {
-  computed: {
-    loggedIn () {
-      return this.$auth.loggedIn
-    }
-  },
+  components: { IconTooltip },
   data () {
     return {
       clipped: false,
@@ -133,13 +110,6 @@ export default {
       rightDrawer: false,
       title: 'SoundScribe'
     }
-  },
-  methods: {
-    async logout () {
-      await this.$auth.logout()
-      this.$auth.strategies.keycloak.options.endpoints.user.headers.Authorization = null
-      this.$router.push('/')
-    }
   }
 }
 </script>
@@ -147,5 +117,9 @@ export default {
 <style lang="scss">
   .application {
     color: white;
+  }
+
+  .icon-tooltip {
+    padding: 5px;
   }
 </style>

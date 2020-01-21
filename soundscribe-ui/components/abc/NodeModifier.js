@@ -148,8 +148,8 @@ class Note {
         noteFractions.right = noteFractions.right * 2;
         break;
       case 2:
-        noteFractions.left = noteFractions.left * 3 + 1;
-        noteFractions.right = noteFractions.right * 2;
+        noteFractions.left = noteFractions.left * 6 + 1;
+        noteFractions.right = noteFractions.right * 4;
         break;
     }
     this.nodeLength = `${noteFractions.left}/${noteFractions.right}`;

@@ -4,10 +4,6 @@ import webpack from 'webpack'
 export default {
   mode: 'spa',
   /*
-  ** Possible values: "write", "read"
-   */
-  soundscribeMode: 'write',
-  /*
   ** Headers of the page
   */
   head: {
@@ -50,8 +46,19 @@ export default {
   */
   modules: [
     '@nuxtjs/axios',
-    '@nuxtjs/font-awesome',
-    '@nuxtjs/auth'
+    [
+      'nuxt-fontawesome', {
+        imports: [
+          {
+            set: '@fortawesome/free-solid-svg-icons',
+            icons: []
+          },
+          {
+            set: '@fortawesome/free-brands-svg-icons',
+            icons: ['faGithub']
+          }
+        ]
+      }]
   ],
   /*
   ** vuetify module configuration
@@ -84,34 +91,6 @@ export default {
   },
   axios: {
     baseURL: 'http://localhost:80/be'
-  },
-  auth: {
-    strategies: {
-      keycloak: {
-        _scheme: 'oauth2',
-        authorization_endpoint: 'http://localhost:80/auth/realms/soundscribe/protocol/openid-connect/auth',
-        userinfo_endpoint: false,
-        access_type: 'offline',
-        access_token_endpoint: 'http://localhost:80/auth/realms/soundscribe/protocol/openid-connect/token',
-        response_type: 'code',
-        token_type: 'Bearer',
-        token_key: 'access_token',
-        client_secret: '6e14846a-8711-4396-abea-9d2cfa7dd867',
-        client_id: 'vue-edit',
-        redirect_uri: 'http://localhost:80/callback',
-        grant_type: 'authorization_code',
-        scope: 'soundscribe-edit,soundscribe-read'
-      }
-    },
-    redirect: {
-      login: '/login',
-      callback: '/callback',
-      home: '/',
-      logout: false
-    }
-  },
-  router: {
-    middleware: ['auth']
   },
   /*
   ** Build configuration
