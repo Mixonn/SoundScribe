@@ -5,6 +5,9 @@ import com.soundscribe.storage.StorageService;
 import com.soundscribe.utilities.CommonUtil;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -13,15 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -61,23 +58,32 @@ public class FileUploadController {
         .body(file);
   }
 
-  @PostMapping("/")
   @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
-  public String handleFileUpload(
-      @RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
+  @RequestMapping(value = "/", method = RequestMethod.POST)
+  public Callable<String> handleFileUpload(
+      @RequestParam("uploadingFiles") MultipartFile[] uploadingFiles) {
 
-    storageService.store(file);
-    String extension = CommonUtil.getFileExtension(new File(file.getOriginalFilename()));
-    if (extension.equals("mp3") || extension.equals("wav")) {
-      conversionController.analyzeFile(file.getOriginalFilename());
-    } else {
-      throw new RuntimeException("File in unsupported format");
+    List<MultipartFile> notSupportedFiles = new ArrayList<>();
+
+    for (MultipartFile file : uploadingFiles) {
+      storageService.store(file);
+      String extension = CommonUtil.getFileExtension(new File(file.getOriginalFilename()));
+      if (extension.equals("mp3") || extension.equals("wav")) {
+        conversionController.analyzeFile(file.getOriginalFilename());
+      } else {
+        notSupportedFiles.add(file);
+      }
     }
 
-    redirectAttributes.addFlashAttribute(
-        "message", "You successfully uploaded " + file.getOriginalFilename() + "!");
-
-    return "redirect:/";
+    if (!notSupportedFiles.isEmpty()) {
+      StringBuilder stringBuilder = new StringBuilder();
+      for (MultipartFile file : notSupportedFiles) {
+        stringBuilder.append(file.getOriginalFilename());
+        stringBuilder.append(" ");
+      }
+      throw new RuntimeException("Files in unsupported format: " + stringBuilder.toString());
+    }
+    return () -> "redirect:/";
   }
 
   @ExceptionHandler(StorageFileNotFoundException.class)
