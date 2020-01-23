@@ -1,7 +1,6 @@
 package com.soundscribe.converters.xml;
 
 import com.soundscribe.converters.PyinNote;
-import com.soundscribe.utilities.MidiNotes;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -136,8 +135,7 @@ public class XmlPojo {
         note.appendChild(midi);
 
         Element letterNote = document.createElement("letterNote");
-        letterNote.appendChild(
-            document.createTextNode(pyinNote.getLetterNote()));
+        letterNote.appendChild(document.createTextNode(pyinNote.getLetterNote()));
         note.appendChild(letterNote);
 
         root.appendChild(note);
