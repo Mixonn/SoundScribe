@@ -137,7 +137,7 @@ public class XmlPojo {
 
         Element letterNote = document.createElement("letterNote");
         letterNote.appendChild(
-            document.createTextNode(MidiNotes.getNoteSymbolByMidiValue(pyinNote.getMidiValue())));
+            document.createTextNode(pyinNote.getLetterNote()));
         note.appendChild(letterNote);
 
         root.appendChild(note);

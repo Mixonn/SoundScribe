@@ -93,8 +93,6 @@ public class MusicXmlToMidi {
           String letterNote = pitchValue + octaveValue;
           int midiNote = MidiNotes.getMidiValueByNoteSymbol(letterNote);
           noteList.add(new PyinNote(timeNow, durationInSeconds, 0, midiNote, letterNote));
-        } else {
-          noteList.add(new PyinNote(timeNow, durationInSeconds, 0, 0, null));
         }
         timeNow += durationInSeconds;
       }
