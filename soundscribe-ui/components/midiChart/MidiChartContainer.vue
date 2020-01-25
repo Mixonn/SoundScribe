@@ -39,7 +39,6 @@
     </div>
     <div id="audio-controls-container" class="audioControlsContainer">
       <audio controls="controls" style="width: 50%;">
-        <source :src="mp3Url" type="audio/mpeg">
       </audio>
       <div id="audio-controls">
         <input id="original-audio" v-model="soundOptionsSelected" type="checkbox" value="original">
@@ -181,14 +180,12 @@ export default {
       this.loadFiles();
     },
     loadFiles () {
-      const baseFrequencyFilePromise = fetch(this.f0Url).then((element) => {
-        return element.text()
+      const baseFrequencyFilePromise = this.$axios.$get(this.f0Url).then((element) => {
+        return element;
       });
       const parser = new DOMParser();
-      const midiFilePromise = fetch(this.midiUrl).then((element) => {
-        return element.text().then((text) => {
-          return parser.parseFromString(text, 'text/xml')
-        })
+      const midiFilePromise = this.$axios.$get(this.midiUrl).then((element) => {
+        return parser.parseFromString(element, 'text/xml')
       });
       Promise.all([baseFrequencyFilePromise, midiFilePromise]).then((files) => {
         this.baseFrequencyFileContent = files[0];
@@ -346,9 +343,11 @@ export default {
     buildWaveform () {
       const vm = this;
       const audioContext = new AudioContext();
-      fetch(vm.mp3Url)
-        .then(response => response.arrayBuffer())
-        .then((buffer) => {
+      this.$axios.$get(vm.mp3Url, {
+        responseType: 'arraybuffer'
+      }).then((buffer) => {
+          const audio = document.querySelector('audio');
+          audio.src = URL.createObjectURL(new Blob([buffer]));
           const options = {
             audio_context: audioContext,
             array_buffer: buffer,
