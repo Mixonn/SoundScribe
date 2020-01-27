@@ -4,9 +4,6 @@ import com.soundscribe.dlibra.DLibraService;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +24,7 @@ public class DLibraController {
   private final DLibraService dLibraService;
   private final SoundscribeConfiguration soundscribeConfiguration;
 
-  @GetMapping("upload")
+  /*@GetMapping("upload")
   @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
   public ResponseEntity<String> upload(
       @RequestParam Integer publicationID,
@@ -46,6 +43,23 @@ public class DLibraController {
     int receivedID;
     try {
       receivedID = dLibraService.uploadCollection(musicXml, files, publicationID);
+    } catch (IOException e) {
+      log.error(e.getMessage(), e);
+      return new ResponseEntity<>("Failed to upload publication.", HttpStatus.EXPECTATION_FAILED);
+    }
+    return new ResponseEntity<>(
+        "Publication was successful uploaded. Publication ID: " + receivedID, HttpStatus.OK);
+  }*/
+
+  @GetMapping("upload")
+  @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
+  public ResponseEntity<String> upload(@RequestParam String file) {
+    File musicXml = new File(soundscribeConfiguration.getSongDataStorage() + file);
+    ArrayList<File> files = new ArrayList<>();
+
+    int receivedID;
+    try {
+      receivedID = dLibraService.uploadCollection(musicXml, files, 1290);
     } catch (IOException e) {
       log.error(e.getMessage(), e);
       return new ResponseEntity<>("Failed to upload publication.", HttpStatus.EXPECTATION_FAILED);
