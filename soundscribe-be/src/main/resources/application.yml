@@ -3,9 +3,9 @@ server:
 
 #Path properties
 settings:
-  uploadDirectory: "dlibraUpload/"
-  downloadDirectory: "dlibraDownload/"
-  pathToDLibraScript: "/dlibra-cmdln-tools"
+  uploadDirectory: "/usr/app/soundscribe/dlibraUpload"
+  downloadDirectory: "/usr/app/soundscribe/dlibraDownload/"
+  pathToDLibraScript: "/usr/app/soundscribe/"
 
   songDataStorage: "audioFilesStorage/"
   vampPath: "/usr/lib/"
@@ -41,7 +41,7 @@ logging:
 musicxml:
   useBassKey: false
   useDots: false
-  useRest: true
+  useRest: false
 
   delete16thRest: false
   delete16thPitch: false

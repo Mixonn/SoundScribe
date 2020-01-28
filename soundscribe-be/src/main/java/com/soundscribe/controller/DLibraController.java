@@ -1,10 +1,18 @@
 package com.soundscribe.controller;
 
 import com.soundscribe.dlibra.DLibraService;
+import com.soundscribe.dlibra.PublicationInfo;
+import com.soundscribe.dlibra.XMLService;
+import com.soundscribe.utilities.CommonUtil;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -24,59 +32,67 @@ public class DLibraController {
   private final DLibraService dLibraService;
   private final SoundscribeConfiguration soundscribeConfiguration;
 
-  /*@GetMapping("upload")
-  @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
-  public ResponseEntity<String> upload(
-      @RequestParam Integer publicationID,
-      @RequestParam String musicXmlName,
-      @RequestParam String[] filesNames) {
-    File musicXml = new File(soundscribeConfiguration.getSongDataStorage() + musicXmlName);
-    ArrayList<File> files = new ArrayList<>();
-
-    for (String fileName : filesNames) {
-      Path path = Paths.get(soundscribeConfiguration.getSongDataStorage() + fileName);
-      if (Files.exists(path)) {
-        files.add(new File(path.toUri()));
-      }
-    }
-
-    int receivedID;
-    try {
-      receivedID = dLibraService.uploadCollection(musicXml, files, publicationID);
-    } catch (IOException e) {
-      log.error(e.getMessage(), e);
-      return new ResponseEntity<>("Failed to upload publication.", HttpStatus.EXPECTATION_FAILED);
-    }
-    return new ResponseEntity<>(
-        "Publication was successful uploaded. Publication ID: " + receivedID, HttpStatus.OK);
-  }*/
-
   @GetMapping("upload")
   @PreAuthorize("hasAuthority('SCOPE_soundscribe-edit')")
   public ResponseEntity<String> upload(@RequestParam String file) {
-    File musicXml = new File(soundscribeConfiguration.getSongDataStorage() + file);
+    String fileNameWithOutExt = file.replaceFirst("[.][^.]+$", "");
+    File abcFile = new File(soundscribeConfiguration.getSongDataStorage() + file);
+    File musicXml =
+        new File(soundscribeConfiguration.getSongDataStorage() + fileNameWithOutExt + ".musicxml");
+    File xmlFile =
+        new File(soundscribeConfiguration.getSongDataStorage() + fileNameWithOutExt + ".xml");
+    File midFile =
+        new File(soundscribeConfiguration.getSongDataStorage() + fileNameWithOutExt + ".midi");
     ArrayList<File> files = new ArrayList<>();
+    files.add(abcFile);
+    files.add(xmlFile);
+    files.add(midFile);
 
-    int receivedID;
     try {
-      receivedID = dLibraService.uploadCollection(musicXml, files, 1290);
+      Path publicationInfoPath =
+          Paths.get(
+              soundscribeConfiguration.getSongDataStorage()
+                  + CommonUtil.getFileNameWithoutExtension(musicXml)
+                  + ".publicationid");
+
+      boolean idPresent = Files.lines(publicationInfoPath).findFirst().isPresent();
+      if (idPresent) {
+        String publicationIdString = Files.lines(publicationInfoPath).findFirst().get();
+        int publicationId = Integer.parseInt(publicationIdString);
+        dLibraService.uploadCollection(musicXml, files, publicationId);
+      } else {
+        int receivedID = dLibraService.uploadCollection(musicXml, files, null);
+        byte[] strToBytes = String.valueOf(receivedID).getBytes();
+        Files.write(publicationInfoPath, strToBytes);
+      }
+
     } catch (IOException e) {
       log.error(e.getMessage(), e);
-      return new ResponseEntity<>("Failed to upload publication.", HttpStatus.EXPECTATION_FAILED);
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
     }
-    return new ResponseEntity<>(
-        "Publication was successful uploaded. Publication ID: " + receivedID, HttpStatus.OK);
+
+    return new ResponseEntity<>("Publication was successful uploaded.", HttpStatus.OK);
   }
 
   @GetMapping("download")
   @PreAuthorize("hasAuthority('SCOPE_soundscribe-read')")
-  public ResponseEntity<String> download(@RequestParam Integer publicationID) {
+  public ResponseEntity<String> download(@RequestParam String publicationToDownload) {
     try {
+      Integer publicationID = Integer.parseInt(publicationToDownload.split(":")[1]);
       dLibraService.downloadCollection(publicationID);
       return new ResponseEntity<>("Publication was successfully downloaded.", HttpStatus.OK);
     } catch (IOException e) {
       e.printStackTrace();
       return new ResponseEntity<>("Failed to download publication.", HttpStatus.EXPECTATION_FAILED);
     }
+  }
+
+  @GetMapping("/list-files")
+  @PreAuthorize("hasAuthority('SCOPE_soundscribe-read')")
+  public List<String> listFiles() {
+    List<PublicationInfo> publications = XMLService.parseListResponse();
+    return publications.stream()
+        .map(p -> p.getTitle() + ":" + p.getId())
+        .collect(Collectors.toList());
   }
 }

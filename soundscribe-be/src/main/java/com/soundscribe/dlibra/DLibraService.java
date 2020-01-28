@@ -35,6 +35,7 @@ public class DLibraService {
   public int uploadCollection(File musicXml, List<File> fileCollection, Integer id)
       throws IOException {
     File mainDirectory = new File(soundscribeConfiguration.getUploadDirectory());
+    System.out.println("mainDict: " + mainDirectory.getAbsolutePath());
     File audioDirectory;
 
     if (mainDirectory.exists()) {
@@ -42,6 +43,7 @@ public class DLibraService {
     }
 
     if (mainDirectory.mkdir()) {
+      System.out.println("mainDict: created");
       audioDirectory = new File(mainDirectory.getAbsolutePath() + "/Audio");
       if (audioDirectory.mkdir()) {
         createPropertiesForPublication(musicXml, mainDirectory, id);
@@ -88,7 +90,7 @@ public class DLibraService {
     Process process =
         new ProcessBuilder(
                 "sh",
-                soundscribeConfiguration.getPathToDLibraScript() + "/dlibra-cmdln.sh",
+                soundscribeConfiguration.getPathToDLibraScript() + "dlibra-cmdln.sh",
                 "download-objects",
                 String.valueOf(id),
                 subDirectory.getAbsolutePath())
@@ -119,7 +121,7 @@ public class DLibraService {
     ProcessBuilder pb =
         new ProcessBuilder(
             "sh",
-            soundscribeConfiguration.getPathToDLibraScript() + "/dlibra-cmdln.sh",
+            soundscribeConfiguration.getPathToDLibraScript() + "dlibra-cmdln.sh",
             "upload-objects",
             mainDirectory.getAbsolutePath());
     Process p = pb.start();
@@ -127,17 +129,21 @@ public class DLibraService {
     String line;
     String lineWithId = null;
     while ((line = reader.readLine()) != null) {
+      System.out.println("L:" + line);
       if (line.contains("/publication/")) {
         lineWithId = line;
       }
     }
+
+    /*
     if (mainDirectory.exists()) {
       deleteDir(mainDirectory);
-    }
+    }*/
 
     if (lineWithId != null) {
       return getIdFromLine(lineWithId);
     }
+
     throw new IOException("Failed to upload data to dLibra.");
   }
 
@@ -240,8 +246,8 @@ public class DLibraService {
   private void createMetaData(String rootPath, String title) throws IOException {
     File metadataFile = new File(rootPath + "/metadata.properties");
     try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(metadataFile))) {
-      fileWriter.write("pl.Title.0=" + title + "\n");
-      fileWriter.write("pl.Description.0=0 min 20 sec\n");
+      // fileWriter.write("pl.Title.0=" + title + "\n");
+      // fileWriter.write("pl.Description.0=0 min 20 sec\n");
     }
   }
 }
