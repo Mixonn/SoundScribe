@@ -60,6 +60,7 @@ subprojects {
             target project.fileTree(project.rootDir) {
                 include '**/*.java'
                 exclude '**/jvamp-1.3/**'
+                exclude '**/verovio/**'
             }
             googleJavaFormat()
         }

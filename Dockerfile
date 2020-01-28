@@ -7,8 +7,10 @@ RUN apt-get update && \
     apt-get -y install cmake
 RUN cd tmp && \
     ./build-docker.sh
-RUN git clone https://github.com/rism-ch/verovio.git tmp/verovio \
-    && (cd tmp/verovio/tools && cmake . && make && make install)
+COPY verovio/ tmp/verovio/
+RUN (cd tmp/verovio/tools && cmake . && make && make install)
+#RUN git clone https://github.com/rism-ch/verovio.git tmp/verovio \
+#    && (cd tmp/verovio/tools && cmake . && make && make install)
 
 FROM openjdk:11 AS APP_BUILD
 LABEL maintainer="Osipiuk Bartosz <osipiuk.bartosz@gmail.com>"
