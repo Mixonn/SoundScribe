@@ -62,11 +62,6 @@ public class ConversionController {
       converterService.convert(musicXml, new ConversionFormat("musicxml", "midi"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "mei"));
       converterService.convert(musicXml, new ConversionFormat("musicxml", "abc"));
-      File publicationInfo =
-          new File(
-              soundscribeConfiguration.getSongDataStorage(),
-              CommonUtil.getFileNameWithoutExtension(musicXml) + ".publicationid");
-      publicationInfo.createNewFile();
     } catch (Exception e) {
       log.error("Analyze file exception", e);
       return new ResponseEntity<>(

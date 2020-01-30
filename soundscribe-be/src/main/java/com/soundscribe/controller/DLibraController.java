@@ -7,11 +7,13 @@ import com.soundscribe.utilities.CommonUtil;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,15 +57,18 @@ public class DLibraController {
                   + CommonUtil.getFileNameWithoutExtension(musicXml)
                   + ".publicationid");
 
-      boolean idPresent = Files.lines(publicationInfoPath).findFirst().isPresent();
-      if (idPresent) {
-        String publicationIdString = Files.lines(publicationInfoPath).findFirst().get();
-        int publicationId = Integer.parseInt(publicationIdString);
-        dLibraService.uploadCollection(musicXml, files, publicationId);
+      if (Files.exists(publicationInfoPath)) {
+        Scanner scanner = new Scanner(publicationInfoPath);
+        String publicationTitle = scanner.nextLine();
+        Integer publicationId = Integer.parseInt(scanner.nextLine());
+        dLibraService.uploadCollection(musicXml, files, publicationId, publicationTitle);
+        scanner.close();
       } else {
-        int receivedID = dLibraService.uploadCollection(musicXml, files, null);
-        byte[] strToBytes = String.valueOf(receivedID).getBytes();
-        Files.write(publicationInfoPath, strToBytes);
+        int receivedID = dLibraService.uploadCollection(musicXml, files, null, fileNameWithOutExt);
+        PrintWriter printWriter = new PrintWriter(new File(publicationInfoPath.toUri()));
+        printWriter.println(fileNameWithOutExt);
+        printWriter.println(receivedID);
+        printWriter.close();
       }
 
     } catch (IOException e) {

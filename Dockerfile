@@ -7,10 +7,8 @@ RUN apt-get update && \
     apt-get -y install cmake
 RUN cd tmp && \
     ./build-docker.sh
-COPY verovio/ tmp/verovio/
-RUN (cd tmp/verovio/tools && cmake . && make && make install)
-#RUN git clone https://github.com/rism-ch/verovio.git tmp/verovio \
-#    && (cd tmp/verovio/tools && cmake . && make && make install)
+RUN git clone https://github.com/rism-ch/verovio.git tmp/verovio \
+    && (cd tmp/verovio/tools && cmake . && make && make install)
 
 FROM openjdk:11 AS APP_BUILD
 LABEL maintainer="Osipiuk Bartosz <osipiuk.bartosz@gmail.com>"
@@ -36,4 +34,5 @@ RUN mv /usr/tmp/abc2xml.py /usr/local/bin/abc2xml && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     python get-pip.py && \
     python -m pip install pyparsing
+RUN apt update && apt install openjdk-8-jdk -y
 CMD ["java", "-jar", "/usr/app/soundscribe-1.0.jar"]
