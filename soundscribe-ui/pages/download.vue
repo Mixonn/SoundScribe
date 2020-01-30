@@ -1,14 +1,14 @@
 <template>
   <div>
     <v-card-title class="headline">
-      Available files to open:
+      Available files to download:
     </v-card-title>
     <v-card-text class="sider">
       <ul>
         <li v-for="file in files" :key="file" class="item">
-          <nuxt-link :to="'/logic/staff/' + file">
+          <a :href="'be/download/' + file">
             {{ file }}
-          </nuxt-link>
+          </a>
         </li>
       </ul>
     </v-card-text>
@@ -19,8 +19,13 @@
 
 export default {
   middleware: 'customauth',
+  data () {
+    return {
+      baseUrl: this.$axios.defaults.baseURL
+    };
+  },
   async asyncData ({ $axios }) {
-    const res = await $axios.get('/download/list-files?extension=abc')
+    const res = await $axios.get('/download/list-files?extension=');
     return { files: res.data }
   }
 }
