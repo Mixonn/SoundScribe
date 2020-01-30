@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-card-title class="headline">
-      Available files
+      Available files to open:
     </v-card-title>
     <v-card-text class="sider">
       <ul>

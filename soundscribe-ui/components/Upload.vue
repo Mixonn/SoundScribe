@@ -21,7 +21,7 @@
     </form>
 
     <div v-if="isSuccess">
-      <h2>Uploaded {{ uploadedFiles.length }} file(s) successfully.</h2>
+      <h2>Uploaded {{ fileCount }} file(s) successfully.</h2>
       <p>
         <a href="javascript:void(0)" @click="reset()">Upload again</a>
       </p>
@@ -40,10 +40,10 @@
 <script>
 // https://scotch.io/tutorials/how-to-handle-file-uploads-in-vue-2
 
-const STATUS_INITIAL = 0
-const STATUS_SAVING = 1
-const STATUS_SUCCESS = 2
-const STATUS_FAILED = 3
+const STATUS_INITIAL = 0;
+const STATUS_SAVING = 1;
+const STATUS_SUCCESS = 2;
+const STATUS_FAILED = 3;
 
 export default {
   name: 'App',
@@ -73,12 +73,11 @@ export default {
   },
   methods: {
     upload (formData) {
-      console.log(formData)
       const config = {
         headers: {
           ...formData.headers
         }
-      }
+      };
       return this.$axios.post('http://localhost:80/be/', formData, config)
         .then(x => x.data)
     },
@@ -98,14 +97,14 @@ export default {
           this.currentStatus = STATUS_SUCCESS;
         })
         .catch((err) => {
-          console.debug(err)
+          console.debug(err);
           this.uploadError = err.response;
           this.currentStatus = STATUS_FAILED;
         });
     },
     onSelect () {
-      const fileList = this.$refs.file.files
-      this.fileCount = fileList.length
+      const fileList = this.$refs.file.files;
+      this.fileCount = fileList.length;
       // handle file changes
       const formData = new FormData();
 
