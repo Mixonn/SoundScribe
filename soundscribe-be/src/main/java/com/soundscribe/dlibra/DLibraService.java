@@ -1,6 +1,5 @@
 package com.soundscribe.dlibra;
 
-import com.soundscribe.converters.musicxml.utilities.MusicXmlUtils;
 import com.soundscribe.utilities.SoundscribeConfiguration;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -32,7 +31,7 @@ public class DLibraService {
    * @return Publication ID.
    * @throws IOException
    */
-  public int uploadCollection(File musicXml, List<File> fileCollection, Integer id)
+  public int uploadCollection(File musicXml, List<File> fileCollection, Integer id, String title)
       throws IOException {
     File mainDirectory = new File(soundscribeConfiguration.getUploadDirectory());
     File audioDirectory;
@@ -44,7 +43,7 @@ public class DLibraService {
     if (mainDirectory.mkdir()) {
       audioDirectory = new File(mainDirectory.getAbsolutePath() + "/Audio");
       if (audioDirectory.mkdir()) {
-        createPropertiesForPublication(musicXml, mainDirectory, id);
+        createPropertiesForPublication(musicXml, mainDirectory, id, title);
 
         copyFileToDir(musicXml, audioDirectory);
         if (fileCollection != null) {
@@ -88,7 +87,7 @@ public class DLibraService {
     Process process =
         new ProcessBuilder(
                 "sh",
-                soundscribeConfiguration.getPathToDLibraScript() + "/dlibra-cmdln.sh",
+                soundscribeConfiguration.getPathToDLibraScript() + "dlibra-cmdln.sh",
                 "download-objects",
                 String.valueOf(id),
                 subDirectory.getAbsolutePath())
@@ -119,7 +118,7 @@ public class DLibraService {
     ProcessBuilder pb =
         new ProcessBuilder(
             "sh",
-            soundscribeConfiguration.getPathToDLibraScript() + "/dlibra-cmdln.sh",
+            soundscribeConfiguration.getPathToDLibraScript() + "dlibra-cmdln.sh",
             "upload-objects",
             mainDirectory.getAbsolutePath());
     Process p = pb.start();
@@ -131,6 +130,7 @@ public class DLibraService {
         lineWithId = line;
       }
     }
+
     if (mainDirectory.exists()) {
       deleteDir(mainDirectory);
     }
@@ -138,6 +138,7 @@ public class DLibraService {
     if (lineWithId != null) {
       return getIdFromLine(lineWithId);
     }
+
     throw new IOException("Failed to upload data to dLibra.");
   }
 
@@ -189,11 +190,10 @@ public class DLibraService {
    * @param id Publication ID. If no ID is specified, new publication will be added to collection.
    * @throws IOException
    */
-  private void createPropertiesForPublication(File musicxml, File mainDirectory, Integer id)
-      throws IOException {
+  private void createPropertiesForPublication(
+      File musicxml, File mainDirectory, Integer id, String title) throws IOException {
 
     String mainFileName = musicxml.getName();
-    String title = MusicXmlUtils.getSongNameFromMusicxmlFile(musicxml);
     createPublicationProperties(mainDirectory.getAbsolutePath(), title, mainFileName, id);
     createMetaData(mainDirectory.getAbsolutePath(), title);
   }
@@ -240,8 +240,8 @@ public class DLibraService {
   private void createMetaData(String rootPath, String title) throws IOException {
     File metadataFile = new File(rootPath + "/metadata.properties");
     try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(metadataFile))) {
-      fileWriter.write("pl.Title.0=" + title + "\n");
-      fileWriter.write("pl.Description.0=0 min 20 sec\n");
+      // fileWriter.write("pl.Title.0=" + title + "\n");
+      // fileWriter.write("pl.Description.0=0 min 20 sec\n");
     }
   }
 }
