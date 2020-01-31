@@ -21,8 +21,8 @@
           Login
         </v-list-item>
         <v-list-item
-          class="logged-item"
           v-if="isLoggedIn"
+          class="logged-item"
           exact
         >
           <v-list-item-action>
@@ -52,7 +52,7 @@
           <v-list-item-action>
             <v-icon>mdi-logout</v-icon>
           </v-list-item-action>
-          Logout!
+          Logout
         </v-list-item>
         <v-spacer />
       </v-list>
@@ -92,6 +92,7 @@
       <span style="color: white">
         Inżynierowie Dźwięku &copy; 2020
       </span>
+      &nbsp; &nbsp; &nbsp;
       <icon-tooltip i="github" tooltip="Go to github repository" link="https://github.com/Mixonn/SoundScribe" />
     </v-footer>
   </v-app>
@@ -123,6 +124,12 @@ export default {
           icon: 'mdi-file-upload',
           title: 'Upload',
           to: '/upload'
+        },
+        {
+          icon: 'mdi-download',
+          title: 'Download',
+          to: '/download',
+          color: 'primary'
         },
         {
           icon: 'mdi-file-import',

@@ -40,7 +40,7 @@ logging:
 
 musicxml:
   useBassKey: false
-  useDots: false
+  useDots: true
   useRest: false
 
   delete16thRest: false

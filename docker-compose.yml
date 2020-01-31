@@ -30,6 +30,8 @@ services:
     container_name: soundscribe-be
     hostname: soundscribe-be
     build: .
+    depends_on:
+      - "authorization-keycloak"
     expose:
       - 8081
     volumes:
@@ -38,11 +40,18 @@ services:
     container_name: soundscribe-ui
     hostname: soundscribe-ui
     build: soundscribe-ui/
+    depends_on:
+      - "authorization-keycloak"
+      - "soundscribe-be"
     expose:
       - 80
   nginx-proxy:
     image: nginx
     container_name: nginx-proxy
+    depends_on:
+      - authorization-keycloak
+      - soundscribe-ui
+      - soundscribe-be
     ports:
       - "80:80"
       - "443:443"
