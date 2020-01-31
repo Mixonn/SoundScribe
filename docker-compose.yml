@@ -35,7 +35,7 @@ services:
     expose:
       - 8081
     volumes:
-      - /dlibra-cmdln-tools/:/usr/app/soundscribe/:rw
+      - ./dlibra-cmdln-tools/:/usr/app/soundscribe/:rw
   soundscribe-ui:
     container_name: soundscribe-ui
     hostname: soundscribe-ui
