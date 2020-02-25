@@ -19,13 +19,13 @@ export default {
         'scope': 'soundscribe-edit,soundscribe-read',
         'code': this.$route.query.code,
         'redirect_uri': 'http://localhost:80/callback'
-      })
+      });
 
-    const token = await getToken()
+    const token = await getToken();
 
     if (token) {
-      this.$axios.defaults.headers.common.Authorization = 'Bearer ' + token.access_token
-      this.$store.commit('auth_success', token)
+      this.$axios.defaults.headers.common.Authorization = 'Bearer ' + token.access_token;
+      this.$store.commit('auth_success', token);
 
       console.log(token)
     }

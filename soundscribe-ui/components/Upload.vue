@@ -78,7 +78,7 @@ export default {
           ...formData.headers
         }
       };
-      return this.$axios.post('http://localhost:80/be/', formData, config)
+      return this.$axios.$post('/', formData, config)
         .then(x => x.data)
     },
     reset () {

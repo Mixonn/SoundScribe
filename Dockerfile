@@ -34,5 +34,5 @@ RUN mv /usr/tmp/abc2xml.py /usr/local/bin/abc2xml && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     python get-pip.py && \
     python -m pip install pyparsing
-RUN apt update && apt install openjdk-8-jdk -y
+#RUN apt update && apt install openjdk-8-jdk -y
 CMD ["java", "-jar", "/usr/app/soundscribe-1.0.jar"]

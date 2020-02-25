@@ -95,22 +95,22 @@ export default {
     }
   },
   axios: {
-    baseURL: 'http://localhost:80/be'
+    baseURL: 'http://' + process.env.HOST_NAME + ':80/be'
   },
   auth: {
     strategies: {
       keycloak: {
         _scheme: 'oauth2',
-        authorization_endpoint: 'http://localhost:80/auth/realms/soundscribe/protocol/openid-connect/auth',
+        authorization_endpoint: 'http://' + process.env.HOST_NAME + ':80/auth/realms/soundscribe/protocol/openid-connect/auth',
         userinfo_endpoint: false,
         access_type: 'offline',
-        access_token_endpoint: 'http://localhost:80/auth/realms/soundscribe/protocol/openid-connect/token',
+        access_token_endpoint: 'http://' + process.env.HOST_NAME + ':80/auth/realms/soundscribe/protocol/openid-connect/token',
         response_type: 'code',
         token_type: 'Bearer',
         token_key: 'access_token',
         client_secret: 'e63e4b6f-4a50-49aa-bcdd-64bc2a8bf2d0', // for vue-read: ece59075-7394-45c6-849d-235fb6b9ae94
         client_id: 'vue-edit',
-        redirect_uri: 'http://localhost:80/callback',
+        redirect_uri: 'http://' + process.env.HOST_NAME + ':80/callback',
         grant_type: 'authorization_code',
         scope: 'soundscribe-edit,soundscribe-read'
       }
@@ -138,7 +138,6 @@ export default {
       new webpack.ProvidePlugin({
         '$': 'jquery',
         '_': 'lodash'
-        // ...etc.
       })
     ]
   }
