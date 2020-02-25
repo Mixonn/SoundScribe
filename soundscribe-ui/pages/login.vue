@@ -14,7 +14,7 @@
 export default {
   async mounted () {
     console.log('Host name:');
-    console.log(process.env.hostName);
+    console.log(process.env.HOST_NAME);
     await this.$auth.loginWith('keycloak')
   }
 }

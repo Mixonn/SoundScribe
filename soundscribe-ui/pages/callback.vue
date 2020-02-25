@@ -12,13 +12,13 @@ export default {
     const oauth = require('axios-oauth-client');
     const getToken = oauth.client(this.$axios.create(),
       {
-        'url': 'http://localhost:80/auth/realms/soundscribe/protocol/openid-connect/token',
+        'url': `http://${process.env.HOST_NAME}:80/auth/realms/soundscribe/protocol/openid-connect/token`,
         'grant_type': 'authorization_code',
         'client_id': this.$store.getters.getClientId,
         'client_secret': this.$store.getters.getClientSecret,
         'scope': 'soundscribe-edit,soundscribe-read',
         'code': this.$route.query.code,
-        'redirect_uri': 'http://localhost:80/callback'
+        'redirect_uri': `http://${process.env.HOST_NAME}:80/callback`
       });
 
     const token = await getToken();
