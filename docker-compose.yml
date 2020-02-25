@@ -44,18 +44,18 @@ services:
       - "authorization-keycloak"
       - "soundscribe-be"
     environment:
-      HOST_NAME: localhost
+      HOST_NAME: 80.211.255.170
     expose:
       - 80
   nginx-proxy:
-    build: nginx-proxy/Dockerfile
+    build: nginx-proxy/
     container_name: nginx-proxy
     depends_on:
       - authorization-keycloak
       - soundscribe-ui
       - soundscribe-be
     environment:
-      LISTEN_HOST: localhost
+      LISTEN_HOST: 80.211.255.170
       LISTEN_PORT: 80
     ports:
       - "80:80"

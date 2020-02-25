@@ -33,7 +33,7 @@ export const mutations = ({
         'Authorization': 'Bearer ' + state.accessToken
       }
     };
-    this.$axios.$post('http://' + process.env.HOST_NAME + '/auth/realms/soundscribe/protocol/openid-connect/logout', qs.stringify(requestBody), config);
+    this.$axios.$post('http://' + process.env.hostName + '/auth/realms/soundscribe/protocol/openid-connect/logout', qs.stringify(requestBody), config);
 
     state.status = '';
     state.accessToken = '';
