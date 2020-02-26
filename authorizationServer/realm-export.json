@@ -367,10 +367,10 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "ece59075-7394-45c6-849d-235fb6b9ae94",
       "redirectUris": [
-        "http://localhost"
+        "*"
       ],
       "webOrigins": [
-        "http://localhost/*"
+        "*"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -626,10 +626,10 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "e63e4b6f-4a50-49aa-bcdd-64bc2a8bf2d0",
       "redirectUris": [
-        "http://localhost/*"
+        "*"
       ],
       "webOrigins": [
-        "http://localhost"
+        "*"
       ],
       "notBefore": 0,
       "bearerOnly": false,

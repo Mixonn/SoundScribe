@@ -2,7 +2,7 @@ version: '3'
 
 services:
   authorization-keycloak:
-    image: jboss/keycloak:latest
+    image: jboss/keycloak:8.0.1
     container_name: authorization-keycloak
     hostname: authorization-keycloak
     expose:
@@ -29,7 +29,7 @@ services:
   soundscribe-be:
     container_name: soundscribe-be
     hostname: soundscribe-be
-    build: .
+    image: mixon/soundscribe
     depends_on:
       - "authorization-keycloak"
     expose:
@@ -43,20 +43,24 @@ services:
     depends_on:
       - "authorization-keycloak"
       - "soundscribe-be"
+    environment:
+      HOST_NAME: 80.211.255.170
     expose:
       - 80
   nginx-proxy:
-    image: nginx
+    build: nginx-proxy/
     container_name: nginx-proxy
     depends_on:
       - authorization-keycloak
       - soundscribe-ui
       - soundscribe-be
+    environment:
+      LISTEN_HOST: 80.211.255.170
+      LISTEN_PORT: 80
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./nginx-proxy/proxy.conf:/etc/nginx/nginx.conf:ro
       - ./nginx-proxy/nginx/error.log:/etc/nginx/error_log.log
       - ./nginx-proxy/nginx/cache/:/etc/nginx/cache
