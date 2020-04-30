@@ -24,7 +24,7 @@
     "child_process": "^1.0.2",
     "filereader": "^0.10.3",
     "jptv-midi-js": "^0.3.0",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "keycloak-js": "^8.0.1",
     "midi-player-js": "^2.0.5",
     "module": "^1.2.5",
