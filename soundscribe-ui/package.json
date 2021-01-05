@@ -17,7 +17,7 @@
     "@nuxtjs/auth": "^4.8.5",
     "@nuxtjs/axios": "^5.8.0",
     "@nuxtjs/font-awesome": "^1.0.4",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "axios-oauth-client": "^1.2.1",
     "chart.js": "^2.9.2",
     "chartjs-plugin-dragdata": "^1.1.1",
