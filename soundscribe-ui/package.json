@@ -19,7 +19,7 @@
     "@nuxtjs/font-awesome": "^1.0.4",
     "axios": "^0.19.0",
     "axios-oauth-client": "^1.2.1",
-    "chart.js": "^2.9.2",
+    "chart.js": "^2.9.4",
     "chartjs-plugin-dragdata": "^1.1.1",
     "child_process": "^1.0.2",
     "filereader": "^0.10.3",
