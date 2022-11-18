@@ -28,7 +28,7 @@
     "keycloak-js": "^8.0.1",
     "midi-player-js": "^2.0.5",
     "module": "^1.2.5",
-    "nuxt": "^2.0.0",
+    "nuxt": "^2.15.8",
     "nuxt-fontawesome": "^0.4.0",
     "peaks.js": "^0.14.5",
     "serialize-javascript": "^3.1.0",
